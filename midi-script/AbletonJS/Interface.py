@@ -34,6 +34,14 @@ class Interface(object):
         add_fn(fn)
         return True
 
+    def remove_listener(self, prop):
+        try:
+            remove_fn = getattr(self.ns, "remove_" + prop + "_listener")
+            return remove_fn()
+        except:
+            self.socket.send("error", "Listener " + prop + " does not exist.")
+            return
+
     def get_prop(self, prop):
         try:
             get_fn = getattr(self, "get_" + prop)
