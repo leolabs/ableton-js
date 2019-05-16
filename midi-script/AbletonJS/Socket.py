@@ -40,7 +40,7 @@ class Socket(object):
             self._socket.sendto(json.dumps(
                 {"event": name, "data": obj, "uuid": uuid}), self._remote_addr)
             self.log_message("Socket Event " + name +
-                             "(" + uuid + "): " + json.dumps(obj))
+                             "(" + str(uuid) + "): " + json.dumps(obj))
         except Exception, e:
             self._socket.sendto(json.dumps(
                 {"event": "error", "data": type(e).__name__ + ': ' + str(e.args[0])}), self._remote_addr)

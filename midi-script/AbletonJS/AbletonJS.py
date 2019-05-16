@@ -5,9 +5,9 @@ from Song import Song
 from _Framework.ControlSurface import ControlSurface
 
 
-class RemoteControl(ControlSurface):
+class AbletonJS(ControlSurface):
     def __init__(self, c_instance):
-        super(RemoteControl, self).__init__(c_instance)
+        super(AbletonJS, self).__init__(c_instance)
 
         Socket.set_log(self.log_message)
         Socket.set_message(self.show_message)
