@@ -1,0 +1,10 @@
+{
+  "include": ["./src/**/*", "./scripts/**/*"],
+  "exclude": [],
+  "compilerOptions": {
+    "module": "commonjs",
+    "declaration": true,
+    "esModuleInterop": true,
+    "outDir": "./build"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "name": "ableton-js",
+  "version": "1.0.0",
+  "description": "Control Ableton Live from Node",
+  "main": "index.js",
+  "author": "Leo Bernard <admin@leolabs.org>",
+  "license": "MIT",
+  "scripts": {
+    "ableton:clean": "rm -f midi-script/AbletonJS/*.pyc",
+    "ableton:copy-script": "set -- /Applications/Ableton*/Contents/App-Resources/MIDI\\ Remote\\ Scripts && rm -rf \"$1/AbletonJS\" && cp -r \"$(pwd)/midi-script/AbletonJS\" \"$1/AbletonJS\" && rm -rf \"$1/AbletonJS/_Framework\"",
+    "ableton:launch": "set -- /Applications/Ableton* && open \"$1\"",
+    "ableton:logs": "tail -f ~/Library/Preferences/Ableton/*/Log.txt | grep -i -e RemoteScriptError -e RemoteScriptMessage -e AbletonJS",
+    "ableton:kill": "pkill -HUP -f \"Ableton Live\"",
+    "ableton:start": "yarn ableton:kill; yarn ableton:clean && yarn ableton:copy-script && yarn ableton:launch && yarn ableton:logs"
+  },
+  "devDependencies": {
+    "ts-node": "^8.1.0",
+    "typescript": "^3.4.5"
+  },
+  "dependencies": {
+    "commander": "^2.20.0"
+  }
+}
