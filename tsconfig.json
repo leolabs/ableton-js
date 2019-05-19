@@ -3,6 +3,7 @@
   "exclude": [],
   "compilerOptions": {
     "module": "commonjs",
+    "strict": true,
     "declaration": true,
     "esModuleInterop": true,
     "outDir": "./build"

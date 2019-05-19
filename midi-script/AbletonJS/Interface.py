@@ -7,40 +7,37 @@ class Interface(object):
 
     def handle(self, payload):
         func = getattr(self, payload["name"])
+        uuid = payload["uuid"] if payload.has_key("uuid") else None
 
         if func is not None and callable(func):
             try:
                 result = func(
                     **payload["args"]) if payload.has_key("args") else func()
-                self.socket.send(
-                    "result", result, payload["uuid"] if payload.has_key("uuid") else None)
+                self.socket.send("result", result, uuid)
             except Exception, e:
-                self.socket.send(
-                    "error", "Function call failed: " + str(e.args))
+                self.socket.send("error", str(e.args), uuid)
         else:
             self.socket.send(
-                "error", "Function call failed: " + payload["name"] + " doesn't exist or isn't callable")
+                "error", "Function call failed: " + payload["name"] + " doesn't exist or isn't callable", uuid)
 
-    def add_listener(self, prop):
+    def add_listener(self, prop, eventId):
         try:
             add_fn = getattr(self.ns, "add_" + prop + "_listener")
         except:
-            self.socket.send("error", "Listener " + prop + " does not exist.")
-            return
+            raise Exception("Listener " + str(prop) + " does not exist.")
 
         def fn():
-            return self.socket.send(prop, self.get_prop(prop))
+            return self.socket.send(eventId, self.get_prop(prop))
 
         add_fn(fn)
-        return True
+        return eventId
 
     def remove_listener(self, prop):
         try:
             remove_fn = getattr(self.ns, "remove_" + prop + "_listener")
             return remove_fn()
         except:
-            self.socket.send("error", "Listener " + prop + " does not exist.")
-            return
+            raise Exception("Listener " + str(prop) + " does not exist.")
 
     def get_prop(self, prop):
         try:

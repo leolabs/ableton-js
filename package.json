@@ -14,10 +14,13 @@
     "ableton:start": "yarn ableton:kill; yarn ableton:clean && yarn ableton:copy-script && yarn ableton:launch && yarn ableton:logs"
   },
   "devDependencies": {
+    "@types/node": "^12.0.2",
+    "@types/node-uuid": "^0.0.28",
     "ts-node": "^8.1.0",
     "typescript": "^3.4.5"
   },
   "dependencies": {
-    "commander": "^2.20.0"
+    "commander": "^2.20.0",
+    "node-uuid": "^1.4.8"
   }
 }
