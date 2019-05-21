@@ -36,14 +36,19 @@ class Socket(object):
         self.input_handler = func
 
     def send(self, name, obj, uuid=None):
+        def jsonReplace(o):
+            return str(o)
+
         try:
             self._socket.sendto(json.dumps(
-                {"event": name, "data": obj, "uuid": uuid}), self._remote_addr)
+                {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace), self._remote_addr)
             self.log_message("Socket Event " + name +
                              "(" + str(uuid) + "): " + json.dumps(obj))
         except Exception, e:
             self._socket.sendto(json.dumps(
-                {"event": "error", "data": type(e).__name__ + ': ' + str(e.args[0])}), self._remote_addr)
+                {"event": "error", "data": str(type(e).__name__) + ': ' + str(e.args), "uuid": uuid}, default=jsonReplace), self._remote_addr)
+            self.log_message("Socket Error " + name +
+                             "(" + str(uuid) + "): " + str(e))
 
     def process(self):
         try:
