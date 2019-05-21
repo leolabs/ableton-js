@@ -19,7 +19,7 @@ class Interface(object):
                     ns=ns, **payload["args"]) if payload.has_key("args") else func(ns=ns)
                 self.socket.send("result", result, uuid)
             except Exception, e:
-                self.socket.send("error", str(e.args), uuid)
+                self.socket.send("error", str(e.args[0]), uuid)
         else:
             self.socket.send(
                 "error", "Function call failed: " + payload["name"] + " doesn't exist or isn't callable", uuid)
