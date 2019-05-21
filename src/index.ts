@@ -47,7 +47,7 @@ export class Ableton {
 
       if (data.event === "error" && functionCallback) {
         this.msgMap.delete(data.uuid);
-        return functionCallback.rej(data.data);
+        return functionCallback.rej(new Error(data.data));
       }
 
       const eventCallback = this.eventListeners.get(data.event);
@@ -67,7 +67,7 @@ export class Ableton {
       const msgId = uuid.v1();
       const msg = JSON.stringify({ uuid: msgId, ns, name, args } as Command);
 
-      const timeoutId = setTimeout(rej, timeout);
+      const timeoutId = setTimeout(() => rej(new Error("Timeout")), timeout);
 
       this.msgMap.set(msgId, {
         res: (data: any) => {
