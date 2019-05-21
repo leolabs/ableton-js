@@ -1,13 +1,13 @@
 import { Ableton } from "..";
 
-export class Namespace<P, OP> {
+export class Namespace<GP, SP, OP> {
   constructor(protected ableton: Ableton, protected ns: string) {}
 
-  async get(prop: P) {
+  async get(prop: GP) {
     return this.ableton.getProp(this.ns, String(prop));
   }
 
-  async set(prop: P, value: any) {
+  async set(prop: SP, value: any) {
     return this.ableton.setProp(this.ns, String(prop), value);
   }
 
