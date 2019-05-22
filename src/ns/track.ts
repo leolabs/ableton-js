@@ -1,5 +1,6 @@
 import { Ableton } from "..";
 import { Namespace } from ".";
+import { Device, RawDevice } from "./device";
 
 export interface GettableProperties {
   arm: number;
@@ -18,7 +19,7 @@ export interface GettableProperties {
   current_monitoring_state: number;
   current_output_routing: number;
   current_output_sub_routing: number;
-  devices: number;
+  devices: RawDevice[];
   fired_slot_index: number;
   fold_state: number;
   group_track: number;
@@ -56,7 +57,9 @@ export interface GettableProperties {
   view: number;
 }
 
-export interface TransformedProperties {}
+export interface TransformedProperties {
+  devices: Device[];
+}
 
 export interface SettableProperties {
   arm: number;
@@ -173,5 +176,9 @@ export class Track extends Namespace<
 > {
   constructor(ableton: Ableton, public raw: RawTrack) {
     super(ableton, "track", raw.id);
+
+    this.transformers = {
+      devices: devices => devices.map(d => new Device(this.ableton, d)),
+    };
   }
 }
