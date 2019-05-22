@@ -35,4 +35,12 @@ export class Namespace<GP, TP, SP, OP> {
   async removeListener(prop: OP, eventId: string) {
     this.ableton.removeListener(this.ns, this.nsid, String(prop), eventId);
   }
+
+  protected async sendCommand(
+    name: string,
+    args?: { [k: string]: any },
+    timeout?: number,
+  ) {
+    return this.ableton.sendCommand(this.ns, this.nsid, name, args, timeout);
+  }
 }

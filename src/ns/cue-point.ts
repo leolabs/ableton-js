@@ -35,6 +35,6 @@ export class CuePoint extends Namespace<
   }
 
   async jump() {
-    return this.ableton.sendCommand("cue-point", this.nsid, "jump");
+    return this.sendCommand("jump");
   }
 }
