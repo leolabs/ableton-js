@@ -19,6 +19,11 @@ class AbletonJS(ControlSurface):
         self.socket.set_handler(self.command_handler)
         self.parse()
 
+    def disconnect(self):
+        self.log_message("Disconnecting")
+        self.socket.shutdown()
+        super(AbletonJS, self).disconnect()
+
     def parse(self):
         self.socket.process()
         self.schedule_message(1, self.parse)

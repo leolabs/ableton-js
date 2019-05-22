@@ -3,6 +3,7 @@ import sys
 import errno
 import traceback
 import json
+from threading import Timer
 
 
 class Socket(object):
@@ -22,15 +23,20 @@ class Socket(object):
         self._local_addr = (localhost, localport)
         self._remote_addr = (remotehost, remoteport)
 
+        self.bind()
+
+    def bind(self):
         try:
             self._socket.bind(self._local_addr)
             self.log_message('Starting on: ' + str(self._local_addr) +
                              ', remote addr: ' + str(self._remote_addr))
         except:
             msg = 'ERROR: Cannot bind to ' + \
-                str(self._local_addr) + ', port in use'
+                str(self._local_addr) + ', port in use. Trying again...'
             self.show_message(msg)
             self.log_message(msg)
+            t = Timer(5, self.bind)
+            t.start()
 
     def set_handler(self, func):
         self.input_handler = func
@@ -49,6 +55,9 @@ class Socket(object):
                 {"event": "error", "data": str(type(e).__name__) + ': ' + str(e.args), "uuid": uuid}, default=jsonReplace), self._remote_addr)
             self.log_message("Socket Error " + name +
                              "(" + str(uuid) + "): " + str(e))
+
+    def shutdown(self):
+        self._socket.close()
 
     def process(self):
         try:
