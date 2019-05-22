@@ -1,5 +1,18 @@
 class Interface(object):
     def __init__(self, c_instance, socket, log):
+    obj_ids = dict()
+
+    @staticmethod
+    def save_obj(obj):
+        obj_id = str(obj)
+        Interface.obj_ids[obj_id] = obj
+        return obj_id
+
+    @staticmethod
+    def get_obj(obj_id):
+        return Interface.obj_ids[obj_id]
+
+    def __init__(self, c_instance, socket):
         self.ableton = c_instance
         self.socket = socket
         self.log_message = log
