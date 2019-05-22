@@ -47,12 +47,12 @@ class Socket(object):
 
         try:
             self._socket.sendto(json.dumps(
-                {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace), self._remote_addr)
+                {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace, ensure_ascii=False), self._remote_addr)
             self.log_message("Socket Event " + name +
                              "(" + str(uuid) + "): " + json.dumps(obj))
         except Exception, e:
             self._socket.sendto(json.dumps(
-                {"event": "error", "data": str(type(e).__name__) + ': ' + str(e.args), "uuid": uuid}, default=jsonReplace), self._remote_addr)
+                {"event": "error", "data": str(type(e).__name__) + ': ' + str(e.args), "uuid": uuid}, default=jsonReplace, ensure_ascii=False), self._remote_addr)
             self.log_message("Socket Error " + name +
                              "(" + str(uuid) + "): " + str(e))
 
