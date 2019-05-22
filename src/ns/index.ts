@@ -28,8 +28,18 @@ export class Namespace<GP, TP, SP, OP> {
     return this.ableton.setProp(this.ns, this.nsid, String(prop), value);
   }
 
-  async addListener(prop: OP, listener: (data: any) => any) {
-    this.ableton.addListener(this.ns, this.nsid, String(prop), listener);
+  async addListener<T extends keyof GP>(
+    prop: T,
+    listener: (data: T extends keyof TP ? TP[T] : GP[T]) => any,
+  ) {
+    const transformer = this.transformers[prop];
+    return this.ableton.addListener(this.ns, this.nsid, String(prop), data => {
+      if (transformer) {
+        listener(transformer(data));
+      } else {
+        listener(data);
+      }
+    });
   }
 
   async removeListener(prop: OP, eventId: string) {
