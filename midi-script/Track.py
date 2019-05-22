@@ -1,4 +1,5 @@
 from Interface import Interface
+from Device import Device
 
 
 class Track(Interface):
@@ -10,5 +11,5 @@ class Track(Interface):
     def __init__(self, c_instance, socket):
         super(Track, self).__init__(c_instance, socket)
 
-    def get_ns(self, nsid):
-        return Interface.get_obj(nsid)
+    def get_devices(self, ns):
+        return map(Device.serialize_device, ns.devices)
