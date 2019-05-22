@@ -71,6 +71,3 @@ class Socket(object):
             return
         except Exception, e:
             self.log_message("Error: " + str(e.args))
-
-    def shutdown(self):
-        self._socket.close()
