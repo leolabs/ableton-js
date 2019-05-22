@@ -1,7 +1,9 @@
 import sys
 
 from Socket import Socket
+from CuePoint import CuePoint
 from Song import Song
+from Track import Track
 from _Framework.ControlSurface import ControlSurface
 
 
@@ -14,7 +16,9 @@ class AbletonJS(ControlSurface):
         self.socket = Socket()
 
         self.handlers = {
+            "cue-point": CuePoint(c_instance, self.socket),
             "song": Song(c_instance, self.socket),
+            "track": Track(c_instance, self.socket),
         }
 
         self.socket.set_handler(self.command_handler)
