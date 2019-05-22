@@ -13,8 +13,9 @@ class AbletonJS(ControlSurface):
         Socket.set_message(self.show_message)
         self.socket = Socket()
 
-        self.handlers = {"song": Song(
-            c_instance, self.socket, self.log_message), }
+        self.handlers = {
+            "song": Song(c_instance, self.socket),
+        }
 
         self.socket.set_handler(self.command_handler)
         self.parse()

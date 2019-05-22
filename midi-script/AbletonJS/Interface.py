@@ -1,5 +1,4 @@
 class Interface(object):
-    def __init__(self, c_instance, socket, log):
     obj_ids = dict()
 
     @staticmethod
@@ -15,7 +14,7 @@ class Interface(object):
     def __init__(self, c_instance, socket):
         self.ableton = c_instance
         self.socket = socket
-        self.log_message = log
+        self.log_message = c_instance.log_message
 
     def get_ns(self, nsid):
         pass

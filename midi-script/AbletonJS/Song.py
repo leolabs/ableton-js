@@ -2,8 +2,8 @@ from Interface import Interface
 
 
 class Song(Interface):
-    def __init__(self, c_instance, socket, log):
-        super(Song, self).__init__(c_instance, socket, log)
+    def __init__(self, c_instance, socket):
+        super(Song, self).__init__(c_instance, socket)
 
     def get_ns(self, nsid):
         return self.ableton.song()
