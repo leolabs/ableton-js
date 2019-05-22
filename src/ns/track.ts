@@ -1,165 +1,177 @@
 import { Ableton } from "..";
 import { Namespace } from ".";
 
-export type GettableProperty =
-  | "arm"
-  | "available_input_routing_channels"
-  | "available_input_routing_types"
-  | "available_output_routing_channels"
-  | "available_output_routing_types"
-  | "can_be_armed"
-  | "can_be_frozen"
-  | "can_show_chains"
-  | "clip_slots"
-  | "color"
-  | "color_index"
-  | "current_input_routing"
-  | "current_input_sub_routing"
-  | "current_monitoring_state"
-  | "current_output_routing"
-  | "current_output_sub_routing"
-  | "devices"
-  | "fired_slot_index"
-  | "fold_state"
-  | "group_track"
-  | "has_audio_input"
-  | "has_audio_output"
-  | "has_midi_input"
-  | "has_midi_output"
-  | "implicit_arm"
-  | "input_meter_left"
-  | "input_meter_level"
-  | "input_meter_right"
-  | "input_routing_channel"
-  | "input_routing_type"
-  | "input_routings"
-  | "input_sub_routings"
-  | "is_foldable"
-  | "is_frozen"
-  | "is_grouped"
-  | "is_part_of_selection"
-  | "is_showing_chains"
-  | "is_visible"
-  | "mixer_device"
-  | "mute"
-  | "muted_via_solo"
-  | "name"
-  | "output_meter_left"
-  | "output_meter_level"
-  | "output_meter_right"
-  | "output_routing_channel"
-  | "output_routing_type"
-  | "output_routings"
-  | "output_sub_routings"
-  | "playing_slot_index"
-  | "solo"
-  | "view";
+export interface GettableProperties {
+  arm: number;
+  available_input_routing_channels: number;
+  available_input_routing_types: number;
+  available_output_routing_channels: number;
+  available_output_routing_types: number;
+  can_be_armed: number;
+  can_be_frozen: number;
+  can_show_chains: number;
+  clip_slots: number;
+  color: number;
+  color_index: number;
+  current_input_routing: number;
+  current_input_sub_routing: number;
+  current_monitoring_state: number;
+  current_output_routing: number;
+  current_output_sub_routing: number;
+  devices: number;
+  fired_slot_index: number;
+  fold_state: number;
+  group_track: number;
+  has_audio_input: number;
+  has_audio_output: number;
+  has_midi_input: number;
+  has_midi_output: number;
+  implicit_arm: number;
+  input_meter_left: number;
+  input_meter_level: number;
+  input_meter_right: number;
+  input_routing_channel: number;
+  input_routing_type: number;
+  input_routings: number;
+  input_sub_routings: number;
+  is_foldable: number;
+  is_frozen: number;
+  is_grouped: number;
+  is_part_of_selection: number;
+  is_showing_chains: number;
+  is_visible: number;
+  mixer_device: number;
+  mute: number;
+  muted_via_solo: number;
+  name: number;
+  output_meter_left: number;
+  output_meter_level: number;
+  output_meter_right: number;
+  output_routing_channel: number;
+  output_routing_type: number;
+  output_routings: number;
+  output_sub_routings: number;
+  playing_slot_index: number;
+  solo: number;
+  view: number;
+}
 
-export type SettableProperty =
-  | "arm"
-  | "available_input_routing_channels"
-  | "available_input_routing_types"
-  | "available_output_routing_channels"
-  | "available_output_routing_types"
-  | "can_be_armed"
-  | "can_be_frozen"
-  | "can_show_chains"
-  | "canonical_parent"
-  | "clip_slots"
-  | "color"
-  | "color_index"
-  | "current_input_routing"
-  | "current_input_sub_routing"
-  | "current_monitoring_state"
-  | "current_output_routing"
-  | "current_output_sub_routing"
-  | "devices"
-  | "fired_slot_index"
-  | "fold_state"
-  | "group_track"
-  | "has_audio_input"
-  | "has_audio_output"
-  | "has_midi_input"
-  | "has_midi_output"
-  | "implicit_arm"
-  | "input_meter_left"
-  | "input_meter_level"
-  | "input_meter_right"
-  | "input_routing_channel"
-  | "input_routing_type"
-  | "input_routings"
-  | "input_sub_routings"
-  | "is_foldable"
-  | "is_frozen"
-  | "is_grouped"
-  | "is_part_of_selection"
-  | "is_showing_chains"
-  | "is_visible"
-  | "mixer_device"
-  | "mute"
-  | "muted_via_solo"
-  | "name"
-  | "output_meter_left"
-  | "output_meter_level"
-  | "output_meter_right"
-  | "output_routing_channel"
-  | "output_routing_type"
-  | "output_routings"
-  | "output_sub_routings"
-  | "playing_slot_index"
-  | "solo"
-  | "view";
+export interface TransformedProperties {}
 
-export type ObservableProperty =
-  | "arm"
-  | "available_input_routing_channels"
-  | "available_input_routing_types"
-  | "available_output_routing_channels"
-  | "available_output_routing_types"
-  | "clip_slots"
-  | "color_index"
-  | "color"
-  | "current_input_routing"
-  | "current_input_sub_routing"
-  | "current_monitoring_state"
-  | "current_output_routing"
-  | "current_output_sub_routing"
-  | "data"
-  | "devices"
-  | "fired_slot_index"
-  | "has_audio_input"
-  | "has_audio_output"
-  | "has_midi_input"
-  | "has_midi_output"
-  | "implicit_arm"
-  | "input_meter_left"
-  | "input_meter_level"
-  | "input_meter_right"
-  | "input_routing_channel"
-  | "input_routing_type"
-  | "input_routings"
-  | "input_sub_routings"
-  | "is_frozen"
-  | "is_showing_chains"
-  | "mute"
-  | "muted_via_solo"
-  | "name"
-  | "output_meter_left"
-  | "output_meter_level"
-  | "output_meter_right"
-  | "output_routing_channel"
-  | "output_routing_type"
-  | "output_routings"
-  | "output_sub_routings"
-  | "playing_slot_index"
-  | "solo";
+export interface SettableProperties {
+  arm: number;
+  available_input_routing_channels: number;
+  available_input_routing_types: number;
+  available_output_routing_channels: number;
+  available_output_routing_types: number;
+  can_be_armed: number;
+  can_be_frozen: number;
+  can_show_chains: number;
+  canonical_parent: number;
+  clip_slots: number;
+  color: number;
+  color_index: number;
+  current_input_routing: number;
+  current_input_sub_routing: number;
+  current_monitoring_state: number;
+  current_output_routing: number;
+  current_output_sub_routing: number;
+  devices: number;
+  fired_slot_index: number;
+  fold_state: number;
+  group_track: number;
+  has_audio_input: number;
+  has_audio_output: number;
+  has_midi_input: number;
+  has_midi_output: number;
+  implicit_arm: number;
+  input_meter_left: number;
+  input_meter_level: number;
+  input_meter_right: number;
+  input_routing_channel: number;
+  input_routing_type: number;
+  input_routings: number;
+  input_sub_routings: number;
+  is_foldable: number;
+  is_frozen: number;
+  is_grouped: number;
+  is_part_of_selection: number;
+  is_showing_chains: number;
+  is_visible: number;
+  mixer_device: number;
+  mute: number;
+  muted_via_solo: number;
+  name: number;
+  output_meter_left: number;
+  output_meter_level: number;
+  output_meter_right: number;
+  output_routing_channel: number;
+  output_routing_type: number;
+  output_routings: number;
+  output_sub_routings: number;
+  playing_slot_index: number;
+  solo: number;
+  view: number;
+}
+
+export interface ObservableProperties {
+  arm: number;
+  available_input_routing_channels: number;
+  available_input_routing_types: number;
+  available_output_routing_channels: number;
+  available_output_routing_types: number;
+  clip_slots: number;
+  color_index: number;
+  color: number;
+  current_input_routing: number;
+  current_input_sub_routing: number;
+  current_monitoring_state: number;
+  current_output_routing: number;
+  current_output_sub_routing: number;
+  data: number;
+  devices: number;
+  fired_slot_index: number;
+  has_audio_input: number;
+  has_audio_output: number;
+  has_midi_input: number;
+  has_midi_output: number;
+  implicit_arm: number;
+  input_meter_left: number;
+  input_meter_level: number;
+  input_meter_right: number;
+  input_routing_channel: number;
+  input_routing_type: number;
+  input_routings: number;
+  input_sub_routings: number;
+  is_frozen: number;
+  is_showing_chains: number;
+  mute: number;
+  muted_via_solo: number;
+  name: number;
+  output_meter_left: number;
+  output_meter_level: number;
+  output_meter_right: number;
+  output_routing_channel: number;
+  output_routing_type: number;
+  output_routings: number;
+  output_sub_routings: number;
+  playing_slot_index: number;
+  solo: number;
+}
+
+export interface RawTrack {
+  id: string;
+  name: string;
+  color: number;
+}
 
 export class Track extends Namespace<
-  GettableProperty,
-  SettableProperty,
-  ObservableProperty
+  GettableProperties,
+  TransformedProperties,
+  SettableProperties,
+  ObservableProperties
 > {
-  constructor(ableton: Ableton, nsid: string) {
-    super(ableton, "track", nsid);
+  constructor(ableton: Ableton, public raw: RawTrack) {
+    super(ableton, "track", raw.id);
   }
 }

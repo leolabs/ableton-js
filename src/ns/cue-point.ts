@@ -1,17 +1,37 @@
 import { Ableton } from "..";
 import { Namespace } from ".";
 
-export type GettableProperty = "name" | "time";
-export type SettableProperty = "name" | "time";
-export type ObservableProperty = "name" | "time";
+export interface GettableProperties {
+  name: string;
+  time: number;
+}
+
+export interface TransformedProperties {}
+
+export interface SettableProperties {
+  name: string;
+  time: number;
+}
+
+export interface ObservableProperties {
+  name: string;
+  time: number;
+}
+
+export interface RawCuePoint {
+  id: string;
+  name: string;
+  time: number;
+}
 
 export class CuePoint extends Namespace<
-  GettableProperty,
-  SettableProperty,
-  ObservableProperty
+  GettableProperties,
+  TransformedProperties,
+  SettableProperties,
+  ObservableProperties
 > {
-  constructor(ableton: Ableton, nsid: string) {
-    super(ableton, "cue-point", nsid);
+  constructor(ableton: Ableton, public raw: RawCuePoint) {
+    super(ableton, "cue-point", raw.id);
   }
 
   async jump() {
