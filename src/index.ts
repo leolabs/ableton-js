@@ -63,7 +63,7 @@ export class Ableton {
     name: string,
     args?: { [k: string]: any },
     timeout: number = 2000,
-  ) {
+  ): Promise<any> {
     return new Promise((res, rej) => {
       const msgId = uuid.v1();
       const msg = JSON.stringify({
