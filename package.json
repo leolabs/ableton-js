@@ -11,11 +11,15 @@
     "ableton:launch": "set -- /Applications/Ableton* && open \"$1\"",
     "ableton:logs": "tail -f ~/Library/Preferences/Ableton/*/Log.txt | grep -i -e RemoteScriptError -e RemoteScriptMessage -e AbletonJS",
     "ableton:kill": "pkill -KILL -f \"Ableton Live\"",
-    "ableton:start": "yarn ableton:kill; yarn ableton:clean && yarn ableton:copy-script && yarn ableton:launch && yarn ableton:logs"
+    "ableton:start": "yarn ableton:kill; yarn ableton:clean && yarn ableton:copy-script && yarn ableton:launch && yarn ableton:logs",
+    "test": "jest"
   },
   "devDependencies": {
+    "@types/jest": "^24.0.13",
     "@types/node": "^12.0.2",
     "@types/node-uuid": "^0.0.28",
+    "jest": "^24.8.0",
+    "ts-jest": "^24.0.2",
     "ts-node": "^8.1.0",
     "typescript": "^3.4.5"
   },
