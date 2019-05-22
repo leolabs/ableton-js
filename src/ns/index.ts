@@ -7,8 +7,8 @@ export class Namespace<GP, TP, SP, OP> {
     protected nsid?: string,
   ) {}
 
-  public transformers: Partial<
-    { [T in keyof GP]: (val: GP[T]) => Promise<any> | any }
+  protected transformers: Partial<
+    { [T in keyof GP]: (val: GP[T]) => any }
   > = {};
 
   async get<T extends keyof GP>(
