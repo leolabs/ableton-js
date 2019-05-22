@@ -3,7 +3,7 @@ class Interface(object):
 
     @staticmethod
     def save_obj(obj):
-        obj_id = str(obj)
+        obj_id = id(obj)
         Interface.obj_ids[obj_id] = obj
         return obj_id
 
