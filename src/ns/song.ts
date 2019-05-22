@@ -173,6 +173,6 @@ export class Song extends Namespace<
   }
 
   async jumpToCue(time: number) {
-    return this.ableton.sendCommand(this.ns, "jump_to_cue", { time });
+    return this.ableton.sendCommand(this.ns, "", "jump_to_cue", { time });
   }
 }

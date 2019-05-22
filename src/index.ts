@@ -59,13 +59,20 @@ export class Ableton {
 
   async sendCommand(
     ns: string,
+    nsid: string | undefined,
     name: string,
     args?: { [k: string]: any },
     timeout: number = 2000,
   ) {
     return new Promise((res, rej) => {
       const msgId = uuid.v1();
-      const msg = JSON.stringify({ uuid: msgId, ns, name, args } as Command);
+      const msg = JSON.stringify({
+        uuid: msgId,
+        ns,
+        nsid,
+        name,
+        args,
+      } as Command);
 
       const timeoutId = setTimeout(() => rej(new Error("Timeout")), timeout);
 
@@ -81,17 +88,27 @@ export class Ableton {
     });
   }
 
-  async getProp(ns: string, prop: string) {
-    return this.sendCommand(ns, "get_prop", { prop });
+  async getProp(ns: string, nsid: string | undefined, prop: string) {
+    return this.sendCommand(ns, nsid, "get_prop", { prop });
   }
 
-  async setProp(ns: string, prop: string, value: any) {
-    return this.sendCommand(ns, "set_prop", { prop, value });
+  async setProp(
+    ns: string,
+    nsid: string | undefined,
+    prop: string,
+    value: any,
+  ) {
+    return this.sendCommand(ns, nsid, "set_prop", { prop, value });
   }
 
-  async addListener(ns: string, prop: string, listener: (data: any) => any) {
+  async addListener(
+    ns: string,
+    nsid: string | undefined,
+    prop: string,
+    listener: (data: any) => any,
+  ) {
     const eventId = uuid.v1();
-    const result = await this.sendCommand(ns, "add_listener", {
+    const result = await this.sendCommand(ns, nsid, "add_listener", {
       prop,
       eventId,
     });
@@ -101,8 +118,13 @@ export class Ableton {
     }
   }
 
-  async removeListener(ns: string, prop: string, eventId: string) {
-    await this.sendCommand(ns, "remove_listener", { prop });
+  async removeListener(
+    ns: string,
+    nsid: string | undefined,
+    prop: string,
+    eventId: string,
+  ) {
+    await this.sendCommand(ns, nsid, "remove_listener", { prop });
     this.eventListeners.delete(eventId);
   }
 
