@@ -11,7 +11,7 @@ export interface GettableProperties {
   can_jump_to_prev_cue: number;
   can_redo: number;
   can_undo: number;
-  clip_trigger_quantization: number;
+  clip_trigger_quantization: Quantization;
   count_in_duration: number;
   cue_points: RawCuePoint[];
   current_song_time: number;
@@ -26,7 +26,7 @@ export interface GettableProperties {
   loop_start: number;
   master_track: RawTrack;
   metronome: number;
-  midi_recording_quantization: number;
+  midi_recording_quantization: RecordingQuantization;
   nudge_down: number;
   nudge_up: number;
   overdub: number;
@@ -63,7 +63,7 @@ export interface TransformedProperties {
 export interface SettableProperties {
   arrangement_overdub: number;
   back_to_arranger: number;
-  clip_trigger_quantization: number;
+  clip_trigger_quantization: Quantization;
   count_in_duration: number;
   current_song_time: number;
   exclusive_arm: number;
@@ -77,7 +77,7 @@ export interface SettableProperties {
   loop_start: number;
   master_track: number;
   metronome: number;
-  midi_recording_quantization: number;
+  midi_recording_quantization: RecordingQuantization;
   nudge_down: number;
   nudge_up: number;
   overdub: number;
