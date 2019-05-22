@@ -35,6 +35,10 @@ export class Ableton {
     this.client.addListener("message", this.handleIncoming.bind(this));
   }
 
+  close() {
+    this.client.close();
+  }
+
   handleIncoming(msg: Buffer, info: dgram.RemoteInfo) {
     try {
       const data: Response = JSON.parse(msg.toString());
@@ -116,6 +120,8 @@ export class Ableton {
     if (result === eventId) {
       this.eventListeners.set(eventId, listener);
     }
+
+    return result;
   }
 
   async removeListener(
