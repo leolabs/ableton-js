@@ -17,7 +17,7 @@ class Interface(object):
         self.log_message = c_instance.log_message
 
     def get_ns(self, nsid):
-        pass
+        return Interface.obj_ids[nsid]
 
     def handle(self, payload):
         func = getattr(self, payload["name"])
