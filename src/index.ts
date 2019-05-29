@@ -11,7 +11,7 @@ interface Command {
 
 interface Response {
   uuid: string;
-  event: "result" | "error" | string;
+  event: "result" | "error" | "connect" | "disconnect" | string;
   data: any;
 }
 
@@ -52,6 +52,12 @@ export class Ableton {
       if (data.event === "error" && functionCallback) {
         this.msgMap.delete(data.uuid);
         return functionCallback.rej(new Error(data.data));
+      }
+
+      if (data.event === "disconnect") {
+        this.msgMap.clear();
+        this.eventListeners.clear();
+        return;
       }
 
       const eventCallback = this.eventListeners.get(data.event);

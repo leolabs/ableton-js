@@ -41,7 +41,7 @@ class Socket(object):
     def set_handler(self, func):
         self.input_handler = func
 
-    def send(self, name, obj, uuid=None):
+    def send(self, name, obj=None, uuid=None):
         def jsonReplace(o):
             return str(o)
 
