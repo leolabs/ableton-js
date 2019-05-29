@@ -2,6 +2,7 @@ import { Ableton } from "..";
 import { Namespace } from ".";
 import { Track, RawTrack } from "./track";
 import { CuePoint, RawCuePoint } from "./cue-point";
+import { SongView } from "./song-view";
 
 export interface GettableProperties {
   arrangement_overdub: number;
@@ -58,6 +59,7 @@ export interface TransformedProperties {
   return_tracks: Track[];
   tracks: Track[];
   visible_tracks: Track[];
+  view: SongView;
 }
 
 export interface SettableProperties {
@@ -99,7 +101,6 @@ export interface SettableProperties {
   swing_amount: number;
   tempo: number;
   tracks: number;
-  view: number;
   visible_tracks: number;
 }
 
@@ -183,8 +184,11 @@ export class Song extends Namespace<
       return_tracks: tracks => tracks.map(t => new Track(this.ableton, t)),
       tracks: tracks => tracks.map(t => new Track(this.ableton, t)),
       visible_tracks: tracks => tracks.map(t => new Track(this.ableton, t)),
+      view: () => new SongView(this.ableton),
     };
   }
+
+  public view = new SongView(this.ableton);
 
   async jumpToCue(time: number) {
     return this.ableton.sendCommand(this.ns, "", "jump_to_cue", { time });
