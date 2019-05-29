@@ -22,6 +22,8 @@ export class Ableton {
     { res: (data: any) => any; rej: (data: any) => any }
   >();
   private eventListeners = new Map<string, (data: any) => any>();
+  private connectListeners: (() => any)[] = [];
+  private disconnectListeners: (() => any)[] = [];
 
   public song = new Song(this);
 
@@ -57,6 +59,16 @@ export class Ableton {
       if (data.event === "disconnect") {
         this.msgMap.clear();
         this.eventListeners.clear();
+        for (const listener of this.disconnectListeners) {
+          listener();
+        }
+        return;
+      }
+
+      if (data.event === "connect") {
+        for (const listener of this.connectListeners) {
+          listener();
+        }
         return;
       }
 
@@ -96,6 +108,31 @@ export class Ableton {
 
       this.sendRaw(msg);
     });
+  }
+
+  addConnectionListener(event: "connect" | "disconnect", listener: () => any) {
+    (event === "connect"
+      ? this.connectListeners
+      : this.disconnectListeners
+    ).push(listener);
+  }
+
+  removeConnectionListener(
+    event: "connect" | "disconnect",
+    listener: () => any,
+  ) {
+    switch (event) {
+      case "connect":
+        this.connectListeners = this.connectListeners.filter(
+          l => l !== listener,
+        );
+        break;
+      case "disconnect":
+        this.disconnectListeners = this.disconnectListeners.filter(
+          l => l !== listener,
+        );
+        break;
+    }
   }
 
   async getProp(ns: string, nsid: string | undefined, prop: string) {
