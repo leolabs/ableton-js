@@ -4,6 +4,11 @@
 
 build/
 
+# Built files
+*.js
+*.d.ts
+/ns/
+
 test.ts
 
 ### Node ###
