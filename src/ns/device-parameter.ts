@@ -11,21 +11,21 @@ export interface GettableProperties {
   name: string;
   original_name: string;
   state: ParameterState;
-  value: string;
+  value: number;
   value_items: string[];
 }
 
 export interface TransformedProperties {}
 
 export interface SettableProperties {
-  value: string;
+  value: number;
 }
 
 export interface ObservableProperties {
   automation_state: AutomationState;
   name: string;
   state: ParameterState;
-  value: string;
+  value: number;
 }
 
 export interface RawDeviceParameter {
