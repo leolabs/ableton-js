@@ -1,10 +1,14 @@
 {
   "name": "ableton-js",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Control Ableton Live from Node",
   "main": "index.js",
   "author": "Leo Bernard <admin@leolabs.org>",
   "license": "MIT",
+  "files": [
+    "*.js",
+    "*.d.ts"
+  ],
   "scripts": {
     "ableton:clean": "rm -f midi-script/AbletonJS/*.pyc",
     "ableton:copy-script": "set -- /Applications/Ableton*/Contents/App-Resources/MIDI\\ Remote\\ Scripts && rm -rf \"$1/AbletonJS\" && cp -r \"$(pwd)/midi-script\" \"$1/AbletonJS\" && rm -rf \"$1/AbletonJS/_Framework\"",
