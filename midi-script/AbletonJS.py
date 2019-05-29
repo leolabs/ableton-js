@@ -6,6 +6,7 @@ from Device import Device
 from DeviceParameter import DeviceParameter
 from Scene import Scene
 from Song import Song
+from SongView import SongView
 from Track import Track
 from _Framework.ControlSurface import ControlSurface
 
@@ -24,6 +25,7 @@ class AbletonJS(ControlSurface):
             "device-parameter": DeviceParameter(c_instance, self.socket),
             "scene": Scene(c_instance, self.socket),
             "song": Song(c_instance, self.socket),
+            "song-view": SongView(c_instance, self.socket),
             "track": Track(c_instance, self.socket),
         }
 
