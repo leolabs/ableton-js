@@ -100,7 +100,6 @@ export interface SettableProperties {
   song_length: number;
   swing_amount: number;
   tempo: number;
-  tracks: number;
   visible_tracks: number;
 }
 
