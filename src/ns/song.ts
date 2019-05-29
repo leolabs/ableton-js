@@ -188,8 +188,4 @@ export class Song extends Namespace<
   }
 
   public view = new SongView(this.ableton);
-
-  async jumpToCue(time: number) {
-    return this.ableton.sendCommand(this.ns, "", "jump_to_cue", { time });
-  }
 }

@@ -35,10 +35,3 @@ class Song(Interface):
 
     def get_visible_tracks(self, ns):
         return map(Track.serialize_track, ns.visible_tracks)
-
-    def jump_to_cue(self, ns, time):
-        for cue in ns.cue_points:
-            if cue.time == time:
-                cue.jump()
-                return True
-        return False
