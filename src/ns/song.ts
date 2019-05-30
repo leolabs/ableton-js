@@ -19,8 +19,8 @@ export interface GettableProperties {
   exclusive_arm: boolean;
   exclusive_solo: boolean;
   groove_amount: number;
-  is_counting_in: number;
-  is_playing: number;
+  is_counting_in: boolean;
+  is_playing: boolean;
   last_event_time: number;
   loop: number;
   loop_length: number;
@@ -71,8 +71,8 @@ export interface SettableProperties {
   exclusive_arm: number;
   exclusive_solo: number;
   groove_amount: number;
-  is_counting_in: number;
-  is_playing: number;
+  is_counting_in: boolean;
+  is_playing: boolean;
   last_event_time: number;
   loop: number;
   loop_length: number;
@@ -115,8 +115,8 @@ export interface ObservableProperties {
   data: number;
   exclusive_arm: number;
   groove_amount: number;
-  is_counting_in: number;
-  is_playing: number;
+  is_counting_in: boolean;
+  is_playing: boolean;
   loop_length: number;
   loop: number;
   loop_start: number;
