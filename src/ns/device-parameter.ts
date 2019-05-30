@@ -31,7 +31,7 @@ export interface ObservableProperties {
 export interface RawDeviceParameter {
   id: number;
   name: string;
-  value: string;
+  value: number;
   is_quantized: boolean;
 }
 
