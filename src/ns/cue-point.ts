@@ -19,7 +19,7 @@ export interface ObservableProperties {
 }
 
 export interface RawCuePoint {
-  id: string;
+  id: number;
   name: string;
   time: number;
 }

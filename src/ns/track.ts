@@ -163,7 +163,7 @@ export interface ObservableProperties {
 }
 
 export interface RawTrack {
-  id: string;
+  id: number;
   name: string;
   color: number;
 }

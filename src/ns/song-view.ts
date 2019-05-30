@@ -59,7 +59,7 @@ export class SongView extends Namespace<
   }
 
   async selectDevice(device: Device) {
-    return this.ableton.sendCommand(this.ns, "", "select_device", {
+    return this.ableton.sendCommand(this.ns, undefined, "select_device", {
       device_id: device.raw.id,
     });
   }

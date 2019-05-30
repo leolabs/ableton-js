@@ -4,7 +4,7 @@ export class Namespace<GP, TP, SP, OP> {
   constructor(
     protected ableton: Ableton,
     protected ns: string,
-    protected nsid?: string,
+    protected nsid?: number,
   ) {}
 
   protected transformers: Partial<

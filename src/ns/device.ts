@@ -29,7 +29,7 @@ export interface ObservableProperties {
 }
 
 export interface RawDevice {
-  id: string;
+  id: number;
   name: string;
   type: DeviceType;
   class_name: string;

@@ -81,7 +81,7 @@ export class Ableton {
 
   async sendCommand(
     ns: string,
-    nsid: string | undefined,
+    nsid: number | undefined,
     name: string,
     args?: { [k: string]: any },
     timeout: number = 2000,
@@ -135,13 +135,13 @@ export class Ableton {
     }
   }
 
-  async getProp(ns: string, nsid: string | undefined, prop: string) {
+  async getProp(ns: string, nsid: number | undefined, prop: string) {
     return this.sendCommand(ns, nsid, "get_prop", { prop });
   }
 
   async setProp(
     ns: string,
-    nsid: string | undefined,
+    nsid: number | undefined,
     prop: string,
     value: any,
   ) {
@@ -150,7 +150,7 @@ export class Ableton {
 
   async addListener(
     ns: string,
-    nsid: string | undefined,
+    nsid: number | undefined,
     prop: string,
     listener: (data: any) => any,
   ) {
@@ -169,7 +169,7 @@ export class Ableton {
 
   async removeListener(
     ns: string,
-    nsid: string | undefined,
+    nsid: number | undefined,
     prop: string,
     eventId: string,
   ) {
