@@ -128,6 +128,7 @@ export interface ObservableProperties {
   punch_out: number;
   re_enable_automation_enabled: number;
   record_mode: number;
+  return_tracks: RawTrack[];
   scenes: number;
   session_automation_record: number;
   session_record: number;
@@ -137,6 +138,7 @@ export interface ObservableProperties {
   song_length: number;
   swing_amount: number;
   tempo: number;
+  tracks: RawTrack[];
 }
 
 export enum Quantization {
