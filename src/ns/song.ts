@@ -188,4 +188,84 @@ export class Song extends Namespace<
   }
 
   public view = new SongView(this.ableton);
+
+  public async continuePlaying() {
+    return this.sendCommand("continue_playing");
+  }
+
+  public async createAudioTrack(index?: number) {
+    return this.sendCommand("create_audio_track", { index });
+  }
+
+  public async createMidiTrack(index?: number) {
+    return this.sendCommand("create_midi_track", { index });
+  }
+
+  public async createReturnTrack(index?: number) {
+    return this.sendCommand("create_return_track", { index });
+  }
+
+  public async createScene(index?: number) {
+    return this.sendCommand("create_scene", { index });
+  }
+
+  public async deleteReturnTrack(index: number) {
+    return this.sendCommand("delete_return_track", { index });
+  }
+
+  public async deleteScene(index: number) {
+    return this.sendCommand("delete_scene", { index });
+  }
+
+  public async deleteTrack(index: number) {
+    return this.sendCommand("delete_track", { index });
+  }
+
+  public async duplicateScene(index: number) {
+    return this.sendCommand("duplicate_scene", { index });
+  }
+
+  public async duplicateTrack(index: number) {
+    return this.sendCommand("duplicate_track", { index });
+  }
+
+  public async isCuePointSelected() {
+    return this.sendCommand("is_cue_point_selected");
+  }
+
+  public async jumpBy(amount: number) {
+    return this.sendCommand("jump_by", { amount });
+  }
+
+  public async jumpToNextCue() {
+    return this.sendCommand("jump_to_next_cue");
+  }
+
+  public async jumpToPrevCue() {
+    return this.sendCommand("jump_to_prev_cue");
+  }
+
+  public async playSelection() {
+    return this.sendCommand("play_selection");
+  }
+
+  public async scrubBy(amount: number) {
+    return this.sendCommand("scrub_by", { amount });
+  }
+
+  public async startPlaying() {
+    return this.sendCommand("start_playing");
+  }
+
+  public async stopAllClips() {
+    return this.sendCommand("stop_all_clips");
+  }
+
+  public async stopPlaying() {
+    return this.sendCommand("stop_playing");
+  }
+
+  public async tapTempo() {
+    return this.sendCommand("tap_tempo");
+  }
 }

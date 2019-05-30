@@ -35,3 +35,63 @@ class Song(Interface):
 
     def get_visible_tracks(self, ns):
         return map(Track.serialize_track, ns.visible_tracks)
+
+    def continue_playing(self, ns):
+        return ns.continue_playing()
+
+    def create_audio_track(self, ns, index=-1):
+        return ns.create_audio_track(index)
+
+    def create_midi_track(self, ns, index=-1):
+        return ns.create_midi_track(index)
+
+    def create_return_track(self, ns, index=-1):
+        return ns.create_return_track(index)
+
+    def create_scene(self, ns, index=-1):
+        return ns.create_scene(index)
+
+    def delete_return_track(self, ns, index):
+        return ns.delete_return_track(index)
+
+    def delete_scene(self, ns, index):
+        return ns.delete_scene(index)
+
+    def delete_track(self, ns, index):
+        return ns.delete_track(index)
+
+    def duplicate_scene(self, ns, index):
+        return ns.duplicate_scene(index)
+
+    def duplicate_track(self, ns, index):
+        return ns.duplicate_track(index)
+
+    def is_cue_point_selected(self, ns):
+        return ns.is_cue_point_selected()
+
+    def jump_by(self, ns, amount):
+        return ns.jump_by(amount)
+
+    def jump_to_next_cue(self, ns):
+        return ns.jump_to_next_cue()
+
+    def jump_to_prev_cue(self, ns):
+        return ns.jump_to_prev_cue()
+
+    def play_selection(self, ns):
+        return ns.play_selection()
+
+    def scrub_by(self, ns, amount):
+        return ns.scrub_by(amount)
+
+    def start_playing(self, ns):
+        return ns.start_playing()
+
+    def stop_all_clips(self, ns):
+        return ns.stop_all_clips()
+
+    def stop_playing(self, ns):
+        return ns.stop_playing()
+
+    def tap_tempo(self, ns):
+        return ns.tap_tempo()
