@@ -9,6 +9,8 @@ build/
 *.d.ts
 /ns/
 
+.vscode/settings.json
+
 test.ts
 
 ### Node ###
