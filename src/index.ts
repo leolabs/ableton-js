@@ -1,4 +1,4 @@
-import dgram from "dgram";
+import net from "net";
 import uuid from "node-uuid";
 import { Song } from "./ns/song";
 
@@ -16,7 +16,7 @@ interface Response {
 }
 
 export class Ableton {
-  private client: dgram.Socket;
+  private client: net.Socket;
   private msgMap = new Map<
     string,
     { res: (data: any) => any; rej: (data: any) => any }
@@ -27,21 +27,17 @@ export class Ableton {
 
   public song = new Song(this);
 
-  constructor(
-    private host = "127.0.0.1",
-    private sendPort = 9001,
-    private listenPort = 9000,
-  ) {
-    this.client = dgram.createSocket("udp4");
-    this.client.bind(this.listenPort, host);
-    this.client.addListener("message", this.handleIncoming.bind(this));
+  constructor(private host = "127.0.0.1", private port = 9001) {
+    this.client = new net.Socket();
+    this.client.connect(port, host, console.log);
+    this.client.on("data", this.handleIncoming.bind(this));
   }
 
   close() {
-    this.client.close();
+    this.client.destroy();
   }
 
-  handleIncoming(msg: Buffer, info: dgram.RemoteInfo) {
+  handleIncoming(msg: Buffer) {
     try {
       const data: Response = JSON.parse(msg.toString());
       const functionCallback = this.msgMap.get(data.uuid);
@@ -76,7 +72,9 @@ export class Ableton {
       if (eventCallback) {
         return eventCallback(data.data);
       }
-    } catch (e) {}
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   async sendCommand(
@@ -179,6 +177,6 @@ export class Ableton {
 
   sendRaw(msg: string) {
     const buffer = Buffer.from(msg);
-    this.client.send(buffer, 0, buffer.length, this.sendPort, this.host);
+    this.client.write(buffer);
   }
 }

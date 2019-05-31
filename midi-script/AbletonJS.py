@@ -17,7 +17,7 @@ class AbletonJS(ControlSurface):
 
         Socket.set_log(self.log_message)
         Socket.set_message(self.show_message)
-        self.socket = Socket()
+        self.socket = Socket(self.command_handler)
 
         self.handlers = {
             "cue-point": CuePoint(c_instance, self.socket),
@@ -29,7 +29,6 @@ class AbletonJS(ControlSurface):
             "track": Track(c_instance, self.socket),
         }
 
-        self.socket.set_handler(self.command_handler)
         self.parse()
 
         self.socket.send("connect")
