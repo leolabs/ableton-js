@@ -20,6 +20,10 @@ After starting Ableton Live, add the script to your list of control surfaces:
 
 ![Ableton Live Settings](https://i.imgur.com/a34zJca.png)
 
+If you've forked this project on macOS, you can also use yarn to do that for you.
+Running `yarn ableton:start` will copy the `midi-script` folder, open Ableton and
+show a stream of log messages until you kill it.
+
 ## Using Ableton.js
 
 This library exposes an `Ableton` class which lets you control the entire
