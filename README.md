@@ -1,5 +1,7 @@
 # Ableton.js
 
+[![Current Version](https://img.shields.io/npm/v/ableton-js.svg)](https://www.npmjs.com/package/ableton-js/)
+
 Ableton.js lets you control your instance or instances of Ableton using Node.js. It
 tries to cover as many functions as possible.
 
