@@ -65,6 +65,8 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   }
 
   close() {
+    this.cancelConnectionEvent = true;
+    clearInterval(this.heartbeatInterval);
     this.client.close();
   }
 
