@@ -1,6 +1,6 @@
 import dgram from "dgram";
 import { EventEmitter } from "events";
-import uuid from "node-uuid";
+import uuid from "uuid";
 import { Song } from "./ns/song";
 
 interface Command {
