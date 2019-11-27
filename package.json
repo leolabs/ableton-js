@@ -30,7 +30,6 @@
     "typescript": "^3.4.5"
   },
   "dependencies": {
-    "commander": "^2.20.0",
     "node-uuid": "^1.4.8"
   }
 }
