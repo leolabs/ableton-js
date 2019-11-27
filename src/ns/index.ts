@@ -4,7 +4,7 @@ export class Namespace<GP, TP, SP, OP> {
   constructor(
     protected ableton: Ableton,
     protected ns: string,
-    protected nsid?: number,
+    protected nsid?: number
   ) {}
 
   protected transformers: Partial<
@@ -12,7 +12,7 @@ export class Namespace<GP, TP, SP, OP> {
   > = {};
 
   async get<T extends keyof GP>(
-    prop: T,
+    prop: T
   ): Promise<T extends keyof TP ? TP[T] : GP[T]> {
     const res = await this.ableton.getProp(this.ns, this.nsid, String(prop));
     const transformer = this.transformers[prop];
@@ -30,26 +30,31 @@ export class Namespace<GP, TP, SP, OP> {
 
   async addListener<T extends keyof OP>(
     prop: T,
-    listener: (data: T extends keyof TP ? TP[T] : OP[T]) => any,
+    listener: (data: T extends keyof TP ? TP[T] : OP[T]) => any
   ) {
     const transformer = this.transformers[(prop as any) as keyof GP];
-    return this.ableton.addListener(this.ns, this.nsid, String(prop), data => {
-      if (transformer) {
-        listener(transformer(data));
-      } else {
-        listener(data);
+    return this.ableton.addPropListener(
+      this.ns,
+      this.nsid,
+      String(prop),
+      data => {
+        if (transformer) {
+          listener(transformer(data));
+        } else {
+          listener(data);
+        }
       }
-    });
+    );
   }
 
   async removeListener(prop: OP, eventId: string) {
-    this.ableton.removeListener(this.ns, this.nsid, String(prop), eventId);
+    this.ableton.removePropListener(this.ns, this.nsid, String(prop), eventId);
   }
 
   protected async sendCommand(
     name: string,
     args?: { [k: string]: any },
-    timeout?: number,
+    timeout?: number
   ) {
     return this.ableton.sendCommand(this.ns, this.nsid, name, args, timeout);
   }

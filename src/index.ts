@@ -1,4 +1,5 @@
 import dgram from "dgram";
+import { EventEmitter } from "events";
 import uuid from "node-uuid";
 import { Song } from "./ns/song";
 
@@ -15,15 +16,23 @@ interface Response {
   data: any;
 }
 
-export class Ableton {
+type ConnectionEventType = "realtime" | "heartbeat";
+
+interface ConnectionEventEmitter {
+  on(e: "connect", l: (t: ConnectionEventType) => void): this;
+  on(e: "disconnect", l: (t: ConnectionEventType) => void): this;
+}
+
+export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   private client: dgram.Socket;
   private msgMap = new Map<
     string,
     { res: (data: any) => any; rej: (data: any) => any }
   >();
   private eventListeners = new Map<string, (data: any) => any>();
-  private connectListeners: (() => any)[] = [];
-  private disconnectListeners: (() => any)[] = [];
+  heartbeatInterval: NodeJS.Timeout;
+  isConnected = true;
+  cancelConnectionEvent = false;
 
   public song = new Song(this);
 
@@ -31,10 +40,28 @@ export class Ableton {
     private host = "127.0.0.1",
     private sendPort = 9001,
     private listenPort = 9000,
+    heartbeatInterval = 2000,
   ) {
+    super();
     this.client = dgram.createSocket("udp4");
     this.client.bind(this.listenPort, host);
     this.client.addListener("message", this.handleIncoming.bind(this));
+    this.heartbeatInterval = setInterval(async () => {
+      this.cancelConnectionEvent = false;
+
+      try {
+        await this.song.get("current_song_time");
+        if (!this.isConnected && !this.cancelConnectionEvent) {
+          this.isConnected = true;
+          this.emit("connect", "heartbeat");
+        }
+      } catch (e) {
+        if (this.isConnected && !this.cancelConnectionEvent) {
+          this.isConnected = false;
+          this.emit("disconnect", "heartbeat");
+        }
+      }
+    }, heartbeatInterval);
   }
 
   close() {
@@ -59,15 +86,19 @@ export class Ableton {
       if (data.event === "disconnect") {
         this.msgMap.clear();
         this.eventListeners.clear();
-        for (const listener of this.disconnectListeners) {
-          listener();
+        if (this.isConnected === true) {
+          this.isConnected = false;
+          this.cancelConnectionEvent = true;
+          this.emit("disconnect", "realtime");
         }
         return;
       }
 
       if (data.event === "connect") {
-        for (const listener of this.connectListeners) {
-          listener();
+        if (this.isConnected === false) {
+          this.isConnected = true;
+          this.cancelConnectionEvent = true;
+          this.emit("connect", "realtime");
         }
         return;
       }
@@ -110,31 +141,6 @@ export class Ableton {
     });
   }
 
-  addConnectionListener(event: "connect" | "disconnect", listener: () => any) {
-    (event === "connect"
-      ? this.connectListeners
-      : this.disconnectListeners
-    ).push(listener);
-  }
-
-  removeConnectionListener(
-    event: "connect" | "disconnect",
-    listener: () => any,
-  ) {
-    switch (event) {
-      case "connect":
-        this.connectListeners = this.connectListeners.filter(
-          l => l !== listener,
-        );
-        break;
-      case "disconnect":
-        this.disconnectListeners = this.disconnectListeners.filter(
-          l => l !== listener,
-        );
-        break;
-    }
-  }
-
   async getProp(ns: string, nsid: number | undefined, prop: string) {
     return this.sendCommand(ns, nsid, "get_prop", { prop });
   }
@@ -148,7 +154,7 @@ export class Ableton {
     return this.sendCommand(ns, nsid, "set_prop", { prop, value });
   }
 
-  async addListener(
+  async addPropListener(
     ns: string,
     nsid: number | undefined,
     prop: string,
@@ -167,7 +173,7 @@ export class Ableton {
     return result;
   }
 
-  async removeListener(
+  async removePropListener(
     ns: string,
     nsid: number | undefined,
     prop: string,
