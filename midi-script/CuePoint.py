@@ -4,6 +4,9 @@ from Interface import Interface
 class CuePoint(Interface):
     @staticmethod
     def serialize_cue_point(cue_point):
+        if cue_point is None:
+            return None
+
         cue_point_id = Interface.save_obj(cue_point)
         return {"id": cue_point_id, "name": cue_point.name, "time": cue_point.time}
 

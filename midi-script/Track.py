@@ -5,6 +5,9 @@ from Device import Device
 class Track(Interface):
     @staticmethod
     def serialize_track(track):
+        if track is None:
+            return None
+
         track_id = Interface.save_obj(track)
         return {"id": track_id, "name": track.name, "color": track.color}
 

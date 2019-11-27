@@ -4,6 +4,9 @@ from Interface import Interface
 class DeviceParameter(Interface):
     @staticmethod
     def serialize_device_paramater(param):
+        if param is None:
+            return None
+
         device_paramater_id = Interface.save_obj(param)
         return {
             "id": device_paramater_id,
