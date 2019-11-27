@@ -30,9 +30,9 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     { res: (data: any) => any; rej: (data: any) => any }
   >();
   private eventListeners = new Map<string, (data: any) => any>();
-  heartbeatInterval: NodeJS.Timeout;
-  isConnected = true;
-  cancelConnectionEvent = false;
+  private heartbeatInterval: NodeJS.Timeout;
+  private _isConnected = true;
+  private cancelConnectionEvent = false;
 
   public song = new Song(this);
 
@@ -51,13 +51,13 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
       try {
         await this.song.get("current_song_time");
-        if (!this.isConnected && !this.cancelConnectionEvent) {
-          this.isConnected = true;
+        if (!this._isConnected && !this.cancelConnectionEvent) {
+          this._isConnected = true;
           this.emit("connect", "heartbeat");
         }
       } catch (e) {
-        if (this.isConnected && !this.cancelConnectionEvent) {
-          this.isConnected = false;
+        if (this._isConnected && !this.cancelConnectionEvent) {
+          this._isConnected = false;
           this.emit("disconnect", "heartbeat");
         }
       }
@@ -86,8 +86,8 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       if (data.event === "disconnect") {
         this.msgMap.clear();
         this.eventListeners.clear();
-        if (this.isConnected === true) {
-          this.isConnected = false;
+        if (this._isConnected === true) {
+          this._isConnected = false;
           this.cancelConnectionEvent = true;
           this.emit("disconnect", "realtime");
         }
@@ -95,8 +95,8 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       }
 
       if (data.event === "connect") {
-        if (this.isConnected === false) {
-          this.isConnected = true;
+        if (this._isConnected === false) {
+          this._isConnected = true;
           this.cancelConnectionEvent = true;
           this.emit("connect", "realtime");
         }
@@ -186,5 +186,9 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   sendRaw(msg: string) {
     const buffer = Buffer.from(msg);
     this.client.send(buffer, 0, buffer.length, this.sendPort, this.host);
+  }
+
+  isConnected() {
+    return this._isConnected;
   }
 }
