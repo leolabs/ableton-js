@@ -6,6 +6,7 @@
     "strict": true,
     "declaration": true,
     "esModuleInterop": true,
+    "allowJs": false,
     "outDir": "./"
   }
 }
