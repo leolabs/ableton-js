@@ -1,6 +1,6 @@
 {
   "name": "ableton-js",
-  "version": "1.4.2",
+  "version": "1.4.3",
   "description": "Control Ableton Live from Node",
   "main": "index.js",
   "author": "Leo Bernard <admin@leolabs.org>",
