@@ -47,7 +47,7 @@ export class Namespace<GP, TP, SP, OP> {
     );
   }
 
-  async removeListener(prop: OP, eventId: string) {
+  async removeListener<T extends keyof OP>(prop: T, eventId: string) {
     this.ableton.removePropListener(this.ns, this.nsid, String(prop), eventId);
   }
 
