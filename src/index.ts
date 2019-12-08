@@ -120,7 +120,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     timeout: number = 2000,
   ): Promise<any> {
     return new Promise((res, rej) => {
-      const msgId = uuid.v1();
+      const msgId = uuid.v4();
       const msg = JSON.stringify({
         uuid: msgId,
         ns,
@@ -162,7 +162,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     prop: string,
     listener: (data: any) => any,
   ) {
-    const eventId = uuid.v1();
+    const eventId = uuid.v4();
     const result = await this.sendCommand(ns, nsid, "add_listener", {
       prop,
       eventId,
