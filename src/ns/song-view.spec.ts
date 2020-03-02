@@ -1,8 +1,6 @@
 import { Ableton } from "../index";
 import { GettableProperties } from "./song-view";
 
-const a = new Ableton();
-
 const gettableProps: (keyof GettableProperties)[] = [
   "detail_clip",
   "draw_mode",
@@ -16,8 +14,8 @@ const gettableProps: (keyof GettableProperties)[] = [
 
 describe("Song", () => {
   it("should be able to read all properties without erroring", async () => {
+    const a = new Ableton();
     console.log(await Promise.all(gettableProps.map(p => a.song.view.get(p))));
+    a.close();
   });
 });
-
-afterAll(() => a.close());

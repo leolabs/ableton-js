@@ -1,8 +1,6 @@
 import { Ableton } from "../index";
 import { GettableProperties } from "./song";
 
-const a = new Ableton();
-
 const gettableProps: (keyof GettableProperties)[] = [
   "arrangement_overdub",
   "back_to_arranger",
@@ -54,8 +52,8 @@ const gettableProps: (keyof GettableProperties)[] = [
 
 describe("Song", () => {
   it("should be able to read all properties without erroring", async () => {
+    const a = new Ableton();
     await Promise.all(gettableProps.map(p => a.song.get(p)));
+    a.close();
   });
 });
-
-afterAll(() => a.close());
