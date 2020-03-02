@@ -18,7 +18,7 @@
     "ableton:start": "yarn ableton:kill; yarn ableton:clean && yarn ableton:copy-script && yarn ableton:launch && yarn ableton:logs",
     "prepublishOnly": "yarn build",
     "build": "tsc",
-    "test": "jest"
+    "test": "jest --runInBand"
   },
   "devDependencies": {
     "@types/jest": "^24.0.13",
