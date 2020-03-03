@@ -19,7 +19,7 @@ class Interface(object):
     def get_ns(self, nsid):
         return Interface.obj_ids[nsid]
 
-    def handle(self, payload):
+    def handle(self, payload, send):
         func = getattr(self, payload["name"])
         uuid = payload["uuid"] if payload.has_key("uuid") else None
         ns = self.get_ns(nsid=payload["nsid"]
@@ -28,34 +28,34 @@ class Interface(object):
         if func is not None and callable(func):
             try:
                 result = func(
-                    ns=ns, **payload["args"]) if payload.has_key("args") else func(ns=ns)
-                self.socket.send("result", result, uuid)
+                    ns=ns, send=send, **payload["args"]) if payload.has_key("args") else func(ns=ns, send=send)
+                send("result", result, uuid)
             except Exception, e:
-                self.socket.send("error", str(e.args[0]), uuid)
+                send("error", str(e.args[0]), uuid)
         else:
-            self.socket.send(
+            send(
                 "error", "Function call failed: " + payload["name"] + " doesn't exist or isn't callable", uuid)
 
-    def add_listener(self, ns, prop, eventId):
+    def add_listener(self, ns, prop, eventId, send):
         try:
             add_fn = getattr(ns, "add_" + prop + "_listener")
         except:
             raise Exception("Listener " + str(prop) + " does not exist.")
 
         def fn():
-            return self.socket.send(eventId, self.get_prop(ns, prop))
+            return send(eventId, self.get_prop(ns, prop))
 
         add_fn(fn)
         return eventId
 
-    def remove_listener(self, ns, prop):
+    def remove_listener(self, ns, prop, send):
         try:
             remove_fn = getattr(ns, "remove_" + prop + "_listener")
             return remove_fn()
         except:
             raise Exception("Listener " + str(prop) + " does not exist.")
 
-    def get_prop(self, ns, prop):
+    def get_prop(self, ns, prop, send):
         try:
             get_fn = getattr(self, "get_" + prop)
         except:
@@ -63,7 +63,7 @@ class Interface(object):
 
         return get_fn(ns)
 
-    def set_prop(self, ns, prop, value):
+    def set_prop(self, ns, prop, value, send):
         try:
             set_fn = getattr(self, "set_" + prop)
         except:
