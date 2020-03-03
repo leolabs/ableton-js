@@ -23,13 +23,19 @@ interface ConnectionEventEmitter {
   on(e: "disconnect", l: (t: ConnectionEventType) => void): this;
 }
 
+export interface EventListener {
+  prop: string;
+  eventId: string;
+  listener: (data: any) => any;
+}
+
 export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   private client: dgram.Socket;
   private msgMap = new Map<
     string,
     { res: (data: any) => any; rej: (data: any) => any }
   >();
-  private eventListeners = new Map<string, (data: any) => any>();
+  private eventListeners = new Map<string, Array<(data: any) => any>>();
   private heartbeatInterval: NodeJS.Timeout;
   private _isConnected = true;
   private cancelConnectionEvent = false;
@@ -107,7 +113,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
       const eventCallback = this.eventListeners.get(data.event);
       if (eventCallback) {
-        return eventCallback(data.data);
+        return eventCallback.forEach(cb => cb(data.data));
       }
     } catch (e) {}
   }
@@ -165,14 +171,20 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     const eventId = uuid.v4();
     const result = await this.sendCommand(ns, nsid, "add_listener", {
       prop,
+      nsid,
       eventId,
     });
 
-    if (result === eventId) {
-      this.eventListeners.set(eventId, listener);
+    if (!this.eventListeners.has(result)) {
+      this.eventListeners.set(result, [listener]);
+    } else {
+      this.eventListeners.set(result, [
+        ...this.eventListeners.get(result)!,
+        listener,
+      ]);
     }
 
-    return result;
+    return () => this.removePropListener(ns, nsid, prop, result, listener);
   }
 
   async removePropListener(
@@ -180,9 +192,26 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     nsid: number | undefined,
     prop: string,
     eventId: string,
+    listener: (data: any) => any,
   ) {
-    await this.sendCommand(ns, nsid, "remove_listener", { prop });
-    this.eventListeners.delete(eventId);
+    const listeners = this.eventListeners.get(eventId);
+    if (!listeners) {
+      return false;
+    }
+
+    if (listeners.length > 1) {
+      this.eventListeners.set(
+        eventId,
+        listeners.filter(l => l !== listener),
+      );
+      return true;
+    }
+
+    if (listeners.length === 1) {
+      this.eventListeners.delete(eventId);
+      await this.sendCommand(ns, nsid, "remove_listener", { prop, nsid });
+      return true;
+    }
   }
 
   sendRaw(msg: string) {

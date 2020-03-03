@@ -1,4 +1,4 @@
-import { Ableton } from "..";
+import { Ableton, EventListener } from "..";
 
 export class Namespace<GP, TP, SP, OP> {
   constructor(
@@ -45,10 +45,6 @@ export class Namespace<GP, TP, SP, OP> {
         }
       },
     );
-  }
-
-  async removeListener<T extends keyof OP>(prop: T, eventId: string) {
-    this.ableton.removePropListener(this.ns, this.nsid, String(prop), eventId);
   }
 
   protected async sendCommand(
