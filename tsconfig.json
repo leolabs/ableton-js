@@ -5,6 +5,7 @@
     "module": "commonjs",
     "strict": true,
     "declaration": true,
+    "resolveJsonModule": true,
     "esModuleInterop": true,
     "allowJs": false,
     "outDir": "./"

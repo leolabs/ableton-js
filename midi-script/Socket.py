@@ -68,5 +68,3 @@ class Socket(object):
                     self.input_handler(payload)
         except socket.error:
             return
-        except Exception, e:
-            self.log_message("Error: " + str(e.args))
