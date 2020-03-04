@@ -148,7 +148,15 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
         args,
       } as Command);
 
-      const timeoutId = setTimeout(() => rej(new Error("Timeout")), timeout);
+      const timeoutId = setTimeout(() => {
+        const arg = JSON.stringify(args);
+        const cls = nsid ? `${ns}(${nsid})` : ns;
+        rej(
+          new Error(
+            `The command ${cls}.${name}(${arg}) timed out after ${timeout} ms`,
+          ),
+        );
+      }, timeout);
 
       this.msgMap.set(msgId, {
         res: (data: any) => {
