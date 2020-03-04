@@ -3,7 +3,6 @@ import { EventEmitter } from "events";
 import uuid from "uuid";
 import { Song } from "./ns/song";
 import { Internal } from "./ns/internal";
-import packageInfo from "../package.json";
 import semver from "semver";
 
 interface Command {
@@ -48,8 +47,8 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
   constructor(
     private host = "127.0.0.1",
-    private sendPort = 9001,
-    private listenPort = 9000,
+    private sendPort = 9005,
+    private listenPort = 9004,
     heartbeatInterval = 2000,
   ) {
     super();
@@ -74,9 +73,10 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     }, heartbeatInterval);
 
     this.internal.get("version").then(v => {
-      if (semver.lt(v, packageInfo.version)) {
+      const jsVersion = this.internal.getPackageVersion();
+      if (semver.lt(v, jsVersion)) {
         console.warn(
-          `The installed version of your AbletonJS plugin (${v}) is lower than the JS library (${packageInfo.version}).`,
+          `The installed version of your AbletonJS plugin (${v}) is lower than the JS library (${jsVersion}).`,
           "Please update your AbletonJS plugin to the latest version: https://git.io/JvaOu",
         );
       }
