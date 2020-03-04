@@ -48,7 +48,7 @@ export class Scene extends Namespace<
   ObservableProperties
 > {
   constructor(ableton: Ableton, public raw: RawScene) {
-    super(ableton, "scene");
+    super(ableton, "scene", raw.id);
 
     this.transformers = {
       clip_slots: clip_slots => clip_slots.map(c => new ClipSlot(this.ableton, c)),
