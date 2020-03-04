@@ -8,7 +8,7 @@ build/
 *.js
 *.d.ts
 /ns/
-!postinstall.js
+!/hooks/**/*
 
 .vscode/settings.json
 
