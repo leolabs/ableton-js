@@ -1,6 +1,7 @@
 from Interface import Interface
 from ClipSlot import ClipSlot
 
+
 class Scene(Interface):
     @staticmethod
     def serialize_scene(scene):

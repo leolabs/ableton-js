@@ -8,6 +8,7 @@ from Scene import Scene
 from Song import Song
 from SongView import SongView
 from Track import Track
+from Internal import Internal
 from ClipSlot import ClipSlot
 from _Framework.ControlSurface import ControlSurface
 
@@ -21,6 +22,7 @@ class AbletonJS(ControlSurface):
         self.socket = Socket(self.command_handler)
 
         self.handlers = {
+            "internal": Internal(c_instance, self.socket),
             "cue-point": CuePoint(c_instance, self.socket),
             "device": Device(c_instance, self.socket),
             "device-parameter": DeviceParameter(c_instance, self.socket),
