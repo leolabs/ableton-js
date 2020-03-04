@@ -16,7 +16,7 @@ class Socket(object):
     def set_message(func):
         Socket.show_message = func
 
-    def __init__(self, handler, remotehost='127.0.0.1', remoteport=9000, localhost='127.0.0.1', localport=9001):
+    def __init__(self, handler, remotehost='127.0.0.1', remoteport=9004, localhost='127.0.0.1', localport=9005):
         self.input_handler = handler
 
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)

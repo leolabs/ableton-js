@@ -17,6 +17,7 @@
     "ableton:kill": "pkill -KILL -f \"Ableton Live\"",
     "ableton:start": "yarn ableton:kill; yarn ableton:clean && yarn ableton:copy-script && yarn ableton:launch && yarn ableton:logs",
     "prepublishOnly": "yarn build",
+    "postinstall": "node postinstall.js",
     "build": "tsc",
     "test": "jest --runInBand"
   },
