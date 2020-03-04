@@ -3,9 +3,10 @@ import { Namespace } from ".";
 import { Track, RawTrack } from "./track";
 import { CuePoint, RawCuePoint } from "./cue-point";
 import { SongView } from "./song-view";
+import { ClipSlot, RawClipSlot } from './clip-slot';
 
 export interface GettableProperties {
-  clip_slots: number;
+  clip_slots: RawClipSlot[];
   color: number;
   color_index: number;
   is_empty: boolean;
@@ -14,10 +15,12 @@ export interface GettableProperties {
   tempo: number;
 }
 
-export interface TransformedProperties {}
+export interface TransformedProperties {
+  clip_slots: ClipSlot[];
+}
 
 export interface SettableProperties {
-  clip_slots: number /* Todo: implement ClipSlot */;
+  clip_slots: RawClipSlot[];
   color: number;
   color_index: number;
   name: string;
@@ -25,7 +28,7 @@ export interface SettableProperties {
 }
 
 export interface ObservableProperties {
-  clip_slots: number;
+  clip_slots: RawClipSlot[];
   color: number;
   color_index: number;
   is_triggered: boolean;
@@ -46,5 +49,9 @@ export class Scene extends Namespace<
 > {
   constructor(ableton: Ableton, public raw: RawScene) {
     super(ableton, "scene");
+
+    this.transformers = {
+      clip_slots: clip_slots => clip_slots.map(c => new ClipSlot(this.ableton, c)),
+    };
   }
 }
