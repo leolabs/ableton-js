@@ -42,8 +42,4 @@ export class ClipSlot extends Namespace<
   constructor(ableton: Ableton, public raw: RawClipSlot) {
     super(ableton, "clip_slot", raw.id);
   }
-
-  async jump() {
-    return this.sendCommand("jump");
-  }
 }
