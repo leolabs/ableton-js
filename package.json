@@ -8,7 +8,7 @@
   "files": [
     "**/*.js",
     "**/*.d.ts",
-    "midi-script/*"
+    "midi-script/*.py"
   ],
   "scripts": {
     "ableton:clean": "rm -f midi-script/AbletonJS/*.pyc",
