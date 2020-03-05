@@ -9,6 +9,7 @@ import { unzipSync } from "zlib";
 interface Command {
   uuid: string;
   ns: string;
+  nsid?: number;
   name: string;
   args?: { [k: string]: any };
 }
@@ -30,6 +31,12 @@ export interface EventListener {
   prop: string;
   eventId: string;
   listener: (data: any) => any;
+}
+
+export class TimeoutError extends Error {
+  constructor(public message: string, public payload: Command) {
+    super(message);
+  }
 }
 
 export class Ableton extends EventEmitter implements ConnectionEventEmitter {
@@ -162,20 +169,27 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   ): Promise<any> {
     return new Promise((res, rej) => {
       const msgId = uuid.v4();
-      const msg = JSON.stringify({
+      const payload: Command = {
         uuid: msgId,
         ns,
         nsid,
         name,
         args,
-      } as Command);
+      };
+      const msg = JSON.stringify(payload);
 
       const timeoutId = setTimeout(() => {
         const arg = JSON.stringify(args);
         const cls = nsid ? `${ns}(${nsid})` : ns;
         rej(
-          new Error(
-            `The command ${cls}.${name}(${arg}) timed out after ${timeout} ms`,
+          new TimeoutError(
+            [
+              `The command ${cls}.${name}(${arg}) timed out after ${timeout} ms.`,
+              `Please make sure that Ableton is running and that you have the latest`,
+              `version of AbletonJS' midi script installed, listening on port`,
+              `${this.sendPort} and sending on port ${this.listenPort}.`,
+            ].join(" "),
+            payload,
           ),
         );
       }, timeout);
