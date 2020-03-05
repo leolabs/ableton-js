@@ -1,10 +1,11 @@
 import dgram from "dgram";
 import { EventEmitter } from "events";
 import uuid from "uuid";
-import { Song } from "./ns/song";
-import { Internal } from "./ns/internal";
 import semver from "semver";
 import { unzipSync } from "zlib";
+import { Song } from "./ns/song";
+import { Internal } from "./ns/internal";
+import { getPackageVersion } from "./util/package-version";
 
 interface Command {
   uuid: string;
@@ -82,7 +83,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     }, heartbeatInterval);
 
     this.internal.get("version").then(v => {
-      const jsVersion = this.internal.getPackageVersion();
+      const jsVersion = getPackageVersion();
       if (semver.lt(v, jsVersion)) {
         console.warn(
           `The installed version of your AbletonJS plugin (${v}) is lower than the JS library (${jsVersion}).`,
@@ -280,3 +281,5 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     return this._isConnected;
   }
 }
+
+export { getPackageVersion } from "./util/package-version";
