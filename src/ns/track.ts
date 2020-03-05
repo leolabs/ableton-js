@@ -1,6 +1,7 @@
 import { Ableton } from "..";
 import { Namespace } from ".";
 import { Device, RawDevice } from "./device";
+import { ClipSlot, RawClipSlot } from './clip-slot';
 
 export interface GettableProperties {
   arm: number;
@@ -11,7 +12,7 @@ export interface GettableProperties {
   can_be_armed: number;
   can_be_frozen: number;
   can_show_chains: number;
-  clip_slots: number;
+  clip_slots: RawClipSlot[];
   color: number;
   color_index: number;
   current_input_routing: number;
@@ -59,6 +60,7 @@ export interface GettableProperties {
 
 export interface TransformedProperties {
   devices: Device[];
+  clip_slots: ClipSlot[];
 }
 
 export interface SettableProperties {
@@ -71,7 +73,7 @@ export interface SettableProperties {
   can_be_frozen: number;
   can_show_chains: number;
   canonical_parent: number;
-  clip_slots: number;
+  clip_slots: RawClipSlot[];
   color: number;
   color_index: number;
   current_input_routing: number;
@@ -123,7 +125,7 @@ export interface ObservableProperties {
   available_input_routing_types: number;
   available_output_routing_channels: number;
   available_output_routing_types: number;
-  clip_slots: number;
+  clip_slots: RawClipSlot[];
   color_index: number;
   color: number;
   current_input_routing: number;
@@ -179,6 +181,7 @@ export class Track extends Namespace<
 
     this.transformers = {
       devices: devices => devices.map(d => new Device(this.ableton, d)),
+      clip_slots: clip_slots => clip_slots.map(c => new ClipSlot(this.ableton, c)),
     };
   }
 }

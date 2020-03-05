@@ -3,6 +3,7 @@ import { Namespace } from ".";
 import { Track, RawTrack } from "./track";
 import { CuePoint, RawCuePoint } from "./cue-point";
 import { SongView } from "./song-view";
+import { Scene, RawScene } from "./scene";
 
 export interface GettableProperties {
   arrangement_overdub: number;
@@ -38,7 +39,7 @@ export interface GettableProperties {
   return_tracks: RawTrack[];
   root_note: number;
   scale_name: number;
-  scenes: number;
+  scenes: RawScene[];
   select_on_launch: number;
   session_automation_record: number;
   session_record: number;
@@ -60,6 +61,7 @@ export interface TransformedProperties {
   tracks: Track[];
   visible_tracks: Track[];
   view: SongView;
+  scenes: Scene[];
 }
 
 export interface SettableProperties {
@@ -90,7 +92,6 @@ export interface SettableProperties {
   return_tracks: number;
   root_note: number;
   scale_name: number;
-  scenes: number;
   select_on_launch: number;
   session_automation_record: number;
   session_record: number;
@@ -129,7 +130,7 @@ export interface ObservableProperties {
   re_enable_automation_enabled: number;
   record_mode: number;
   return_tracks: RawTrack[];
-  scenes: number;
+  scenes: RawScene[];
   session_automation_record: number;
   session_record: number;
   session_record_status: number;
@@ -186,6 +187,7 @@ export class Song extends Namespace<
       tracks: tracks => tracks.map(t => new Track(this.ableton, t)),
       visible_tracks: tracks => tracks.map(t => new Track(this.ableton, t)),
       view: () => new SongView(this.ableton),
+      scenes: scenes => scenes.map(s => new Scene(this.ableton, s)),
     };
   }
 
