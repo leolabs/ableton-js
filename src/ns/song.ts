@@ -50,7 +50,7 @@ export interface GettableProperties {
   swing_amount: number;
   tempo: number;
   tracks: RawTrack[];
-  view: number;
+  // view: never; - Not needed here
   visible_tracks: RawTrack[];
 }
 
@@ -60,7 +60,7 @@ export interface TransformedProperties {
   return_tracks: Track[];
   tracks: Track[];
   visible_tracks: Track[];
-  view: SongView;
+  //view: SongView; - Not needed here
   scenes: Scene[];
 }
 
@@ -186,7 +186,6 @@ export class Song extends Namespace<
       return_tracks: tracks => tracks.map(t => new Track(this.ableton, t)),
       tracks: tracks => tracks.map(t => new Track(this.ableton, t)),
       visible_tracks: tracks => tracks.map(t => new Track(this.ableton, t)),
-      view: () => new SongView(this.ableton),
       scenes: scenes => scenes.map(s => new Scene(this.ableton, s)),
     };
   }

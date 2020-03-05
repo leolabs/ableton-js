@@ -46,7 +46,6 @@ const gettableProps: (keyof GettableProperties)[] = [
   "swing_amount",
   "tempo",
   "tracks",
-  "view",
   "visible_tracks",
 ];
 
