@@ -4,6 +4,7 @@ import uuid from "uuid";
 import { Song } from "./ns/song";
 import { Internal } from "./ns/internal";
 import semver from "semver";
+import { unzipSync } from "zlib";
 
 interface Command {
   uuid: string;
@@ -41,6 +42,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   private heartbeatInterval: NodeJS.Timeout;
   private _isConnected = true;
   private cancelConnectionEvent = false;
+  private buffer: Buffer[] = [];
 
   public song = new Song(this);
   public internal = new Internal(this);
@@ -91,44 +93,64 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
   handleIncoming(msg: Buffer, info: dgram.RemoteInfo) {
     try {
-      const data: Response = JSON.parse(msg.toString());
-      const functionCallback = this.msgMap.get(data.uuid);
+      const index = msg[0];
+      const message = msg.slice(1);
 
-      if (data.event === "result" && functionCallback) {
-        this.msgMap.delete(data.uuid);
-        return functionCallback.res(data.data);
-      }
+      this.buffer[index] = message;
 
-      if (data.event === "error" && functionCallback) {
-        this.msgMap.delete(data.uuid);
-        return functionCallback.rej(new Error(data.data));
+      // 0xFF signals that the end of the buffer has been reached
+      if (index === 255) {
+        this.handleUncompressedMessage(
+          unzipSync(Buffer.concat(this.buffer.filter(b => b))).toString(),
+        );
+        this.buffer = [];
       }
+    } catch (e) {
+      this.buffer = [];
+      console.warn("Could not handle input:", e);
+    }
+  }
 
-      if (data.event === "disconnect") {
-        this.msgMap.clear();
-        this.eventListeners.clear();
-        if (this._isConnected === true) {
-          this._isConnected = false;
-          this.cancelConnectionEvent = true;
-          this.emit("disconnect", "realtime");
-        }
-        return;
-      }
+  handleUncompressedMessage(msg: string) {
+    const data: Response = JSON.parse(msg);
+    const functionCallback = this.msgMap.get(data.uuid);
 
-      if (data.event === "connect") {
-        if (this._isConnected === false) {
-          this._isConnected = true;
-          this.cancelConnectionEvent = true;
-          this.emit("connect", "realtime");
-        }
-        return;
-      }
+    if (data.event === "result" && functionCallback) {
+      this.msgMap.delete(data.uuid);
+      return functionCallback.res(data.data);
+    }
 
-      const eventCallback = this.eventListeners.get(data.event);
-      if (eventCallback) {
-        return eventCallback.forEach(cb => cb(data.data));
+    if (data.event === "error" && functionCallback) {
+      this.msgMap.delete(data.uuid);
+      return functionCallback.rej(new Error(data.data));
+    }
+
+    if (data.event === "disconnect") {
+      this.msgMap.clear();
+      this.eventListeners.clear();
+      if (this._isConnected === true) {
+        this._isConnected = false;
+        this.cancelConnectionEvent = true;
+        this.emit("disconnect", "realtime");
       }
-    } catch (e) {}
+      return;
+    }
+
+    if (data.event === "connect") {
+      if (this._isConnected === false) {
+        this._isConnected = true;
+        this.cancelConnectionEvent = true;
+        this.emit("connect", "realtime");
+      }
+      return;
+    }
+
+    const eventCallback = this.eventListeners.get(data.event);
+    if (eventCallback) {
+      return eventCallback.forEach(cb => cb(data.data));
+    }
+
+    throw new Error("Message could not be assigned to any request: " + msg);
   }
 
   async sendCommand(

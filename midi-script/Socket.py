@@ -3,7 +3,15 @@ import sys
 import errno
 import traceback
 import json
+import struct
 from threading import Timer
+
+
+def split_by_n(seq, n):
+    '''A generator to divide a sequence into chunks of n units.'''
+    while seq:
+        yield seq[:n]
+        seq = seq[n:]
 
 
 class Socket(object):
@@ -40,18 +48,32 @@ class Socket(object):
             t = Timer(5, self.bind)
             t.start()
 
+    def _sendto(self, msg):
+        '''Send a raw message to the client, compressed and chunked, if necessary'''
+        compressed = msg.encode("zlib") + "\n"
+        limit = 1024
+
+        if len(compressed) < limit:
+            self._socket.sendto('\xFF' + compressed, self._remote_addr)
+        else:
+            chunks = list(split_by_n(compressed, limit))
+            count = len(chunks)
+            for i, chunk in enumerate(chunks):
+                self._socket.sendto(struct.pack("B", i if i + 1 < count else 255) + compressed, self._remote_addr)
+
     def send(self, name, obj=None, uuid=None):
         def jsonReplace(o):
             return str(o)
 
         try:
-            self._socket.sendto(json.dumps(
-                {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace, ensure_ascii=False), self._remote_addr)
+            self._sendto(json.dumps(
+                {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace, ensure_ascii=False))
             self.log_message("Socket Event " + name +
                              "(" + str(uuid) + "): " + json.dumps(obj))
         except Exception, e:
-            self._socket.sendto(json.dumps(
-                {"event": "error", "data": str(type(e).__name__) + ': ' + str(e.args), "uuid": uuid}, default=jsonReplace, ensure_ascii=False), self._remote_addr)
+            error = str(type(e).__name__) + ': ' + str(e.args)
+            self._sendto(json.dumps(
+                {"event": "error", "data": error, "uuid": uuid}, default=jsonReplace, ensure_ascii=False))
             self.log_message("Socket Error " + name +
                              "(" + str(uuid) + "): " + str(e))
 
