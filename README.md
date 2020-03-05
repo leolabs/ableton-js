@@ -59,6 +59,14 @@ Ableton.js uses UDP to communicate with the MIDI Script. Each message is a JSON
 object containing required data and a UUID so request and response can be
 associated with each other.
 
+### Compression and Chunking
+
+To allow sending large JSON payloads, responses from the MIDI Script are
+compressed using gzip and chunked every 1024 bytes. The first byte of every
+message contains the chunk index (0x00-0xFF) followed by the gzipped chunk. The
+last chunk always has the index 0xFF. This indicates to the JS library that the
+previous received messages should be stiched together, unzipped, and processed.
+
 ### Commands
 
 A command payload consists of the following properties:
