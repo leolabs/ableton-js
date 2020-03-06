@@ -82,15 +82,18 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       }
     }, heartbeatInterval);
 
-    this.internal.get("version").then(v => {
-      const jsVersion = getPackageVersion();
-      if (semver.lt(v, jsVersion)) {
-        console.warn(
-          `The installed version of your AbletonJS plugin (${v}) is lower than the JS library (${jsVersion}).`,
-          "Please update your AbletonJS plugin to the latest version: https://git.io/JvaOu",
-        );
-      }
-    });
+    this.internal
+      .get("version")
+      .then(v => {
+        const jsVersion = getPackageVersion();
+        if (semver.lt(v, jsVersion)) {
+          console.warn(
+            `The installed version of your AbletonJS plugin (${v}) is lower than the JS library (${jsVersion}).`,
+            "Please update your AbletonJS plugin to the latest version: https://git.io/JvaOu",
+          );
+        }
+      })
+      .catch(() => {});
   }
 
   close() {
