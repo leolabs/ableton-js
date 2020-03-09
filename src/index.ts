@@ -26,6 +26,7 @@ type ConnectionEventType = "realtime" | "heartbeat";
 interface ConnectionEventEmitter {
   on(e: "connect", l: (t: ConnectionEventType) => void): this;
   on(e: "disconnect", l: (t: ConnectionEventType) => void): this;
+  on(e: "ping", l: (t: number) => void): this;
 }
 
 export interface EventListener {
@@ -51,6 +52,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   private _isConnected = true;
   private cancelConnectionEvent = false;
   private buffer: Buffer[] = [];
+  private latency: number = 0;
 
   public song = new Song(this);
   public internal = new Internal(this);
@@ -100,6 +102,15 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     this.cancelConnectionEvent = true;
     clearInterval(this.heartbeatInterval);
     this.client.close();
+  }
+
+  getPing() {
+    return this.latency;
+  }
+
+  private setPing(latency: number) {
+    this.latency = latency;
+    this.emit("ping", this.latency);
   }
 
   handleIncoming(msg: Buffer, info: dgram.RemoteInfo) {
@@ -197,8 +208,10 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
         );
       }, timeout);
 
+      const currentTimestamp = Date.now();
       this.msgMap.set(msgId, {
         res: (data: any) => {
+          this.setPing(Date.now() - currentTimestamp);
           clearTimeout(timeoutId);
           res(data);
         },
