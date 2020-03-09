@@ -118,7 +118,6 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       }
     } catch (e) {
       this.buffer = [];
-      console.warn("Could not handle input:", e);
     }
   }
 
