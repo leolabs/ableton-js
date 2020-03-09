@@ -104,6 +104,10 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     this.client.close();
   }
 
+  /**
+   * Returns the latency between the last command and its response.
+   * This is a rough measurement, so don't rely too much on it.
+   */
   getPing() {
     return this.latency;
   }
