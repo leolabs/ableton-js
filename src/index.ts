@@ -113,7 +113,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     this.emit("ping", this.latency);
   }
 
-  handleIncoming(msg: Buffer, info: dgram.RemoteInfo) {
+  private handleIncoming(msg: Buffer, info: dgram.RemoteInfo) {
     try {
       const index = msg[0];
       const message = msg.slice(1);
@@ -132,7 +132,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     }
   }
 
-  handleUncompressedMessage(msg: string) {
+  private handleUncompressedMessage(msg: string) {
     const data: Response = JSON.parse(msg);
     const functionCallback = this.msgMap.get(data.uuid);
 
