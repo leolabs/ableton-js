@@ -26,6 +26,7 @@ type ConnectionEventType = "realtime" | "heartbeat";
 interface ConnectionEventEmitter {
   on(e: "connect", l: (t: ConnectionEventType) => void): this;
   on(e: "disconnect", l: (t: ConnectionEventType) => void): this;
+  on(e: "message", l: (t: any) => void): this;
   on(e: "ping", l: (t: number) => void): this;
 }
 
@@ -139,6 +140,8 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   private handleUncompressedMessage(msg: string) {
     const data: Response = JSON.parse(msg);
     const functionCallback = this.msgMap.get(data.uuid);
+
+    this.emit("message", data);
 
     if (data.event === "result" && functionCallback) {
       this.msgMap.delete(data.uuid);
