@@ -60,8 +60,8 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
   constructor(
     private host = "127.0.0.1",
-    private sendPort = 9005,
-    private listenPort = 9004,
+    private sendPort = 9011,
+    private listenPort = 9010,
     heartbeatInterval = 2000,
   ) {
     super();
