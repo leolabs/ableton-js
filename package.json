@@ -20,7 +20,7 @@
     "prepublishOnly": "yarn build",
     "postinstall": "node hooks/postinstall.js",
     "build:doc": "jsdoc2md --files src/**/*.ts --configure ./jsdoc2md.json > ./API.md",
-    "version": "node hooks/prepublish.js && git add midi-script/Internal.py",
+    "version": "node hooks/prepublish.js && git add midi-script/Internal.py && auto-changelog -p -l 100 && git add CHANGELOG.md",
     "build": "tsc",
     "test": "jest --runInBand"
   },
@@ -36,6 +36,7 @@
     "@types/node-uuid": "^0.0.28",
     "@types/semver": "^7.1.0",
     "@types/uuid": "^3.4.6",
+    "auto-changelog": "^1.16.2",
     "jest": "^24.8.0",
     "jsdoc-babel": "^0.5.0",
     "jsdoc-to-markdown": "^5.0.3",
