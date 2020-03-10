@@ -36,6 +36,9 @@ class Song(Interface):
     def get_visible_tracks(self, ns):
         return map(Track.serialize_track, ns.visible_tracks)
 
+    def begin_undo_step(self, ns):
+        return ns.begin_undo_step()
+
     def continue_playing(self, ns):
         return ns.continue_playing()
 
@@ -66,6 +69,12 @@ class Song(Interface):
     def duplicate_track(self, ns, index):
         return ns.duplicate_track(index)
 
+    def end_undo_step(self, ns):
+        return ns.end_undo_step()
+
+    def get_data(self, ns, key):
+        return ns.get_data(key, None)
+
     def is_cue_point_selected(self, ns):
         return ns.is_cue_point_selected()
 
@@ -83,6 +92,9 @@ class Song(Interface):
 
     def scrub_by(self, ns, amount):
         return ns.scrub_by(amount)
+
+    def set_data(self, ns, key, value):
+        return ns.set_data(key, value)
 
     def start_playing(self, ns):
         return ns.start_playing()

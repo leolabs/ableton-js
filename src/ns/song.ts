@@ -192,6 +192,10 @@ export class Song extends Namespace<
 
   public view = new SongView(this.ableton);
 
+  public async beginUndoStep() {
+    return this.sendCommand("begin_undo_step");
+  }
+
   public async continuePlaying() {
     return this.sendCommand("continue_playing");
   }
@@ -232,6 +236,15 @@ export class Song extends Namespace<
     return this.sendCommand("duplicate_track", { index });
   }
 
+  public async endUndoStep() {
+    return this.sendCommand("end_undo_step");
+  }
+
+  public async getData(key: string) {
+    const data = await this.sendCommand("get_data", { key });
+    return JSON.parse(data);
+  }
+
   public async isCuePointSelected() {
     return this.sendCommand("is_cue_point_selected");
   }
@@ -254,6 +267,10 @@ export class Song extends Namespace<
 
   public async scrubBy(amount: number) {
     return this.sendCommand("scrub_by", { amount });
+  }
+
+  public async setData(key: string, value: any) {
+    return this.sendCommand("set_data", { key, value: JSON.stringify(value) });
   }
 
   public async startPlaying() {
