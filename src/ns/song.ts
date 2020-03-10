@@ -3,6 +3,7 @@ import { Namespace } from ".";
 import { Track, RawTrack } from "./track";
 import { CuePoint, RawCuePoint } from "./cue-point";
 import { SongView } from "./song-view";
+import { Scene, RawScene } from "./scene";
 
 export interface GettableProperties {
   arrangement_overdub: number;
@@ -38,7 +39,7 @@ export interface GettableProperties {
   return_tracks: RawTrack[];
   root_note: number;
   scale_name: number;
-  scenes: number;
+  scenes: RawScene[];
   select_on_launch: number;
   session_automation_record: number;
   session_record: number;
@@ -49,7 +50,7 @@ export interface GettableProperties {
   swing_amount: number;
   tempo: number;
   tracks: RawTrack[];
-  view: number;
+  // view: never; - Not needed here
   visible_tracks: RawTrack[];
 }
 
@@ -59,7 +60,8 @@ export interface TransformedProperties {
   return_tracks: Track[];
   tracks: Track[];
   visible_tracks: Track[];
-  view: SongView;
+  //view: SongView; - Not needed here
+  scenes: Scene[];
 }
 
 export interface SettableProperties {
@@ -90,7 +92,6 @@ export interface SettableProperties {
   return_tracks: number;
   root_note: number;
   scale_name: number;
-  scenes: number;
   select_on_launch: number;
   session_automation_record: number;
   session_record: number;
@@ -129,7 +130,7 @@ export interface ObservableProperties {
   re_enable_automation_enabled: number;
   record_mode: number;
   return_tracks: RawTrack[];
-  scenes: number;
+  scenes: RawScene[];
   session_automation_record: number;
   session_record: number;
   session_record_status: number;
@@ -185,11 +186,15 @@ export class Song extends Namespace<
       return_tracks: tracks => tracks.map(t => new Track(this.ableton, t)),
       tracks: tracks => tracks.map(t => new Track(this.ableton, t)),
       visible_tracks: tracks => tracks.map(t => new Track(this.ableton, t)),
-      view: () => new SongView(this.ableton),
+      scenes: scenes => scenes.map(s => new Scene(this.ableton, s)),
     };
   }
 
   public view = new SongView(this.ableton);
+
+  public async beginUndoStep() {
+    return this.sendCommand("begin_undo_step");
+  }
 
   public async continuePlaying() {
     return this.sendCommand("continue_playing");
@@ -231,6 +236,15 @@ export class Song extends Namespace<
     return this.sendCommand("duplicate_track", { index });
   }
 
+  public async endUndoStep() {
+    return this.sendCommand("end_undo_step");
+  }
+
+  public async getData(key: string) {
+    const data = await this.sendCommand("get_data", { key });
+    return JSON.parse(data);
+  }
+
   public async isCuePointSelected() {
     return this.sendCommand("is_cue_point_selected");
   }
@@ -253,6 +267,10 @@ export class Song extends Namespace<
 
   public async scrubBy(amount: number) {
     return this.sendCommand("scrub_by", { amount });
+  }
+
+  public async setData(key: string, value: any) {
+    return this.sendCommand("set_data", { key, value: JSON.stringify(value) });
   }
 
   public async startPlaying() {

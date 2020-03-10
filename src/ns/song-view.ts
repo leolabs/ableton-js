@@ -4,12 +4,13 @@ import { Device } from "./device";
 import { Track, RawTrack } from "./track";
 import { Scene, RawScene } from "./scene";
 import { RawDeviceParameter, DeviceParameter } from "./device-parameter";
+import { ClipSlot, RawClipSlot } from "./clip-slot";
 
 export interface GettableProperties {
   detail_clip: any /* Todo: Implement Clip class */;
   draw_mode: boolean;
   follow_song: boolean;
-  highlighted_clip_slot: any /* Todo: Implement ClipSlot class */;
+  highlighted_clip_slot: RawClipSlot;
   selected_chain: any /* Todo: Implement Chain class */;
   selected_parameter: RawDeviceParameter;
   selected_scene: RawScene;
@@ -20,6 +21,7 @@ export interface TransformedProperties {
   selected_parameter: DeviceParameter;
   selected_scene: Scene;
   selected_track: Track;
+  highlighted_clip_slot: ClipSlot;
 }
 
 export interface SettableProperties {
@@ -55,6 +57,7 @@ export class SongView extends Namespace<
       selected_parameter: param => new DeviceParameter(this.ableton, param),
       selected_track: track => new Track(this.ableton, track),
       selected_scene: scene => new Scene(this.ableton, scene),
+      highlighted_clip_slot: clipSlot => new ClipSlot(this.ableton, clipSlot),
     };
   }
 

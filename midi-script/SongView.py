@@ -2,6 +2,7 @@ from Interface import Interface
 from DeviceParameter import DeviceParameter
 from Scene import Scene
 from Track import Track
+from ClipSlot import ClipSlot
 
 
 class SongView(Interface):
@@ -22,3 +23,6 @@ class SongView(Interface):
 
     def get_selected_scene(self, ns):
         return Scene.serialize_scene(ns.selected_scene)
+
+    def get_highlighted_clip_slot(self, ns):
+        return ClipSlot.serialize_clip_slot(ns.highlighted_clip_slot)

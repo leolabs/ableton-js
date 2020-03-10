@@ -1,5 +1,6 @@
 class Interface(object):
     obj_ids = dict()
+    listeners = dict()
 
     @staticmethod
     def save_obj(obj):
@@ -36,24 +37,37 @@ class Interface(object):
             send(
                 "error", "Function call failed: " + payload["name"] + " doesn't exist or isn't callable", uuid)
 
-    def add_listener(self, ns, prop, eventId, send):
+    def add_listener(self, ns, prop, eventId, send, nsid="Default"):
         try:
             add_fn = getattr(ns, "add_" + prop + "_listener")
         except:
             raise Exception("Listener " + str(prop) + " does not exist.")
 
+        key = str(nsid) + prop
+        self.log_message("Add key: " + key)
+        if self.listeners.has_key(key):
+            return self.listeners[key]["id"]
+
         def fn():
             return send(eventId, self.get_prop(ns, prop))
 
         add_fn(fn)
+        self.listeners[key] = {"id": eventId, "fn": fn}
         return eventId
 
-    def remove_listener(self, ns, prop, send):
+    def remove_listener(self, ns, prop, send, nsid="Default"):
+        key = str(nsid) + prop
+        self.log_message("Remove key: " + key)
+        if not self.listeners.has_key(key):
+            raise Exception("Listener " + str(prop) + " does not exist.")
+
         try:
             remove_fn = getattr(ns, "remove_" + prop + "_listener")
-            return remove_fn()
-        except:
-            raise Exception("Listener " + str(prop) + " does not exist.")
+            remove_fn(self.listeners[key]["fn"])
+            self.listeners.pop(key, None)
+            return True
+        except Exception as e:
+            raise Exception("Listener " + str(prop) + " could not be removed: " + str(e))
 
     def get_prop(self, ns, prop, send):
         try:

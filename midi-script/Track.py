@@ -1,5 +1,6 @@
 from Interface import Interface
 from Device import Device
+from ClipSlot import ClipSlot
 
 
 class Track(Interface):
@@ -16,3 +17,6 @@ class Track(Interface):
 
     def get_devices(self, ns):
         return map(Device.serialize_device, ns.devices)
+
+    def get_clip_slots(self, ns):
+        return map(ClipSlot.serialize_clip_slot, ns.clip_slots)

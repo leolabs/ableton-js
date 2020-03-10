@@ -12,10 +12,10 @@ const gettableProps: (keyof GettableProperties)[] = [
   "selected_track",
 ];
 
-describe("Song", () => {
+describe("Song View", () => {
   it("should be able to read all properties without erroring", async () => {
     const a = new Ableton();
-    console.log(await Promise.all(gettableProps.map(p => a.song.view.get(p))));
+    await Promise.all(gettableProps.map(p => a.song.view.get(p)));
     a.close();
   });
 });

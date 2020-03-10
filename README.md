@@ -2,34 +2,38 @@
 
 [![Current Version](https://img.shields.io/npm/v/ableton-js.svg)](https://www.npmjs.com/package/ableton-js/)
 
-Ableton.js lets you control your instance or instances of Ableton using Node.js. It
-tries to cover as many functions as possible.
+Ableton.js lets you control your instance or instances of Ableton using Node.js.
+It tries to cover as many functions as possible.
 
-This package is still a work-in-progress. My goal is to expose all of [Ableton's MIDI
-Remote Script](https://julienbayle.studio/PythonLiveAPI_documentation/Live10.0.2.xml) functions to TypeScript. If you'd like to contribute, please feel free to do so.
+This package is still a work-in-progress. My goal is to expose all of
+[Ableton's MIDI Remote Script](https://julienbayle.studio/PythonLiveAPI_documentation/Live10.0.2.xml)
+functions to TypeScript. If you'd like to contribute, please feel free to do so.
 
 ## Prerequisites
 
-To use this library, you'll need to install and activate the MIDI Remote Script in
-Ableton.js. To do that, copy the `midi-script` folder of this repo to Ableton's
-Remote Scripts folder. If you prefer, you can rename it to something like `AbletonJS`
-for better identification. The MIDI Remote Scripts folder is usually located at:
+To use this library, you'll need to install and activate the MIDI Remote Script
+in Ableton.js. To do that, copy the `midi-script` folder of this repo to
+Ableton's Remote Scripts folder. If you prefer, you can rename it to something
+like `AbletonJS` for better identification. The MIDI Remote Scripts folder is
+usually located at:
 
 - **Windows:** {path to Ableton}\Resources\MIDI\Remote Scripts
-- **macOS:** /Applications/Ableton Live {version}/Contents/App-Resources/MIDI Remote Scripts
+- **macOS:** /Applications/Ableton Live {version}/Contents/App-Resources/MIDI
+  Remote Scripts
 
 After starting Ableton Live, add the script to your list of control surfaces:
 
 ![Ableton Live Settings](https://i.imgur.com/a34zJca.png)
 
-If you've forked this project on macOS, you can also use yarn to do that for you.
-Running `yarn ableton:start` will copy the `midi-script` folder, open Ableton and
-show a stream of log messages until you kill it.
+If you've forked this project on macOS, you can also use yarn to do that for
+you. Running `yarn ableton:start` will copy the `midi-script` folder, open
+Ableton and show a stream of log messages until you kill it.
 
 ## Using Ableton.js
 
 This library exposes an `Ableton` class which lets you control the entire
-application. You can instanciate it once and use TS to explore available features.
+application. You can instantiate it once and use TS to explore available
+features.
 
 Example:
 
@@ -52,8 +56,16 @@ test();
 ## Protocol
 
 Ableton.js uses UDP to communicate with the MIDI Script. Each message is a JSON
-object containing required data and a UUID so request and response can be associated
-with each other.
+object containing required data and a UUID so request and response can be
+associated with each other.
+
+### Compression and Chunking
+
+To allow sending large JSON payloads, responses from the MIDI Script are
+compressed using gzip and chunked every 1024 bytes. The first byte of every
+message contains the chunk index (0x00-0xFF) followed by the gzipped chunk. The
+last chunk always has the index 0xFF. This indicates to the JS library that the
+previous received messages should be stiched together, unzipped, and processed.
 
 ### Commands
 
@@ -81,7 +93,8 @@ The MIDI Script answers with a JSON object looking like this:
 
 ### Events
 
-To attach an event listener to a specific property, the client sends a command object:
+To attach an event listener to a specific property, the client sends a command
+object:
 
 ```js
 {
@@ -117,13 +130,13 @@ object:
 }
 ```
 
-Note that for some values, this event is emitted multiple times per second. 20-30
-updates per second are not unusual.
+Note that for some values, this event is emitted multiple times per second.
+20-30 updates per second are not unusual.
 
 ### Connection Events
 
-The MIDI Script sends events when it starts and when it shuts down.
-These look like this:
+The MIDI Script sends events when it starts and when it shuts down. These look
+like this:
 
 ```js
 {
@@ -133,8 +146,20 @@ These look like this:
 }
 ```
 
-When you open a new Project in Ableton, the script will shut down and start again.
+When you open a new Project in Ableton, the script will shut down and start
+again.
 
-When Ableton.js receives a disconnect event, it clears all current event listeners
-and pending commands. It is usually a good idea to attach all event listeners and
-get properties each time the `connect` event is emitted.
+When Ableton.js receives a disconnect event, it clears all current event
+listeners and pending commands. It is usually a good idea to attach all event
+listeners and get properties each time the `connect` event is emitted.
+
+### Findings
+
+In this section, I'll note interesting pieces of information related to
+Ableton's Python framework that I stumble upon during the development of this
+library.
+
+- It seems like Ableton's listener to `output_meter_level` doesn't quite work as
+  well as expected, hanging every few 100ms. Listening to `output_meter_left` or
+  `output_meter_right` works better. See
+  [Issue #4](https://github.com/leolabs/ableton-js/issues/4)

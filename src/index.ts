@@ -1,11 +1,16 @@
 import dgram from "dgram";
 import { EventEmitter } from "events";
 import uuid from "uuid";
+import semver from "semver";
+import { unzipSync } from "zlib";
 import { Song } from "./ns/song";
+import { Internal } from "./ns/internal";
+import { getPackageVersion } from "./util/package-version";
 
 interface Command {
   uuid: string;
   ns: string;
+  nsid?: number;
   name: string;
   args?: { [k: string]: any };
 }
@@ -21,6 +26,20 @@ type ConnectionEventType = "realtime" | "heartbeat";
 interface ConnectionEventEmitter {
   on(e: "connect", l: (t: ConnectionEventType) => void): this;
   on(e: "disconnect", l: (t: ConnectionEventType) => void): this;
+  on(e: "message", l: (t: any) => void): this;
+  on(e: "ping", l: (t: number) => void): this;
+}
+
+export interface EventListener {
+  prop: string;
+  eventId: string;
+  listener: (data: any) => any;
+}
+
+export class TimeoutError extends Error {
+  constructor(public message: string, public payload: Command) {
+    super(message);
+  }
 }
 
 export class Ableton extends EventEmitter implements ConnectionEventEmitter {
@@ -29,17 +48,20 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     string,
     { res: (data: any) => any; rej: (data: any) => any }
   >();
-  private eventListeners = new Map<string, (data: any) => any>();
+  private eventListeners = new Map<string, Array<(data: any) => any>>();
   private heartbeatInterval: NodeJS.Timeout;
   private _isConnected = true;
   private cancelConnectionEvent = false;
+  private buffer: Buffer[] = [];
+  private latency: number = 0;
 
   public song = new Song(this);
+  public internal = new Internal(this);
 
   constructor(
     private host = "127.0.0.1",
-    private sendPort = 9001,
-    private listenPort = 9000,
+    private sendPort = 9011,
+    private listenPort = 9010,
     heartbeatInterval = 2000,
   ) {
     super();
@@ -62,6 +84,19 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
         }
       }
     }, heartbeatInterval);
+
+    this.internal
+      .get("version")
+      .then(v => {
+        const jsVersion = getPackageVersion();
+        if (semver.lt(v, jsVersion)) {
+          console.warn(
+            `The installed version of your AbletonJS plugin (${v}) is lower than the JS library (${jsVersion}).`,
+            "Please update your AbletonJS plugin to the latest version: https://git.io/JvaOu",
+          );
+        }
+      })
+      .catch(() => {});
   }
 
   close() {
@@ -70,46 +105,80 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     this.client.close();
   }
 
-  handleIncoming(msg: Buffer, info: dgram.RemoteInfo) {
+  /**
+   * Returns the latency between the last command and its response.
+   * This is a rough measurement, so don't rely too much on it.
+   */
+  getPing() {
+    return this.latency;
+  }
+
+  private setPing(latency: number) {
+    this.latency = latency;
+    this.emit("ping", this.latency);
+  }
+
+  private handleIncoming(msg: Buffer, info: dgram.RemoteInfo) {
     try {
-      const data: Response = JSON.parse(msg.toString());
-      const functionCallback = this.msgMap.get(data.uuid);
+      const index = msg[0];
+      const message = msg.slice(1);
 
-      if (data.event === "result" && functionCallback) {
-        this.msgMap.delete(data.uuid);
-        return functionCallback.res(data.data);
-      }
+      this.buffer[index] = message;
 
-      if (data.event === "error" && functionCallback) {
-        this.msgMap.delete(data.uuid);
-        return functionCallback.rej(new Error(data.data));
+      // 0xFF signals that the end of the buffer has been reached
+      if (index === 255) {
+        this.handleUncompressedMessage(
+          unzipSync(Buffer.concat(this.buffer.filter(b => b))).toString(),
+        );
+        this.buffer = [];
       }
+    } catch (e) {
+      this.buffer = [];
+    }
+  }
 
-      if (data.event === "disconnect") {
-        this.msgMap.clear();
-        this.eventListeners.clear();
-        if (this._isConnected === true) {
-          this._isConnected = false;
-          this.cancelConnectionEvent = true;
-          this.emit("disconnect", "realtime");
-        }
-        return;
-      }
+  private handleUncompressedMessage(msg: string) {
+    const data: Response = JSON.parse(msg);
+    const functionCallback = this.msgMap.get(data.uuid);
 
-      if (data.event === "connect") {
-        if (this._isConnected === false) {
-          this._isConnected = true;
-          this.cancelConnectionEvent = true;
-          this.emit("connect", "realtime");
-        }
-        return;
-      }
+    this.emit("message", data);
 
-      const eventCallback = this.eventListeners.get(data.event);
-      if (eventCallback) {
-        return eventCallback(data.data);
+    if (data.event === "result" && functionCallback) {
+      this.msgMap.delete(data.uuid);
+      return functionCallback.res(data.data);
+    }
+
+    if (data.event === "error" && functionCallback) {
+      this.msgMap.delete(data.uuid);
+      return functionCallback.rej(new Error(data.data));
+    }
+
+    if (data.event === "disconnect") {
+      this.msgMap.clear();
+      this.eventListeners.clear();
+      if (this._isConnected === true) {
+        this._isConnected = false;
+        this.cancelConnectionEvent = true;
+        this.emit("disconnect", "realtime");
       }
-    } catch (e) {}
+      return;
+    }
+
+    if (data.event === "connect") {
+      if (this._isConnected === false) {
+        this._isConnected = true;
+        this.cancelConnectionEvent = true;
+        this.emit("connect", "realtime");
+      }
+      return;
+    }
+
+    const eventCallback = this.eventListeners.get(data.event);
+    if (eventCallback) {
+      return eventCallback.forEach(cb => cb(data.data));
+    }
+
+    throw new Error("Message could not be assigned to any request: " + msg);
   }
 
   async sendCommand(
@@ -121,18 +190,35 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   ): Promise<any> {
     return new Promise((res, rej) => {
       const msgId = uuid.v4();
-      const msg = JSON.stringify({
+      const payload: Command = {
         uuid: msgId,
         ns,
         nsid,
         name,
         args,
-      } as Command);
+      };
+      const msg = JSON.stringify(payload);
 
-      const timeoutId = setTimeout(() => rej(new Error("Timeout")), timeout);
+      const timeoutId = setTimeout(() => {
+        const arg = JSON.stringify(args);
+        const cls = nsid ? `${ns}(${nsid})` : ns;
+        rej(
+          new TimeoutError(
+            [
+              `The command ${cls}.${name}(${arg}) timed out after ${timeout} ms.`,
+              `Please make sure that Ableton is running and that you have the latest`,
+              `version of AbletonJS' midi script installed, listening on port`,
+              `${this.sendPort} and sending on port ${this.listenPort}.`,
+            ].join(" "),
+            payload,
+          ),
+        );
+      }, timeout);
 
+      const currentTimestamp = Date.now();
       this.msgMap.set(msgId, {
         res: (data: any) => {
+          this.setPing(Date.now() - currentTimestamp);
           clearTimeout(timeoutId);
           res(data);
         },
@@ -165,14 +251,20 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     const eventId = uuid.v4();
     const result = await this.sendCommand(ns, nsid, "add_listener", {
       prop,
+      nsid,
       eventId,
     });
 
-    if (result === eventId) {
-      this.eventListeners.set(eventId, listener);
+    if (!this.eventListeners.has(result)) {
+      this.eventListeners.set(result, [listener]);
+    } else {
+      this.eventListeners.set(result, [
+        ...this.eventListeners.get(result)!,
+        listener,
+      ]);
     }
 
-    return result;
+    return () => this.removePropListener(ns, nsid, prop, result, listener);
   }
 
   async removePropListener(
@@ -180,9 +272,26 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     nsid: number | undefined,
     prop: string,
     eventId: string,
+    listener: (data: any) => any,
   ) {
-    await this.sendCommand(ns, nsid, "remove_listener", { prop });
-    this.eventListeners.delete(eventId);
+    const listeners = this.eventListeners.get(eventId);
+    if (!listeners) {
+      return false;
+    }
+
+    if (listeners.length > 1) {
+      this.eventListeners.set(
+        eventId,
+        listeners.filter(l => l !== listener),
+      );
+      return true;
+    }
+
+    if (listeners.length === 1) {
+      this.eventListeners.delete(eventId);
+      await this.sendCommand(ns, nsid, "remove_listener", { prop, nsid });
+      return true;
+    }
   }
 
   sendRaw(msg: string) {
@@ -194,3 +303,5 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     return this._isConnected;
   }
 }
+
+export { getPackageVersion } from "./util/package-version";

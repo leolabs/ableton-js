@@ -8,6 +8,7 @@ build/
 *.js
 *.d.ts
 /ns/
+!/hooks/**/*
 
 .vscode/settings.json
 
