@@ -241,8 +241,7 @@ export class Song extends Namespace<
   }
 
   public async getData(key: string) {
-    const data = await this.sendCommand("get_data", { key });
-    return JSON.parse(data);
+    return this.sendCommand("get_data", { key });
   }
 
   public async isCuePointSelected() {
@@ -270,7 +269,7 @@ export class Song extends Namespace<
   }
 
   public async setData(key: string, value: any) {
-    return this.sendCommand("set_data", { key, value: JSON.stringify(value) });
+    return this.sendCommand("set_data", { key, value });
   }
 
   public async startPlaying() {
