@@ -60,8 +60,8 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
   constructor(
     private host = "127.0.0.1",
-    private sendPort = 9011,
-    private listenPort = 9010,
+    private sendPort = 9021,
+    private listenPort = 9020,
     heartbeatInterval = 2000,
   ) {
     super();
@@ -87,7 +87,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
     this.internal
       .get("version")
-      .then(v => {
+      .then((v) => {
         const jsVersion = getPackageVersion();
         if (semver.lt(v, jsVersion)) {
           console.warn(
@@ -128,7 +128,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       // 0xFF signals that the end of the buffer has been reached
       if (index === 255) {
         this.handleUncompressedMessage(
-          unzipSync(Buffer.concat(this.buffer.filter(b => b))).toString(),
+          unzipSync(Buffer.concat(this.buffer.filter((b) => b))).toString(),
         );
         this.buffer = [];
       }
@@ -175,7 +175,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
     const eventCallback = this.eventListeners.get(data.event);
     if (eventCallback) {
-      return eventCallback.forEach(cb => cb(data.data));
+      return eventCallback.forEach((cb) => cb(data.data));
     }
 
     throw new Error("Message could not be assigned to any request: " + msg);
@@ -282,7 +282,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     if (listeners.length > 1) {
       this.eventListeners.set(
         eventId,
-        listeners.filter(l => l !== listener),
+        listeners.filter((l) => l !== listener),
       );
       return true;
     }
