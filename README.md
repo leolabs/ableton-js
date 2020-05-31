@@ -9,6 +9,12 @@ This package is still a work-in-progress. My goal is to expose all of
 [Ableton's MIDI Remote Script](https://julienbayle.studio/PythonLiveAPI_documentation/Live10.0.2.xml)
 functions to TypeScript. If you'd like to contribute, please feel free to do so.
 
+## Sponsored Message
+
+I've used Ableton.js to build a setlist manager called [AbleSet](https://ableset.app). AbleSet allows you to easily manage and control your Ableton setlists from any device, re-order songs and add notes to them, and get an overview of the current state.
+
+![AbleSet Header](https://static-2.gumroad.com/res/gumroad/8606819144377/asset_previews/f132cee31fbfa4a809c1969e79a1f9c3/retina/ableset-gumroad-header.jpg)
+
 ## Prerequisites
 
 To use this library, you'll need to install and activate the MIDI Remote Script
