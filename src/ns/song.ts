@@ -142,6 +142,22 @@ export interface ObservableProperties {
   tracks: RawTrack[];
 }
 
+export interface SmpteTime {
+  hours: number;
+  minutes: number;
+  seconds: number;
+  frames: number;
+}
+
+export enum TimeFormat {
+  MsTime = 0,
+  Smpte24 = 1,
+  Smpte25 = 2,
+  Smpte29 = 3,
+  Smpte30 = 4,
+  Smpte30Drop = 5,
+}
+
 export enum Quantization {
   q_2_bars = "q_2_bars",
   q_4_bars = "q_4_bars",
@@ -181,12 +197,12 @@ export class Song extends Namespace<
     super(ableton, "song");
 
     this.transformers = {
-      cue_points: points => points.map(c => new CuePoint(this.ableton, c)),
-      master_track: track => new Track(this.ableton, track),
-      return_tracks: tracks => tracks.map(t => new Track(this.ableton, t)),
-      tracks: tracks => tracks.map(t => new Track(this.ableton, t)),
-      visible_tracks: tracks => tracks.map(t => new Track(this.ableton, t)),
-      scenes: scenes => scenes.map(s => new Scene(this.ableton, s)),
+      cue_points: (points) => points.map((c) => new CuePoint(this.ableton, c)),
+      master_track: (track) => new Track(this.ableton, track),
+      return_tracks: (tracks) => tracks.map((t) => new Track(this.ableton, t)),
+      tracks: (tracks) => tracks.map((t) => new Track(this.ableton, t)),
+      visible_tracks: (tracks) => tracks.map((t) => new Track(this.ableton, t)),
+      scenes: (scenes) => scenes.map((s) => new Scene(this.ableton, s)),
     };
   }
 
@@ -242,6 +258,12 @@ export class Song extends Namespace<
 
   public async getData(key: string) {
     return this.sendCommand("get_data", { key });
+  }
+
+  public async getCurrentSmpteSongTime(
+    timeFormat: TimeFormat,
+  ): Promise<SmpteTime> {
+    return this.sendCommand("get_current_smpte_song_time", { timeFormat });
   }
 
   public async isCuePointSelected() {

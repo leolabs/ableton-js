@@ -75,6 +75,10 @@ class Song(Interface):
     def get_data(self, ns, key):
         return ns.get_data(key, None)
 
+    def get_current_smpte_song_time(self, ns, timeFormat):
+        time = ns.get_current_smpte_song_time(timeFormat)
+        return {'hours': time.hours, 'minutes': time.minutes, 'seconds': time.seconds, 'frames': time.frames}
+
     def is_cue_point_selected(self, ns):
         return ns.is_cue_point_selected()
 
