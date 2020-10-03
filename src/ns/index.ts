@@ -47,7 +47,7 @@ export class Namespace<GP, TP, SP, OP> {
     );
   }
 
-  protected async sendCommand(
+  async sendCommand(
     name: string,
     args?: { [k: string]: any },
     timeout?: number,
