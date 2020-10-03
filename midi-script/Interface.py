@@ -92,7 +92,8 @@ class Interface(object):
                 self.log_message('Generic: %s.%s called with %r %r' %
                                  (type(self).__name__, fnName, args, kw))
                 return getattr(ns, fnName)(*args, **kw)
-            self.log_message('Generic: Unknown method %s.%s' %
-                             (type(self).__name__, fnName))
-            raise AttributeError(attr)
+            if not fnName.startswith('get_'):
+                self.log_message('Generic: Unknown method %s.%s' %
+                                 (type(self).__name__, fnName))
+            raise AttributeError()
         return wrapper
