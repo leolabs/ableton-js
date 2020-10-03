@@ -87,13 +87,15 @@ class Interface(object):
         return set_fn(ns, value)
 
     def __getattr__(self, fnName):
+        if fnName.startswith('get_'):
+            raise AttributeError()
+        if fnName.startswith('set_'):
+            raise AttributeError()
+
         def wrapper(ns, *args, **kw):
             if hasattr(ns, fnName):
                 self.log_message('Generic: %s.%s called with %r %r' %
                                  (type(self).__name__, fnName, args, kw))
                 return getattr(ns, fnName)(*args, **kw)
-            if not fnName.startswith('get_'):
-                self.log_message('Generic: Unknown method %s.%s' %
-                                 (type(self).__name__, fnName))
             raise AttributeError()
         return wrapper
