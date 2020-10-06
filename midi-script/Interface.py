@@ -21,21 +21,25 @@ class Interface(object):
         return Interface.obj_ids[nsid]
 
     def handle(self, payload):
-        func = getattr(self, payload["name"])
-        uuid = payload["uuid"] if payload.has_key("uuid") else None
-        ns = self.get_ns(nsid=payload["nsid"]
-                         if payload.has_key("nsid") else None)
+        name = payload.get("name")
+        uuid = payload.get("uuid")
+        ns = self.get_ns(payload.get("nsid"))
 
-        if func is not None and callable(func):
-            try:
-                result = func(
-                    ns=ns, **payload["args"]) if payload.has_key("args") else func(ns=ns)
+        try:
+            # Try self-defined functions first
+            if hasattr(self, name) and callable(getattr(self, name)):
+                result = getattr(self, name)(ns=ns, **payload.get("args", {}))
                 self.socket.send("result", result, uuid)
-            except Exception, e:
-                self.socket.send("error", str(e.args[0]), uuid)
-        else:
-            self.socket.send(
-                "error", "Function call failed: " + payload["name"] + " doesn't exist or isn't callable", uuid)
+            # Check if the function exists in the Ableton API as fallback
+            elif hasattr(ns, name) and callable(getattr(ns, name)):
+                result = getattr(ns, name)(**payload.get("args", {}))
+                self.socket.send("result", result, uuid)
+            else:
+                self.socket.send("error", "Function call failed: " + payload["name"] +
+                                " doesn't exist or isn't callable", uuid)
+        except Exception, e:
+            self.socket.send("error", str(e.args[0]), uuid)
+
 
     def add_listener(self, ns, prop, eventId, nsid="Default"):
         try:
@@ -85,17 +89,3 @@ class Interface(object):
             def set_fn(ns, value): return setattr(ns, prop, value)
 
         return set_fn(ns, value)
-
-    def __getattr__(self, fnName):
-        if fnName.startswith('get_'):
-            raise AttributeError()
-        if fnName.startswith('set_'):
-            raise AttributeError()
-
-        def wrapper(ns, *args, **kw):
-            if hasattr(ns, fnName):
-                self.log_message('Generic: %s.%s called with %r %r' %
-                                 (type(self).__name__, fnName, args, kw))
-                return getattr(ns, fnName)(*args, **kw)
-            raise AttributeError()
-        return wrapper

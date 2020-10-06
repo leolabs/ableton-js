@@ -1,4 +1,4 @@
-import { Ableton, EventListener } from "..";
+import { Ableton } from "..";
 
 export class Namespace<GP, TP, SP, OP> {
   constructor(
@@ -37,7 +37,7 @@ export class Namespace<GP, TP, SP, OP> {
       this.ns,
       this.nsid,
       String(prop),
-      data => {
+      (data) => {
         if (data !== null && transformer) {
           listener(transformer(data));
         } else {
@@ -47,6 +47,10 @@ export class Namespace<GP, TP, SP, OP> {
     );
   }
 
+  /**
+   * Sends a raw function invocation to Ableton.
+   * This should be used with caution.
+   */
   async sendCommand(
     name: string,
     args?: { [k: string]: any },
