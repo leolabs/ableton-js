@@ -23,17 +23,25 @@ class Interface(object):
     def handle(self, payload):
         name = payload.get("name")
         uuid = payload.get("uuid")
+        args = payload.get("args", {})
         ns = self.get_ns(payload.get("nsid"))
 
         try:
             # Try self-defined functions first
             if hasattr(self, name) and callable(getattr(self, name)):
-                result = getattr(self, name)(ns=ns, **payload.get("args", {}))
+                result = getattr(self, name)(ns=ns, **args)
                 self.socket.send("result", result, uuid)
             # Check if the function exists in the Ableton API as fallback
             elif hasattr(ns, name) and callable(getattr(ns, name)):
-                result = getattr(ns, name)(**payload.get("args", {}))
-                self.socket.send("result", result, uuid)
+                if isinstance(args, dict):
+                    result = getattr(ns, name)(**args)
+                    self.socket.send("result", result, uuid)
+                elif isinstance(args, list):
+                    result = getattr(ns, name)(*args)
+                    self.socket.send("result", result, uuid)
+                else:
+                    self.socket.send("error", "Function call failed: " + str(args) +
+                                     " are invalid arguments", uuid)
             else:
                 self.socket.send("error", "Function call failed: " + payload["name"] +
                                 " doesn't exist or isn't callable", uuid)
