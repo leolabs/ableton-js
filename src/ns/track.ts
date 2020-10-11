@@ -1,7 +1,8 @@
 import { Ableton } from "..";
 import { Namespace } from ".";
 import { Device, RawDevice } from "./device";
-import { ClipSlot, RawClipSlot } from './clip-slot';
+import { ClipSlot, RawClipSlot } from "./clip-slot";
+import { Color } from "../util/color";
 
 export interface GettableProperties {
   arm: number;
@@ -59,6 +60,7 @@ export interface GettableProperties {
 }
 
 export interface TransformedProperties {
+  color: Color;
   devices: Device[];
   clip_slots: ClipSlot[];
 }
@@ -180,8 +182,10 @@ export class Track extends Namespace<
     super(ableton, "track", raw.id);
 
     this.transformers = {
-      devices: devices => devices.map(d => new Device(this.ableton, d)),
-      clip_slots: clip_slots => clip_slots.map(c => new ClipSlot(this.ableton, c)),
+      color: (c) => new Color(c),
+      devices: (devices) => devices.map((d) => new Device(this.ableton, d)),
+      clip_slots: (clip_slots) =>
+        clip_slots.map((c) => new ClipSlot(this.ableton, c)),
     };
   }
 }

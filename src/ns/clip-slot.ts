@@ -1,5 +1,6 @@
 import { Ableton } from "..";
 import { Namespace } from ".";
+import { Color } from "../util/color";
 
 export enum PlayingStatus {
   Stopped = "stopped",
@@ -21,7 +22,9 @@ export interface GettableProperties {
   will_record_on_start: boolean;
 }
 
-export interface TransformedProperties {}
+export interface TransformedProperties {
+  color: Color;
+}
 
 export interface SettableProperties {
   name: string;
@@ -58,6 +61,10 @@ export class ClipSlot extends Namespace<
 > {
   constructor(ableton: Ableton, public raw: RawClipSlot) {
     super(ableton, "clip_slot", raw.id);
+
+    this.transformers = {
+      color: (c) => new Color(c),
+    };
   }
 
   /**
