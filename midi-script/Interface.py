@@ -1,14 +1,3 @@
-import json
-
-
-def is_jsonable(x):
-    try:
-        json.dumps(x)
-        return True
-    except (TypeError, OverflowError):
-        return False
-
-
 class Interface(object):
     obj_ids = dict()
     listeners = dict()
@@ -98,7 +87,7 @@ class Interface(object):
         except:
             def get_fn(ns):
                 result = getattr(ns, prop)
-                return result if is_jsonable(result) else str(result)
+                return str(result) if str(type(result)).startswith("<class") else result
 
         return get_fn(ns)
 
