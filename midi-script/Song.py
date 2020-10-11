@@ -15,12 +15,6 @@ class Song(Interface):
         sorted_points = sorted(ns.cue_points, key=lambda cue: cue.time)
         return map(CuePoint.serialize_cue_point, sorted_points)
 
-    def get_clip_trigger_quantization(self, ns):
-        return str(ns.clip_trigger_quantization)
-
-    def get_midi_recording_quantization(self, ns):
-        return str(ns.midi_recording_quantization)
-
     def get_master_track(self, ns):
         return Track.serialize_track(ns.master_track)
 

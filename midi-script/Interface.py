@@ -1,3 +1,11 @@
+def is_jsonable(x):
+    try:
+        json.dumps(x)
+        return True
+    except (TypeError, OverflowError):
+        return False
+
+
 class Interface(object):
     obj_ids = dict()
     listeners = dict()
@@ -44,10 +52,9 @@ class Interface(object):
                                      " are invalid arguments", uuid)
             else:
                 self.socket.send("error", "Function call failed: " + payload["name"] +
-                                " doesn't exist or isn't callable", uuid)
+                                 " doesn't exist or isn't callable", uuid)
         except Exception, e:
             self.socket.send("error", str(e.args[0]), uuid)
-
 
     def add_listener(self, ns, prop, eventId, nsid="Default"):
         try:
@@ -67,7 +74,6 @@ class Interface(object):
         self.listeners[key] = {"id": eventId, "fn": fn}
         return eventId
 
-
     def remove_listener(self, ns, prop, nsid="Default"):
         key = str(nsid) + prop
         self.log_message("Remove key: " + key)
@@ -80,13 +86,16 @@ class Interface(object):
             self.listeners.pop(key, None)
             return True
         except Exception as e:
-            raise Exception("Listener " + str(prop) + " could not be removed: " + str(e))
+            raise Exception("Listener " + str(prop) +
+                            " could not be removed: " + str(e))
 
     def get_prop(self, ns, prop):
         try:
             get_fn = getattr(self, "get_" + prop)
         except:
-            def get_fn(ns): return getattr(ns, prop)
+            def get_fn(ns):
+                result = getattr(ns, prop)
+                return result if is_jsonable(result) else str(result)
 
         return get_fn(ns)
 
