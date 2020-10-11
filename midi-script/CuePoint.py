@@ -13,5 +13,3 @@ class CuePoint(Interface):
     def __init__(self, c_instance, socket):
         super(CuePoint, self).__init__(c_instance, socket)
 
-    def get_ns(self, nsid):
-        return Interface.get_obj(nsid)
