@@ -10,6 +10,7 @@ from SongView import SongView
 from Track import Track
 from Internal import Internal
 from ClipSlot import ClipSlot
+from Clip import Clip
 from _Framework.ControlSurface import ControlSurface
 
 
@@ -31,6 +32,7 @@ class AbletonJS(ControlSurface):
             "song-view": SongView(c_instance, self.socket),
             "track": Track(c_instance, self.socket),
             "clip_slot": ClipSlot(c_instance, self.socket),
+            "clip": Clip(c_instance, self.socket)
         }
 
         self.parse()

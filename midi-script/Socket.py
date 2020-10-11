@@ -60,7 +60,8 @@ class Socket(object):
             chunks = list(split_by_n(compressed, limit))
             count = len(chunks)
             for i, chunk in enumerate(chunks):
-                self._socket.sendto(struct.pack("B", i if i + 1 < count else 255) + compressed, self._remote_addr)
+                self._socket.sendto(struct.pack(
+                    "B", i if i + 1 < count else 255) + compressed, self._remote_addr)
 
     def send(self, name, obj=None, uuid=None):
         def jsonReplace(o):

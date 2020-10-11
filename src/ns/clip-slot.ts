@@ -1,6 +1,7 @@
 import { Ableton } from "..";
 import { Namespace } from ".";
 import { Color } from "../util/color";
+import { Clip, RawClip } from "./clip";
 
 export enum PlayingStatus {
   Stopped = "stopped",
@@ -9,6 +10,7 @@ export enum PlayingStatus {
 }
 
 export interface GettableProperties {
+  clip: RawClip | null;
   color: number;
   color_index: number;
   controls_other_clips: boolean;
@@ -23,6 +25,7 @@ export interface GettableProperties {
 }
 
 export interface TransformedProperties {
+  clip: Clip | null;
   color: Color;
 }
 
@@ -63,6 +66,7 @@ export class ClipSlot extends Namespace<
     super(ableton, "clip_slot", raw.id);
 
     this.transformers = {
+      clip: (c) => (c ? new Clip(ableton, c) : null),
       color: (c) => new Color(c),
     };
   }
