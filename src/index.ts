@@ -181,11 +181,15 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     throw new Error("Message could not be assigned to any request: " + msg);
   }
 
+  /**
+   * Sends a raw command to Ableton. Usually, you won't need this.
+   * A good starting point in general is the `song` prop.
+   */
   async sendCommand(
     ns: string,
     nsid: number | undefined,
     name: string,
-    args?: { [k: string]: any },
+    args?: Record<string, any> | any[],
     timeout: number = 2000,
   ): Promise<any> {
     return new Promise((res, rej) => {
