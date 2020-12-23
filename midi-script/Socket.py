@@ -50,7 +50,7 @@ class Socket(object):
 
     def _sendto(self, msg):
         '''Send a raw message to the client, compressed and chunked, if necessary'''
-        compressed = msg.encode("zlib") + "\n"
+        compressed = msg.encode("utf8").encode("zlib") + "\n"
         # https://stackoverflow.com/questions/40032171/find-max-udp-payload-python-socket-send-sendto
         limit = 60500
 
