@@ -71,7 +71,7 @@ class Socket(object):
             self._sendto(json.dumps(
                 {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace, ensure_ascii=False))
             self.log_message("Socket Event " + name +
-                             "(" + str(uuid) + "): " + json.dumps(obj))
+                             "(" + str(uuid) + "): " + json.dumps(obj, default=jsonReplace, ensure_ascii=False))
         except Exception, e:
             error = str(type(e).__name__) + ': ' + str(e.args)
             self._sendto(json.dumps(
