@@ -54,7 +54,7 @@ class Interface(object):
         except:
             raise Exception("Listener " + str(prop) + " does not exist.")
 
-        key = str(nsid) + prop
+        key = str(nsid) + ":" + prop
         self.log_message("Add key: " + key)
         if self.listeners.has_key(key):
             return self.listeners[key]["id"]
@@ -67,7 +67,7 @@ class Interface(object):
         return eventId
 
     def remove_listener(self, ns, prop, nsid="Default"):
-        key = str(nsid) + prop
+        key = str(nsid) + ":" + prop
         self.log_message("Remove key: " + key)
         if not self.listeners.has_key(key):
             raise Exception("Listener " + str(prop) + " does not exist.")
