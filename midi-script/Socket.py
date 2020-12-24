@@ -86,11 +86,11 @@ class Socket(object):
         try:
             while 1:
                 data = self._socket.recv(65536)
-                self.log_message(data)
                 if len(data) and self.input_handler:
                     payload = json.loads(data)
+                    self.log_message("Receiving: " + json.dumps(payload))
                     self.input_handler(payload)
         except socket.error:
             return
         except Exception, e:
-            self.log_message("Error: " + str(e.args))
+            self.log_message("Error while processing: " + str(e.args))
