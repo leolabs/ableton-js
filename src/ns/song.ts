@@ -291,7 +291,7 @@ export class Song extends Namespace<
   }
 
   public async setData(key: string, value: any) {
-    return this.sendCommand("set_data", { key, value });
+    return this.sendCommand("set_data", [key, value]);
   }
 
   public async startPlaying() {
