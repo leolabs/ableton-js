@@ -4,6 +4,8 @@ import errno
 import traceback
 import json
 import struct
+import zlib
+import base64
 from threading import Timer
 
 
@@ -50,12 +52,12 @@ class Socket(object):
 
     def _sendto(self, msg):
         '''Send a raw message to the client, compressed and chunked, if necessary'''
-        compressed = msg.encode("utf8").encode("zlib") + "\n"
+        compressed = zlib.compress(msg.encode("utf8"))  + b'\n'
         # https://stackoverflow.com/questions/40032171/find-max-udp-payload-python-socket-send-sendto
         limit = 60500
 
         if len(compressed) < limit:
-            self._socket.sendto('\xFF' + compressed, self._remote_addr)
+            self._socket.sendto(b'\xFF' + compressed, self._remote_addr)
         else:
             chunks = list(split_by_n(compressed, limit))
             count = len(chunks)
@@ -72,7 +74,7 @@ class Socket(object):
                 {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace, ensure_ascii=False))
             self.log_message("Socket Event " + name +
                              "(" + str(uuid) + "): " + json.dumps(obj, default=jsonReplace))
-        except Exception, e:
+        except Exception as e:
             error = str(type(e).__name__) + ': ' + str(e.args)
             self._sendto(json.dumps(
                 {"event": "error", "data": error, "uuid": uuid}, default=jsonReplace, ensure_ascii=False))
@@ -92,5 +94,5 @@ class Socket(object):
                     self.input_handler(payload)
         except socket.error:
             return
-        except Exception, e:
+        except Exception as e:
             self.log_message("Error while processing: " + str(e.args))

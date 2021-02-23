@@ -1,5 +1,5 @@
-from Interface import Interface
-from DeviceParameter import DeviceParameter
+from AbletonJS.Interface import Interface
+from AbletonJS.DeviceParameter import DeviceParameter
 
 
 class Device(Interface):
@@ -20,4 +20,4 @@ class Device(Interface):
         super(Device, self).__init__(c_instance, socket)
 
     def get_parameters(self, ns):
-        return map(DeviceParameter.serialize_device_paramater, ns.parameters)
+        return list(map(DeviceParameter.serialize_device_paramater, ns.parameters))

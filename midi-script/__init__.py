@@ -1,6 +1,6 @@
 import sys
 
-from AbletonJS import AbletonJS
+from AbletonJS.AbletonJS import AbletonJS
 
 
 def create_instance(c_instance):

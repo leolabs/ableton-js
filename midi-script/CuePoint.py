@@ -1,4 +1,4 @@
-from Interface import Interface
+from AbletonJS.Interface import Interface
 
 
 class CuePoint(Interface):

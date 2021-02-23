@@ -1,8 +1,8 @@
-from Interface import Interface
-from DeviceParameter import DeviceParameter
-from Scene import Scene
-from Track import Track
-from ClipSlot import ClipSlot
+from AbletonJS.Interface import Interface
+from AbletonJS.DeviceParameter import DeviceParameter
+from AbletonJS.Scene import Scene
+from AbletonJS.Track import Track
+from AbletonJS.ClipSlot import ClipSlot
 
 
 class SongView(Interface):

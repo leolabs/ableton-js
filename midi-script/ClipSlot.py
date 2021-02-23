@@ -1,5 +1,5 @@
-from Interface import Interface
-from Clip import Clip
+from AbletonJS.Interface import Interface
+from AbletonJS.Clip import Clip
 
 
 class ClipSlot(Interface):

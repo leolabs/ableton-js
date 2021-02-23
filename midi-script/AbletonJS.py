@@ -1,16 +1,16 @@
 import sys
 
-from Socket import Socket
-from CuePoint import CuePoint
-from Device import Device
-from DeviceParameter import DeviceParameter
-from Scene import Scene
-from Song import Song
-from SongView import SongView
-from Track import Track
-from Internal import Internal
-from ClipSlot import ClipSlot
-from Clip import Clip
+from AbletonJS.Socket import Socket
+from AbletonJS.CuePoint import CuePoint
+from AbletonJS.Device import Device
+from AbletonJS.DeviceParameter import DeviceParameter
+from AbletonJS.Scene import Scene
+from AbletonJS.Song import Song
+from AbletonJS.SongView import SongView
+from AbletonJS.Track import Track
+from AbletonJS.Internal import Internal
+from AbletonJS.ClipSlot import ClipSlot
+from AbletonJS.Clip import Clip
 from _Framework.ControlSurface import ControlSurface
 
 
@@ -53,7 +53,7 @@ class AbletonJS(ControlSurface):
         self.log_message("Received command: " + str(payload))
         namespace = payload["ns"]
 
-        if self.handlers.has_key(namespace):
+        if namespace in self.handlers:
             handler = self.handlers[namespace]
             handler.handle(payload)
         else:

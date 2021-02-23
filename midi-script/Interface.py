@@ -45,7 +45,7 @@ class Interface(object):
             else:
                 self.socket.send("error", "Function call failed: " + payload["name"] +
                                  " doesn't exist or isn't callable", uuid)
-        except Exception, e:
+        except Exception as e:
             self.socket.send("error", str(e.args[0]), uuid)
 
     def add_listener(self, ns, prop, eventId, nsid="Default"):
@@ -56,7 +56,7 @@ class Interface(object):
 
         key = str(nsid) + ":" + prop
         self.log_message("Add key: " + key)
-        if self.listeners.has_key(key):
+        if key in self.listeners:
             return self.listeners[key]["id"]
 
         def fn():
@@ -69,7 +69,7 @@ class Interface(object):
     def remove_listener(self, ns, prop, nsid="Default"):
         key = str(nsid) + ":" + prop
         self.log_message("Remove key: " + key)
-        if not self.listeners.has_key(key):
+        if key not in self.listeners:
             raise Exception("Listener " + str(prop) + " does not exist.")
 
         try:
