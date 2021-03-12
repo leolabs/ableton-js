@@ -1,6 +1,7 @@
-from Interface import Interface
-from Device import Device
-from ClipSlot import ClipSlot
+from __future__ import absolute_import
+from .Interface import Interface
+from .Device import Device
+from .ClipSlot import ClipSlot
 
 
 class Track(Interface):
@@ -16,7 +17,7 @@ class Track(Interface):
         super(Track, self).__init__(c_instance, socket)
 
     def get_devices(self, ns):
-        return map(Device.serialize_device, ns.devices)
+        return list(map(Device.serialize_device, ns.devices))
 
     def get_clip_slots(self, ns):
-        return map(ClipSlot.serialize_clip_slot, ns.clip_slots)
+        return list(map(ClipSlot.serialize_clip_slot, ns.clip_slots))

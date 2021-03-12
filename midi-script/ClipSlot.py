@@ -1,5 +1,6 @@
-from Interface import Interface
-from Clip import Clip
+from __future__ import absolute_import
+from .Interface import Interface
+from .Clip import Clip
 
 
 class ClipSlot(Interface):

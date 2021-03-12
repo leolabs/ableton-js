@@ -1,8 +1,9 @@
-from Interface import Interface
-from DeviceParameter import DeviceParameter
-from Scene import Scene
-from Track import Track
-from ClipSlot import ClipSlot
+from __future__ import absolute_import
+from .Interface import Interface
+from .DeviceParameter import DeviceParameter
+from .Scene import Scene
+from .Track import Track
+from .ClipSlot import ClipSlot
 
 
 class SongView(Interface):

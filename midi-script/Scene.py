@@ -1,5 +1,6 @@
-from Interface import Interface
-from ClipSlot import ClipSlot
+from __future__ import absolute_import
+from .Interface import Interface
+from .ClipSlot import ClipSlot
 
 
 class Scene(Interface):
@@ -15,4 +16,4 @@ class Scene(Interface):
         super(Scene, self).__init__(c_instance, socket)
 
     def get_clip_slots(self, ns):
-        return map(ClipSlot.serialize_clip_slot, ns.clip_slots)
+        return list(list(map(ClipSlot.serialize_clip_slot, ns.clip_slots)))

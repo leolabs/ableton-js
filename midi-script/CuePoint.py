@@ -1,4 +1,5 @@
-from Interface import Interface
+from __future__ import absolute_import
+from .Interface import Interface
 
 
 class CuePoint(Interface):
@@ -12,4 +13,3 @@ class CuePoint(Interface):
 
     def __init__(self, c_instance, socket):
         super(CuePoint, self).__init__(c_instance, socket)
-

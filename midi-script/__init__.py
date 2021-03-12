@@ -1,6 +1,7 @@
+from __future__ import absolute_import
 import sys
 
-from AbletonJS import AbletonJS
+from .AbletonJS import AbletonJS
 
 
 def create_instance(c_instance):

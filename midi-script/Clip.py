@@ -1,4 +1,5 @@
-from Interface import Interface
+from __future__ import absolute_import
+from .Interface import Interface
 
 
 class Clip(Interface):
