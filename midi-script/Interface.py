@@ -87,7 +87,7 @@ class Interface(object):
         except:
             def get_fn(ns):
                 result = getattr(ns, prop)
-                return str(result) if str(type(result)).startswith("<class") else result
+                return result if isinstance(result, (int, bool, float, str)) or result is None else str(result)
 
         return get_fn(ns)
 
