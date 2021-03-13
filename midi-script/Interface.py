@@ -55,13 +55,15 @@ class Interface(object):
             raise Exception("Listener " + str(prop) + " does not exist.")
 
         key = str(nsid) + ":" + prop
-        self.log_message("Add key: " + key)
+        self.log_message("Listener key: " + key)
         if key in self.listeners:
+            self.log_message("Key already has a listener")
             return self.listeners[key]["id"]
 
         def fn():
             return self.socket.send(eventId, self.get_prop(ns, prop))
 
+        self.log_message("Attaching listener")
         add_fn(fn)
         self.listeners[key] = {"id": eventId, "fn": fn}
         return eventId
