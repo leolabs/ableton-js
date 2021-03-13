@@ -80,6 +80,8 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       } catch (e) {
         if (this._isConnected && !this.cancelConnectionEvent) {
           this._isConnected = false;
+          this.eventListeners.clear();
+          this.msgMap.clear();
           this.emit("disconnect", "heartbeat");
         }
       }
