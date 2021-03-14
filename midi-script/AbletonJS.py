@@ -2,6 +2,7 @@ from __future__ import absolute_import
 import sys
 
 from .Socket import Socket
+from .Interface import Interface
 from .CuePoint import CuePoint
 from .Device import Device
 from .DeviceParameter import DeviceParameter
@@ -44,6 +45,7 @@ class AbletonJS(ControlSurface):
         self.log_message("Disconnecting")
         self.socket.send("disconnect")
         self.socket.shutdown()
+        Interface.listeners.clear()
         super(AbletonJS, self).disconnect()
 
     def parse(self):
