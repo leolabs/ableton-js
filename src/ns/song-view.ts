@@ -28,9 +28,9 @@ export interface SettableProperties {
   detail_clip: any;
   draw_mode: boolean;
   follow_song: boolean;
-  highlighted_clip_slot: any;
-  selected_scene: any;
-  selected_track: any;
+  highlighted_clip_slot: number;
+  selected_scene: number;
+  selected_track: number;
 }
 
 export interface ObservableProperties {
@@ -40,8 +40,8 @@ export interface ObservableProperties {
   highlighted_clip_slot: any;
   selected_chain: any;
   selected_parameter: any;
-  selected_scene: any;
-  selected_track: any;
+  selected_scene: RawScene | null;
+  selected_track: RawTrack | null;
 }
 
 export class SongView extends Namespace<
@@ -54,10 +54,10 @@ export class SongView extends Namespace<
     super(ableton, "song-view");
 
     this.transformers = {
-      selected_parameter: param => new DeviceParameter(this.ableton, param),
-      selected_track: track => new Track(this.ableton, track),
-      selected_scene: scene => new Scene(this.ableton, scene),
-      highlighted_clip_slot: clipSlot => new ClipSlot(this.ableton, clipSlot),
+      selected_parameter: (param) => new DeviceParameter(this.ableton, param),
+      selected_track: (track) => new Track(this.ableton, track),
+      selected_scene: (scene) => new Scene(this.ableton, scene),
+      highlighted_clip_slot: (clipSlot) => new ClipSlot(this.ableton, clipSlot),
     };
   }
 

@@ -22,8 +22,18 @@ class SongView(Interface):
     def get_selected_track(self, ns):
         return Track.serialize_track(ns.selected_track)
 
+    def set_selected_track(self, ns, track_id):
+        ns.selected_track = Interface.get_obj(track_id)
+
     def get_selected_scene(self, ns):
         return Scene.serialize_scene(ns.selected_scene)
 
+    def set_selected_scene(self, ns, scene_id):
+        ns.selected_scene = Interface.get_obj(scene_id)
+
     def get_highlighted_clip_slot(self, ns):
         return ClipSlot.serialize_clip_slot(ns.highlighted_clip_slot)
+
+    def set_highlighted_clip_slot(self, ns, slot_id):
+        ns.highlighted_clip_slot = Interface.get_obj(slot_id)
+
