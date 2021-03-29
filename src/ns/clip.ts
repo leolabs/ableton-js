@@ -246,7 +246,7 @@ export class Clip extends Namespace<
     timeSpan: number,
     pitchSpan: number,
   ) {
-    return this.sendCommand("quantize_pitch", [
+    return this.sendCommand("remove_notes", [
       fromTime,
       fromPitch,
       timeSpan,
