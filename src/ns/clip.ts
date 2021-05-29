@@ -155,7 +155,7 @@ export class Clip extends Namespace<
    * Deselects all notes present in the clip.
    */
   deselectAllNotes(): Promise<void> {
-    return this.sendCommand("deselectAllNotes");
+    return this.sendCommand("deselect_all_notes");
   }
 
   /**
@@ -258,7 +258,9 @@ export class Clip extends Namespace<
    * Replaces selected notes with an array of new notes.
    */
   replaceSelectedNotes(notes: Note[]) {
-    return this.sendCommand("replace_selected_notes", [notes.map(noteToTuple)]);
+    return this.sendCommand("replace_selected_notes", {
+      notes: notes.map(noteToTuple),
+    });
   }
 
   /**
@@ -308,7 +310,7 @@ export class Clip extends Namespace<
    * Adds the given notes to the clip.
    */
   setNotes(notes: Note[]): Promise<void> {
-    return this.sendCommand("set_notes", [notes.map(noteToTuple)]);
+    return this.sendCommand("set_notes", { notes: notes.map(noteToTuple) });
   }
 
   /**

@@ -22,8 +22,8 @@ class Clip(Interface):
     def get_available_warp_modes(self, ns):
         return list(ns.available_warp_modes)
 
-    def get_notes(self, ns):
-        return ns.get_notes()
+    def set_notes(self, ns, notes):
+        return ns.set_notes(tuple(notes))
 
-    def get_selected_notes(self, ns):
-        return ns.get_selected_notes()
+    def replace_selected_notes(self, ns, notes):
+        return ns.replace_selected_notes(tuple(notes))
