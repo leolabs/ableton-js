@@ -195,3 +195,5 @@ library.
   well as expected, hanging every few 100ms. Listening to `output_meter_left` or
   `output_meter_right` works better. See
   [Issue #4](https://github.com/leolabs/ableton-js/issues/4)
+- The `playing_status` listener of clip slots never fires in Ableton. See
+  [Issue #25](https://github.com/leolabs/ableton-js/issues/25)
