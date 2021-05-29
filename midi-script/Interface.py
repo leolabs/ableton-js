@@ -89,7 +89,10 @@ class Interface(object):
         except:
             def get_fn(ns):
                 result = getattr(ns, prop)
-                return result if isinstance(result, (int, bool, float, str)) or result is None else str(result)
+                is_class = "<class" in str(type(result))
+                is_native = isinstance(
+                    result, (int, bool, float, str)) or result is None
+                return result if is_native and not is_class else str(result)
 
         return get_fn(ns)
 
