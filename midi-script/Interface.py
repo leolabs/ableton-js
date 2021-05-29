@@ -12,6 +12,13 @@ class Interface(object):
     def get_obj(obj_id):
         return Interface.obj_ids[obj_id]
 
+    @staticmethod
+    def to_json(value):
+        is_class = "<class" in str(type(value))
+        is_native = isinstance(
+            value, (int, bool, float, str)) or value is None
+        return value if is_native and not is_class else str(value)
+
     def __init__(self, c_instance, socket):
         self.ableton = c_instance
         self.socket = socket
@@ -61,7 +68,8 @@ class Interface(object):
             return self.listeners[key]["id"]
 
         def fn():
-            return self.socket.send(eventId, self.get_prop(ns, prop))
+            value = self.get_prop(ns, prop)
+            return self.socket.send(eventId, value)
 
         self.log_message("Attaching listener")
         add_fn(fn)
@@ -89,10 +97,7 @@ class Interface(object):
         except:
             def get_fn(ns):
                 result = getattr(ns, prop)
-                is_class = "<class" in str(type(result))
-                is_native = isinstance(
-                    result, (int, bool, float, str)) or result is None
-                return result if is_native and not is_class else str(result)
+                return Interface.to_json(result)
 
         return get_fn(ns)
 
