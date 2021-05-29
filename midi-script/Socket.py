@@ -92,17 +92,16 @@ class Socket(object):
                 data = self._socket.recv(65536)
                 if len(data) and self.input_handler:
                     buffer += data[1:]
-                    self.log_message("Receiving chunk " +
-                                     str(ord(data[0])))
 
-                    if(data[0] == b'\xFF'):
+                    # \xFF for Live 10 (Python2) and 255 for Live 11 (Python3)
+                    if(data[0] == b'\xFF' or data[0] == 255):
                         unzipped = zlib.decompress(buffer)
                         payload = json.loads(unzipped)
 
                         self.log_message("Receiving: " + str(payload))
                         self.input_handler(payload)
                         buffer = bytes()
-        except socket.error:
+        except socket.error as e:
             return
         except Exception as e:
             self.log_message("Error while processing: " + str(e.args))
