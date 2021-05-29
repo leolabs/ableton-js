@@ -11,7 +11,10 @@ functions to TypeScript. If you'd like to contribute, please feel free to do so.
 
 ## Sponsored Message
 
-I've used Ableton.js to build a setlist manager called [AbleSet](https://ableset.app). AbleSet allows you to easily manage and control your Ableton setlists from any device, re-order songs and add notes to them, and get an overview of the current state.
+I've used Ableton.js to build a setlist manager called
+[AbleSet](https://ableset.app). AbleSet allows you to easily manage and control
+your Ableton setlists from any device, re-order songs and add notes to them, and
+get an overview of the current of your set.
 
 [![AbleSet Header](https://static-2.gumroad.com/res/gumroad/8606819144377/asset_previews/f132cee31fbfa4a809c1969e79a1f9c3/retina/ableset-gumroad-header.jpg)](https://ableset.app)
 
@@ -49,11 +52,11 @@ import { Ableton } from "ableton-js";
 const ableton = new Ableton();
 
 const test = async () => {
-  ableton.song.addListener("is_playing", p => console.log("Playing:", p));
-  ableton.song.addListener("tempo", t => console.log("Tempo:", t));
+  ableton.song.addListener("is_playing", (p) => console.log("Playing:", p));
+  ableton.song.addListener("tempo", (t) => console.log("Tempo:", t));
 
   const cues = await ableton.get("cue_points");
-  console.log(cues.map(c => c.raw));
+  console.log(cues.map((c) => c.raw));
 };
 
 test();
@@ -67,11 +70,12 @@ associated with each other.
 
 ### Compression and Chunking
 
-To allow sending large JSON payloads, responses from the MIDI Script are
-compressed using gzip and chunked every 1024 bytes. The first byte of every
-message contains the chunk index (0x00-0xFF) followed by the gzipped chunk. The
-last chunk always has the index 0xFF. This indicates to the JS library that the
-previous received messages should be stiched together, unzipped, and processed.
+To allow sending large JSON payloads, requests to and responses from the MIDI
+Script are compressed using gzip and chunked every 7500 bytes. The first byte of
+every message contains the chunk index (0x00-0xFF) followed by the gzipped
+chunk. The last chunk always has the index 0xFF. This indicates to the JS
+library that the previous received messages should be stiched together,
+unzipped, and processed.
 
 ### Commands
 

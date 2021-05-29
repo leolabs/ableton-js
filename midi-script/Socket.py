@@ -53,8 +53,9 @@ class Socket(object):
     def _sendto(self, msg):
         '''Send a raw message to the client, compressed and chunked, if necessary'''
         compressed = zlib.compress(msg.encode("utf8")) + b'\n'
-        # https://stackoverflow.com/questions/40032171/find-max-udp-payload-python-socket-send-sendto
-        limit = 60500
+        # Based on this thread, 7500 bytes seems like a safe value
+        # https://stackoverflow.com/questions/22819214/udp-message-too-long
+        limit = 7500
 
         if len(compressed) < limit:
             self._socket.sendto(b'\xFF' + compressed, self._remote_addr)
@@ -62,8 +63,8 @@ class Socket(object):
             chunks = list(split_by_n(compressed, limit))
             count = len(chunks)
             for i, chunk in enumerate(chunks):
-                self._socket.sendto(struct.pack(
-                    "B", i if i + 1 < count else 255) + compressed, self._remote_addr)
+                count_byte = struct.pack("B", i if i + 1 < count else 255)
+                self._socket.sendto(count_byte + chunk, self._remote_addr)
 
     def send(self, name, obj=None, uuid=None):
         def jsonReplace(o):
@@ -86,12 +87,21 @@ class Socket(object):
 
     def process(self):
         try:
+            buffer = bytes()
             while 1:
                 data = self._socket.recv(65536)
                 if len(data) and self.input_handler:
-                    payload = json.loads(data)
-                    self.log_message("Receiving: " + json.dumps(payload))
-                    self.input_handler(payload)
+                    buffer += data[1:]
+                    self.log_message("Receiving chunk " +
+                                     str(ord(data[0])))
+
+                    if(data[0] == b'\xFF'):
+                        unzipped = zlib.decompress(buffer)
+                        payload = json.loads(unzipped)
+
+                        self.log_message("Receiving: " + str(payload))
+                        self.input_handler(payload)
+                        buffer = bytes()
         except socket.error:
             return
         except Exception as e:

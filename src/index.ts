@@ -2,7 +2,7 @@ import dgram from "dgram";
 import { EventEmitter } from "events";
 import uuid from "uuid";
 import semver from "semver";
-import { unzipSync } from "zlib";
+import { unzipSync, deflateSync } from "zlib";
 import { Song } from "./ns/song";
 import { Internal } from "./ns/internal";
 import { getPackageVersion } from "./util/package-version";
@@ -301,8 +301,22 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   }
 
   sendRaw(msg: string) {
-    const buffer = Buffer.from(msg);
-    this.client.send(buffer, 0, buffer.length, this.sendPort, this.host);
+    const buffer = deflateSync(Buffer.from(msg));
+
+    // Based on this thread, 7500 bytes seems like a safe value
+    // https://stackoverflow.com/questions/22819214/udp-message-too-long
+    const byteLimit = 7500;
+    const chunks = Math.ceil(buffer.byteLength / byteLimit);
+
+    // Split the message into chunks if it becomes too large
+    for (let i = 0; i < chunks; i++) {
+      const chunk = Buffer.concat([
+        // Add a counter to the message, the last message is always 255
+        Buffer.alloc(1, i + 1 === chunks ? 255 : i),
+        buffer.slice(i * byteLimit, i * byteLimit + byteLimit),
+      ]);
+      this.client.send(chunk, 0, chunk.length, this.sendPort, this.host);
+    }
   }
 
   isConnected() {
