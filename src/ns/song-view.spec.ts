@@ -1,4 +1,4 @@
-import { Ableton } from "../index";
+import { withAbleton } from "../util/tests";
 import { GettableProperties } from "./song-view";
 
 const gettableProps: (keyof GettableProperties)[] = [
@@ -14,8 +14,8 @@ const gettableProps: (keyof GettableProperties)[] = [
 
 describe("Song View", () => {
   it("should be able to read all properties without erroring", async () => {
-    const a = new Ableton();
-    await Promise.all(gettableProps.map(p => a.song.view.get(p)));
-    a.close();
+    await withAbleton(async (ab) => {
+      await Promise.all(gettableProps.map((p) => ab.song.view.get(p)));
+    });
   });
 });
