@@ -27,6 +27,7 @@ interface ConnectionEventEmitter {
   on(e: "connect", l: (t: ConnectionEventType) => void): this;
   on(e: "disconnect", l: (t: ConnectionEventType) => void): this;
   on(e: "message", l: (t: any) => void): this;
+  on(e: "error", l: (t: Error) => void): this;
   on(e: "ping", l: (t: number) => void): this;
 }
 
@@ -136,10 +137,12 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       }
     } catch (e) {
       this.buffer = [];
+      this.emit("error", e);
     }
   }
 
   private handleUncompressedMessage(msg: string) {
+    this.emit("raw_message", msg);
     const data: Response = JSON.parse(msg);
     const functionCallback = this.msgMap.get(data.uuid);
 
@@ -301,6 +304,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   }
 
   sendRaw(msg: string) {
+    console.log("Send raw:", msg);
     const buffer = deflateSync(Buffer.from(msg));
 
     // Based on this thread, 7500 bytes seems like a safe value

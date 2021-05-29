@@ -62,6 +62,28 @@ const test = async () => {
 test();
 ```
 
+## Events
+
+There are a few events you can use to get more under-the-hood insights:
+
+```ts
+// A connection to Ableton is established
+ab.on("connect", (e) => console.log("Connect", e));
+
+// Connection to Ableton was lost,
+// also happens when you load a new project
+ab.on("disconnect", (e) => console.log("Disconnect", e));
+
+// A raw message was received from Ableton
+ab.on("message", (m) => console.log("Message:", m));
+
+// A received message could not be parsed
+ab.on("error", (e) => console.error("Error:", e));
+
+// Fires on every response with the current ping
+ab.on("ping", (ping) => console.log("Ping:", ping, "ms"));
+```
+
 ## Protocol
 
 Ableton.js uses UDP to communicate with the MIDI Script. Each message is a JSON
