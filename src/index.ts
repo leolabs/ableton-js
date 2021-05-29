@@ -1,6 +1,6 @@
 import dgram from "dgram";
 import { EventEmitter } from "events";
-import uuid from "uuid";
+import { v4 } from "uuid";
 import semver from "semver";
 import { unzipSync, deflateSync } from "zlib";
 import { Song } from "./ns/song";
@@ -198,7 +198,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     timeout: number = 2000,
   ): Promise<any> {
     return new Promise((res, rej) => {
-      const msgId = uuid.v4();
+      const msgId = v4();
       const payload: Command = {
         uuid: msgId,
         ns,
@@ -257,7 +257,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     prop: string,
     listener: (data: any) => any,
   ) {
-    const eventId = uuid.v4();
+    const eventId = v4();
     const result = await this.sendCommand(ns, nsid, "add_listener", {
       prop,
       nsid,
@@ -304,7 +304,6 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   }
 
   sendRaw(msg: string) {
-    console.log("Send raw:", msg);
     const buffer = deflateSync(Buffer.from(msg));
 
     // Based on this thread, 7500 bytes seems like a safe value
