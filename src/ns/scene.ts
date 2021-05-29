@@ -1,9 +1,6 @@
 import { Ableton } from "..";
 import { Namespace } from ".";
-import { Track, RawTrack } from "./track";
-import { CuePoint, RawCuePoint } from "./cue-point";
-import { SongView } from "./song-view";
-import { ClipSlot, RawClipSlot } from './clip-slot';
+import { ClipSlot, RawClipSlot } from "./clip-slot";
 
 export interface GettableProperties {
   clip_slots: RawClipSlot[];
@@ -51,7 +48,8 @@ export class Scene extends Namespace<
     super(ableton, "scene", raw.id);
 
     this.transformers = {
-      clip_slots: clip_slots => clip_slots.map(c => new ClipSlot(this.ableton, c)),
+      clip_slots: (clip_slots) =>
+        clip_slots.map((c) => new ClipSlot(this.ableton, c)),
     };
   }
 }
