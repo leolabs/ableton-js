@@ -25,5 +25,8 @@ class ClipSlot(Interface):
     def get_clip(self, ns):
         return Clip.serialize_clip(ns.clip)
 
+    def get_playing_status(self, ns):
+        return str(ns.playing_status)
+
     def duplicate_clip_to(self, ns, slot_id):
         return ns.duplicate_clip_to(Interface.get_obj(slot_id))

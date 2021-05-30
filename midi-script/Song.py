@@ -12,12 +12,18 @@ class Song(Interface):
     def get_ns(self, nsid):
         return self.ableton.song()
 
+    def get_clip_trigger_quantization(self, ns):
+        return str(ns.clip_trigger_quantization)
+
     def get_cue_points(self, ns):
         sorted_points = sorted(ns.cue_points, key=lambda cue: cue.time)
         return list(map(CuePoint.serialize_cue_point, sorted_points))
 
     def get_master_track(self, ns):
         return Track.serialize_track(ns.master_track)
+
+    def get_midi_recording_quantization(self, ns):
+        return str(ns.midi_recording_quantization)
 
     def get_return_tracks(self, ns):
         return list(map(Track.serialize_track, ns.return_tracks))

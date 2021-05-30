@@ -12,13 +12,6 @@ class Interface(object):
     def get_obj(obj_id):
         return Interface.obj_ids[obj_id]
 
-    @staticmethod
-    def to_json(value):
-        is_class = "<class" in str(type(value))
-        is_native = isinstance(
-            value, (int, bool, float, str)) or value is None
-        return value if is_native and not is_class else str(value)
-
     def __init__(self, c_instance, socket):
         self.ableton = c_instance
         self.socket = socket
@@ -97,7 +90,7 @@ class Interface(object):
         except:
             def get_fn(ns):
                 result = getattr(ns, prop)
-                return Interface.to_json(result)
+                return result
 
         return get_fn(ns)
 

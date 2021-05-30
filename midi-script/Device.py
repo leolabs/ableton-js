@@ -22,3 +22,6 @@ class Device(Interface):
 
     def get_parameters(self, ns):
         return list(list(map(DeviceParameter.serialize_device_paramater, ns.parameters)))
+
+    def get_type(self, ns):
+        return str(ns.type)

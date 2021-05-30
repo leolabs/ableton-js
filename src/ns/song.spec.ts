@@ -1,5 +1,6 @@
 import { withAbleton } from "../util/tests";
 import { GettableProperties } from "./song";
+import "jest-extended";
 
 const gettableProps: (keyof GettableProperties)[] = [
   "arrangement_overdub",
@@ -53,6 +54,35 @@ describe("Song", () => {
   it("should be able to read all properties without erroring", async () => {
     await withAbleton(async (ab) => {
       await Promise.all(gettableProps.map((p) => ab.song.get(p)));
+    });
+  });
+
+  it("should return the proper types for properties", async () => {
+    await withAbleton(async (ab) => {
+      const songTime = await ab.song.get("current_song_time");
+      expect(songTime).toBeNumber();
+
+      const clipTriggerQuantization = await ab.song.get(
+        "clip_trigger_quantization",
+      );
+      expect(clipTriggerQuantization).toBeString();
+
+      const isPlaying = await ab.song.get("is_playing");
+      expect(isPlaying).toBeBoolean();
+    });
+  });
+
+  it("should be able to write and read large objects from the project", async () => {
+    await withAbleton(async (ab) => {
+      const largeArray: number[] = [];
+
+      for (let i = 0; i < 10000; i++) {
+        largeArray.push(i);
+      }
+
+      await ab.song.setData("abletonjs_test", largeArray);
+      const received = await ab.song.getData("abletonjs_test");
+      expect(received).toEqual(largeArray);
     });
   });
 });

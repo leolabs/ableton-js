@@ -41,6 +41,7 @@
     "@types/uuid": "^8.3.0",
     "auto-changelog": "^2.3.0",
     "jest": "^27.0.3",
+    "jest-extended": "^0.11.5",
     "jsdoc-babel": "^0.5.0",
     "jsdoc-to-markdown": "^7.0.1",
     "ts-jest": "^27.0.1",
