@@ -183,7 +183,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       return eventCallback.forEach((cb) => cb(data.data));
     }
 
-    throw new Error("Message could not be assigned to any request: " + msg);
+    this.emit("error", "Message could not be assigned to any request: " + msg);
   }
 
   /**
