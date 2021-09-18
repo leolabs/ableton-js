@@ -1,11 +1,7 @@
 import socket
-import sys
-import errno
-import traceback
 import json
 import struct
 import zlib
-import base64
 from threading import Timer
 
 
@@ -73,8 +69,6 @@ class Socket(object):
         try:
             self._sendto(json.dumps(
                 {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace, ensure_ascii=False))
-            self.log_message("Socket Event " + name +
-                             "(" + str(uuid) + "): " + json.dumps(obj, default=jsonReplace))
         except Exception as e:
             error = str(type(e).__name__) + ': ' + str(e.args)
             self._sendto(json.dumps(
