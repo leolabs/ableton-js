@@ -13,6 +13,31 @@ export enum WarpMode {
   ComplexPro = 6,
 }
 
+export enum LaunchMode {
+  Trigger = 0,
+  Gate = 1,
+  Toggle = 2,
+  Repeat = 3,
+}
+
+export enum LaunchQuantization {
+  QGlobal = 0,
+  QNone = 1,
+  Q8Bars = 2,
+  Q4Bars = 3,
+  Q2Bars = 4,
+  QBar = 5,
+  QHalf = 6,
+  QHalfTriplet = 7,
+  QQuarter = 8,
+  QQuarterTriplet = 9,
+  QEighth = 10,
+  QEighthTriplet = 11,
+  QSixteenth = 12,
+  QSixteenthTriplet = 13,
+  QThirtySecond = 14,
+}
+
 export interface GettableProperties {
   available_warp_modes: WarpMode[];
   color: number;
@@ -30,6 +55,8 @@ export interface GettableProperties {
   is_playing: boolean;
   is_recording: boolean;
   is_triggered: boolean;
+  launch_mode: LaunchMode;
+  launch_quantization: LaunchQuantization;
   length: number;
   loop_end: number;
   loop_start: number;
@@ -47,6 +74,7 @@ export interface GettableProperties {
   signature_numerator: number;
   start_marker: number;
   start_time: number;
+  velocity_amount: number;
   //view: unknown;
   warp_mode: WarpMode;
   warping: boolean;
@@ -61,6 +89,26 @@ export interface TransformedProperties {
 export interface SettableProperties {
   name: string;
   color: Color | number;
+  color_index: number;
+  end_marker: number;
+  gain: number;
+  is_playing: boolean;
+  launch_mode: LaunchMode;
+  launch_quantization: LaunchQuantization;
+  loop_end: number;
+  loop_start: number;
+  looping: boolean;
+  muted: boolean;
+  pitch_coarse: number;
+  pitch_fine: number;
+  position: number;
+  ram_mode: boolean;
+  signature_denominator: number;
+  signature_numerator: number;
+  start_marker: number;
+  velocity_amount: number;
+  warp_mode: WarpMode;
+  warping: boolean;
 }
 
 export interface ObservableProperties {
