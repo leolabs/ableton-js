@@ -216,7 +216,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
             [
               `The command ${cls}.${name}(${arg}) timed out after ${timeout} ms.`,
               `Please make sure that Ableton is running and that you have the latest`,
-              `version of AbletonJS' midi script installed, listening on port`,
+              `version of AbletonJS' midi script installed and renamed to "AbletonJS", listening on port`,
               `${this.sendPort} and sending on port ${this.listenPort}.`,
             ].join(" "),
             payload,
