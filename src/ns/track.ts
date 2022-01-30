@@ -25,7 +25,7 @@ export interface GettableProperties {
   current_output_sub_routing: string;
   devices: RawDevice[];
   fired_slot_index: number;
-  fold_state: number;
+  fold_state: boolean;
   group_track: RawTrack | null;
   has_audio_input: boolean;
   has_audio_output: boolean;
@@ -142,6 +142,7 @@ export interface RawTrack {
   id: number;
   name: string;
   color: number;
+  is_foldable: boolean;
 }
 
 export class Track extends Namespace<
