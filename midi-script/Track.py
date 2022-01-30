@@ -11,7 +11,7 @@ class Track(Interface):
             return None
 
         track_id = Interface.save_obj(track)
-        return {"id": track_id, "name": track.name, "color": track.color, "is_foldable": track.is_foldable}
+        return {"id": track_id, "name": track.name, "color": track.color, "is_foldable": track.is_foldable, "is_grouped": track.is_grouped}
 
     def __init__(self, c_instance, socket):
         super(Track, self).__init__(c_instance, socket)

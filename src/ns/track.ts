@@ -143,6 +143,7 @@ export interface RawTrack {
   name: string;
   color: number;
   is_foldable: boolean;
+  is_grouped: boolean;
 }
 
 export class Track extends Namespace<
