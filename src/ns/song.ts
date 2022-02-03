@@ -6,13 +6,13 @@ import { SongView } from "./song-view";
 import { Scene, RawScene } from "./scene";
 
 export interface GettableProperties {
-  arrangement_overdub: number;
+  arrangement_overdub: boolean;
   back_to_arranger: number;
-  can_capture_midi: number;
-  can_jump_to_next_cue: number;
-  can_jump_to_prev_cue: number;
-  can_redo: number;
-  can_undo: number;
+  can_capture_midi: boolean;
+  can_jump_to_next_cue: boolean;
+  can_jump_to_prev_cue: boolean;
+  can_redo: boolean;
+  can_undo: boolean;
   clip_trigger_quantization: Quantization;
   count_in_duration: number;
   cue_points: RawCuePoint[];
@@ -23,17 +23,17 @@ export interface GettableProperties {
   is_counting_in: boolean;
   is_playing: boolean;
   last_event_time: number;
-  loop: number;
+  loop: boolean;
   loop_length: number;
   loop_start: number;
   master_track: RawTrack;
   metronome: number;
   midi_recording_quantization: RecordingQuantization;
-  nudge_down: number;
-  nudge_up: number;
-  overdub: number;
-  punch_in: number;
-  punch_out: number;
+  nudge_down: boolean;
+  nudge_up: boolean;
+  overdub: boolean;
+  punch_in: boolean;
+  punch_out: boolean;
   re_enable_automation_enabled: number;
   record_mode: number;
   return_tracks: RawTrack[];
@@ -65,7 +65,7 @@ export interface TransformedProperties {
 }
 
 export interface SettableProperties {
-  arrangement_overdub: number;
+  arrangement_overdub: boolean;
   back_to_arranger: number;
   clip_trigger_quantization: Quantization;
   count_in_duration: number;
@@ -76,17 +76,17 @@ export interface SettableProperties {
   is_counting_in: boolean;
   is_playing: boolean;
   last_event_time: number;
-  loop: number;
+  loop: boolean;
   loop_length: number;
   loop_start: number;
   master_track: number;
   metronome: number;
   midi_recording_quantization: RecordingQuantization;
-  nudge_down: number;
-  nudge_up: number;
-  overdub: number;
-  punch_in: number;
-  punch_out: number;
+  nudge_down: boolean;
+  nudge_up: boolean;
+  overdub: boolean;
+  punch_in: boolean;
+  punch_out: boolean;
   re_enable_automation_enabled: number;
   record_mode: number;
   return_tracks: number;
@@ -105,11 +105,11 @@ export interface SettableProperties {
 }
 
 export interface ObservableProperties {
-  arrangement_overdub: number;
+  arrangement_overdub: boolean;
   back_to_arranger: number;
-  can_capture_midi: number;
-  can_jump_to_next_cue: number;
-  can_jump_to_prev_cue: number;
+  can_capture_midi: boolean;
+  can_jump_to_next_cue: boolean;
+  can_jump_to_prev_cue: boolean;
   count_in_duration: number;
   cue_points: number;
   current_song_time: number;
@@ -119,14 +119,14 @@ export interface ObservableProperties {
   is_counting_in: boolean;
   is_playing: boolean;
   loop_length: number;
-  loop: number;
+  loop: boolean;
   loop_start: number;
   metronome: number;
-  nudge_down: number;
-  nudge_up: number;
-  overdub: number;
-  punch_in: number;
-  punch_out: number;
+  nudge_down: boolean;
+  nudge_up: boolean;
+  overdub: boolean;
+  punch_in: boolean;
+  punch_out: boolean;
   re_enable_automation_enabled: number;
   record_mode: number;
   return_tracks: RawTrack[];
