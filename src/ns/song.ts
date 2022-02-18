@@ -110,6 +110,7 @@ export interface ObservableProperties {
   can_capture_midi: boolean;
   can_jump_to_next_cue: boolean;
   can_jump_to_prev_cue: boolean;
+  clip_trigger_quantization: Quantization;
   count_in_duration: number;
   cue_points: number;
   current_song_time: number;
@@ -122,6 +123,7 @@ export interface ObservableProperties {
   loop: boolean;
   loop_start: number;
   metronome: number;
+  midi_recording_quantization: RecordingQuantization;
   nudge_down: boolean;
   nudge_up: boolean;
   overdub: boolean;
