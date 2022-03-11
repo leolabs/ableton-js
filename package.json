@@ -5,6 +5,10 @@
   "main": "index.js",
   "author": "Leo Bernard <admin@leolabs.org>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/leolabs/ableton-js.git"
+  },
   "files": [
     "**/*.js",
     "**/*.d.ts",
