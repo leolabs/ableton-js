@@ -51,7 +51,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   >();
   private eventListeners = new Map<string, Array<(data: any) => any>>();
   private heartbeatInterval: NodeJS.Timeout;
-  private _isConnected = true;
+  private _isConnected = false;
   private cancelConnectionEvent = false;
   private buffer: Buffer[] = [];
   private latency: number = 0;
