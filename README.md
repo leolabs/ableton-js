@@ -22,8 +22,7 @@ get an overview of the current of your set.
 
 To use this library, you'll need to install and activate the MIDI Remote Script
 in Ableton.js. To do that, copy the `midi-script` folder of this repo to
-Ableton's Remote Scripts folder. If you prefer, you can rename it to something
-like `AbletonJS` for better identification. The MIDI Remote Scripts folder is
+Ableton's Remote Scripts folder and rename it to `AbletonJS`. The MIDI Remote Scripts folder is
 usually located at:
 
 - **Windows:** {path to Ableton}\Resources\MIDI\Remote Scripts
@@ -55,8 +54,8 @@ const test = async () => {
   ableton.song.addListener("is_playing", (p) => console.log("Playing:", p));
   ableton.song.addListener("tempo", (t) => console.log("Tempo:", t));
 
-  const cues = await ableton.get("cue_points");
-  console.log(cues.map((c) => c.raw));
+  const tempo = await ableton.song.get("tempo");
+  console.log(tempo);
 };
 
 test();
