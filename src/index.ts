@@ -47,7 +47,11 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   private client: dgram.Socket;
   private msgMap = new Map<
     string,
-    { res: (data: any) => any; rej: (data: any) => any }
+    {
+      res: (data: any) => any;
+      rej: (data: any) => any;
+      clearTimeout: () => any;
+    }
   >();
   private eventListeners = new Map<string, Array<(data: any) => any>>();
   private heartbeatInterval: NodeJS.Timeout;
@@ -82,6 +86,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
         if (this._isConnected && !this.cancelConnectionEvent) {
           this._isConnected = false;
           this.eventListeners.clear();
+          this.msgMap.forEach((msg) => msg.clearTimeout());
           this.msgMap.clear();
           this.emit("disconnect", "heartbeat");
         }
@@ -159,8 +164,9 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     }
 
     if (data.event === "disconnect") {
-      this.msgMap.clear();
       this.eventListeners.clear();
+      this.msgMap.forEach((msg) => msg.clearTimeout());
+      this.msgMap.clear();
       if (this._isConnected === true) {
         this._isConnected = false;
         this.cancelConnectionEvent = true;
@@ -232,6 +238,9 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
           res(data);
         },
         rej,
+        clearTimeout: () => {
+          clearTimeout(timeoutId);
+        },
       });
 
       this.sendRaw(msg);
