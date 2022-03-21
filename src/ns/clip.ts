@@ -136,6 +136,7 @@ export interface ObservableProperties {
 
 export interface RawClip {
   id: number;
+  name: string;
   color: number;
   is_audio_clip: boolean;
   is_midi_clip: boolean;

@@ -11,6 +11,7 @@ class Clip(Interface):
         clip_id = Interface.save_obj(clip)
         return {
             "id": clip_id,
+            "name": clip.name,
             "color": clip.color,
             "is_audio_clip": clip.is_audio_clip,
             "is_midi_clip": clip.is_midi_clip,
