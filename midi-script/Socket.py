@@ -27,7 +27,7 @@ class Socket(object):
         self.input_handler = handler
 
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self._socket.setblocking(0)
+        # self._socket.setblocking(0)
 
         self._local_addr = (localhost, localport)
         self._remote_addr = (remotehost, remoteport)
@@ -81,6 +81,7 @@ class Socket(object):
         self._socket.close()
 
     def process(self):
+        self.log_message("Starting socket thread")
         try:
             buffer = bytes()
             while 1:
@@ -106,4 +107,4 @@ class Socket(object):
             self.log_message("Error while processing: " + str(e.args))
 
     def start_thread(self):
-        threading.Thread(target=self.process).start()
+        threading.Thread(target=self.process, daemon=True).start()
