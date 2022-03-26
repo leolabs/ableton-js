@@ -14,6 +14,7 @@ from .Internal import Internal
 from .ClipSlot import ClipSlot
 from .Clip import Clip
 from _Framework.ControlSurface import ControlSurface
+from Live.Base import Timer
 
 
 class AbletonJS(ControlSurface):
@@ -37,20 +38,20 @@ class AbletonJS(ControlSurface):
             "clip": Clip(c_instance, self.socket)
         }
 
-        self.parse()
+        self.recv_loop = Timer(
+            callback=self.socket.process, interval=10, repeat=True)
+
+        self.recv_loop.start()
 
         self.socket.send("connect")
 
     def disconnect(self):
         self.log_message("Disconnecting")
+        self.recv_loop.stop()
         self.socket.send("disconnect")
         self.socket.shutdown()
         Interface.listeners.clear()
         super(AbletonJS, self).disconnect()
-
-    def parse(self):
-        self.socket.process()
-        self.schedule_message(1, self.parse)
 
     def command_handler(self, payload):
         self.log_message("Received command: " + str(payload))
