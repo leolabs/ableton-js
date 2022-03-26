@@ -37,7 +37,7 @@ class AbletonJS(ControlSurface):
             "clip": Clip(c_instance, self.socket)
         }
 
-        self.parse()
+        self.socket.start_thread()
 
         self.socket.send("connect")
 
@@ -47,10 +47,6 @@ class AbletonJS(ControlSurface):
         self.socket.shutdown()
         Interface.listeners.clear()
         super(AbletonJS, self).disconnect()
-
-    def parse(self):
-        self.socket.process()
-        self.schedule_message(1, self.parse)
 
     def command_handler(self, payload):
         self.log_message("Received command: " + str(payload))

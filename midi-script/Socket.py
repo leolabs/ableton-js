@@ -1,6 +1,7 @@
 import socket
 import json
 import struct
+import threading
 import zlib
 from threading import Timer
 
@@ -83,19 +84,26 @@ class Socket(object):
         try:
             buffer = bytes()
             while 1:
-                data = self._socket.recv(65536)
-                if len(data) and self.input_handler:
-                    buffer += data[1:]
+                try:
+                    data = self._socket.recv(65536)
+                    if len(data) and self.input_handler:
+                        buffer += data[1:]
 
-                    # \xFF for Live 10 (Python2) and 255 for Live 11 (Python3)
-                    if(data[0] == b'\xFF' or data[0] == 255):
-                        unzipped = zlib.decompress(buffer)
-                        payload = json.loads(unzipped)
+                        # \xFF for Live 10 (Python2) and 255 for Live 11 (Python3)
+                        if(data[0] == b'\xFF' or data[0] == 255):
+                            unzipped = zlib.decompress(buffer)
+                            payload = json.loads(unzipped)
 
-                        self.log_message("Receiving: " + str(payload))
-                        self.input_handler(payload)
-                        buffer = bytes()
-        except socket.error as e:
-            return
+                            self.log_message("Receiving: " + str(payload))
+                            self.input_handler(payload)
+                            buffer = bytes()
+                except socket.error as e:
+                    if e.errno == 35:
+                        continue
+                    else:
+                        raise e
         except Exception as e:
             self.log_message("Error while processing: " + str(e.args))
+
+    def start_thread(self):
+        threading.Thread(target=self.process).start()
