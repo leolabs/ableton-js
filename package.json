@@ -20,7 +20,7 @@
     "ableton10:launch": "set -- /Applications/Ableton*10* && open \"$1\"",
     "ableton11:copy-script": "set -- /Applications/Ableton*11*/Contents/App-Resources/MIDI\\ Remote\\ Scripts && rm -rf \"$1/AbletonJS\" && cp -r \"$(pwd)/midi-script\" \"$1/AbletonJS\" && rm -rf \"$1/AbletonJS/_Framework\"",
     "ableton11:launch": "set -- /Applications/Ableton*11* && open \"$1\"",
-    "ableton:logs": "tail -f ~/Library/Preferences/Ableton/*/Log.txt | grep -i -e RemoteScriptError -e RemoteScriptMessage | grep -i -e AbletonJS",
+    "ableton:logs": "tail -f ~/Library/Preferences/Ableton/*/Log.txt | grep -i -e RemoteScriptError -e RemoteScriptMessage",
     "ableton:kill": "pkill -KILL -f \"Ableton Live\"",
     "ableton10:start": "yarn ableton:kill; yarn ableton:clean && yarn ableton10:copy-script && yarn ableton10:launch && yarn ableton:logs",
     "ableton11:start": "yarn ableton:kill; yarn ableton:clean && yarn ableton11:copy-script && yarn ableton11:launch && yarn ableton:logs",
