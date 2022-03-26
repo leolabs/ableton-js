@@ -82,19 +82,23 @@ class Socket(object):
     def process(self):
         try:
             buffer = bytes()
+            num_messages = 0
             while 1:
-                data = self._socket.recv(65536)
+                data = self._socket.recv(8192)
                 if len(data) and self.input_handler:
                     buffer += data[1:]
+                    num_messages += 1
 
                     # \xFF for Live 10 (Python2) and 255 for Live 11 (Python3)
                     if(data[0] == b'\xFF' or data[0] == 255):
                         unzipped = zlib.decompress(buffer)
                         payload = json.loads(unzipped)
 
-                        self.log_message("Receiving: " + str(payload))
+                        self.log_message(
+                            "Receiving from " + str(num_messages) + " messages, " + str(len(buffer)) + " bytes: " + str(payload))
                         self.input_handler(payload)
                         buffer = bytes()
+                        num_messages = 0
         except socket.error as e:
             return
         except Exception as e:
