@@ -3,8 +3,10 @@ import { EventEmitter } from "events";
 import { v4 } from "uuid";
 import semver from "semver";
 import { unzipSync, deflateSync } from "zlib";
+
 import { Song } from "./ns/song";
 import { Internal } from "./ns/internal";
+import { Application } from "./ns/application";
 import { getPackageVersion } from "./util/package-version";
 
 interface Command {
@@ -61,6 +63,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   private latency: number = 0;
 
   public song = new Song(this);
+  public application = new Application(this);
   public internal = new Internal(this);
 
   constructor(

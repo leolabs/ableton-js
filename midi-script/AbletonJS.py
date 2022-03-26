@@ -3,6 +3,7 @@ import sys
 
 from .Socket import Socket
 from .Interface import Interface
+from .Application import Application
 from .CuePoint import CuePoint
 from .Device import Device
 from .DeviceParameter import DeviceParameter
@@ -26,6 +27,7 @@ class AbletonJS(ControlSurface):
         self.socket = Socket(self.command_handler)
 
         self.handlers = {
+            "application": Application(c_instance, self.socket, self.application()),
             "internal": Internal(c_instance, self.socket),
             "cue-point": CuePoint(c_instance, self.socket),
             "device": Device(c_instance, self.socket),
