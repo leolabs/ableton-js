@@ -123,6 +123,7 @@ export interface ObservableProperties {
   is_recording: boolean;
   loop_end: number;
   loop_start: number;
+  name: string;
   pitch_coarse: number;
   pitch_fine: number;
   playing_position: number;
