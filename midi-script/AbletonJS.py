@@ -15,7 +15,7 @@ from .Internal import Internal
 from .ClipSlot import ClipSlot
 from .Clip import Clip
 from _Framework.ControlSurface import ControlSurface
-from Live.Base import Timer
+import Live
 
 
 class AbletonJS(ControlSurface):
@@ -40,7 +40,7 @@ class AbletonJS(ControlSurface):
             "clip": Clip(c_instance, self.socket)
         }
 
-        self.recv_loop = Timer(
+        self.recv_loop = Live.Base.Timer(
             callback=self.socket.process, interval=10, repeat=True)
 
         self.recv_loop.start()
