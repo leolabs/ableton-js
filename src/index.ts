@@ -315,6 +315,15 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     }
   }
 
+  /**
+   * Removes all event listeners that were attached to properties.
+   * This is useful for clearing all listeners when Live
+   * disconnects, for example.
+   */
+  removeAllPropListeners() {
+    this.eventListeners.clear();
+  }
+
   sendRaw(msg: string) {
     const buffer = deflateSync(Buffer.from(msg));
 
