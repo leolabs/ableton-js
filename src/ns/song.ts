@@ -288,12 +288,20 @@ export class Song extends Namespace<
     return this.sendCommand("play_selection");
   }
 
+  public async redo() {
+    return this.sendCommand("redo");
+  }
+
   public async scrubBy(amount: number) {
     return this.sendCommand("scrub_by", [amount]);
   }
 
   public async setData(key: string, value: any) {
     return this.sendCommand("set_data", [key, value]);
+  }
+
+  public async setOrDeleteCue() {
+    return this.sendCommand("set_or_delete_cue");
   }
 
   public async startPlaying() {
@@ -310,5 +318,9 @@ export class Song extends Namespace<
 
   public async tapTempo() {
     return this.sendCommand("tap_tempo");
+  }
+
+  public async undo() {
+    return this.sendCommand("undo");
   }
 }
