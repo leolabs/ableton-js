@@ -141,6 +141,8 @@ export interface RawClip {
   color: number;
   is_audio_clip: boolean;
   is_midi_clip: boolean;
+  start_time: number;
+  end_time: number;
 }
 
 /**

@@ -15,6 +15,8 @@ class Clip(Interface):
             "color": clip.color,
             "is_audio_clip": clip.is_audio_clip,
             "is_midi_clip": clip.is_midi_clip,
+            "start_time": clip.start_time,
+            "end_time": clip.end_time,
         }
 
     def __init__(self, c_instance, socket):
