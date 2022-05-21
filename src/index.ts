@@ -76,7 +76,8 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     this.client = dgram.createSocket({ type: "udp4" });
     this.client.bind(this.listenPort, host);
     this.client.addListener("message", this.handleIncoming.bind(this));
-    this.heartbeatInterval = setInterval(async () => {
+
+    const heartbeat = async () => {
       this.cancelConnectionEvent = false;
 
       try {
@@ -94,7 +95,10 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
           this.emit("disconnect", "heartbeat");
         }
       }
-    }, heartbeatInterval);
+    };
+
+    this.heartbeatInterval = setInterval(heartbeat, heartbeatInterval);
+    heartbeat();
 
     this.internal
       .get("version")
