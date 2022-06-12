@@ -168,4 +168,11 @@ export class Track extends Namespace<
         clip_slots.map((c) => new ClipSlot(ableton, c)),
     };
   }
+
+  duplicateClipToArrangement(clipID: number, time: number) {
+    return this.sendCommand("duplicate_clip_to_arrangement", {
+      clip_id: clipID,
+      time: time
+    });
+  }
 }
