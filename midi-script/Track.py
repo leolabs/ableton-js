@@ -25,3 +25,6 @@ class Track(Interface):
 
     def get_clip_slots(self, ns):
         return list(map(ClipSlot.serialize_clip_slot, ns.clip_slots))
+
+    def duplicate_clip_to_arrangement(self, ns, clip_id, time):
+        return ns.duplicate_clip_to_arrangement(self.get_obj(clip_id), time)
