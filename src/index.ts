@@ -7,6 +7,7 @@ import { unzipSync, deflateSync } from "zlib";
 import { Song } from "./ns/song";
 import { Internal } from "./ns/internal";
 import { Application } from "./ns/application";
+import { Midi } from "./ns/midi";
 import { getPackageVersion } from "./util/package-version";
 
 interface Command {
@@ -65,6 +66,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   public song = new Song(this);
   public application = new Application(this);
   public internal = new Internal(this);
+  public midi = new Midi(this);
 
   constructor(
     private host = "127.0.0.1",

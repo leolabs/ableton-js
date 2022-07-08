@@ -14,6 +14,7 @@ from .Track import Track
 from .Internal import Internal
 from .ClipSlot import ClipSlot
 from .Clip import Clip
+from .Midi import Midi
 from _Framework.ControlSurface import ControlSurface
 import Live
 
@@ -21,6 +22,7 @@ import Live
 class AbletonJS(ControlSurface):
     def __init__(self, c_instance):
         super(AbletonJS, self).__init__(c_instance)
+        self.tracked_midi = set()
 
         Socket.set_log(self.log_message)
         Socket.set_message(self.show_message)
@@ -37,7 +39,8 @@ class AbletonJS(ControlSurface):
             "song-view": SongView(c_instance, self.socket),
             "track": Track(c_instance, self.socket),
             "clip_slot": ClipSlot(c_instance, self.socket),
-            "clip": Clip(c_instance, self.socket)
+            "clip": Clip(c_instance, self.socket),
+            "midi": Midi(c_instance, self.socket, self.tracked_midi, self.request_rebuild_midi_map)
         }
 
         self.recv_loop = Live.Base.Timer(
@@ -46,6 +49,17 @@ class AbletonJS(ControlSurface):
         self.recv_loop.start()
 
         self.socket.send("connect")
+
+    def build_midi_map(self, midi_map_handle):
+        script_handle = self._c_instance.handle()
+        for midi in self.tracked_midi:
+            if midi[0] == "cc":
+                Live.MidiMap.forward_midi_cc(script_handle, midi_map_handle, midi[1], midi[2])
+            elif midi[0] == "note":
+                Live.MidiMap.forward_midi_note(script_handle, midi_map_handle, midi[1], midi[2])
+
+    def receive_midi(self, midi_bytes):
+        self.handlers["midi"].send_midi(midi_bytes)
 
     def disconnect(self):
         self.log_message("Disconnecting")
