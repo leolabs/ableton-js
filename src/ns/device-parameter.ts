@@ -36,15 +36,15 @@ export interface RawDeviceParameter {
 }
 
 export enum AutomationState {
-  None = "none",
-  Overridden = "overridden",
-  Playing = "playing",
+  None = 0,
+  Playing = 1,
+  Overridden = 2,
 }
 
 export enum ParameterState {
-  Disabled = "disabled",
-  Enabled = "enabled",
-  Irrelevant = "irrelevant",
+  Enabled = 0,
+  Disabled = 1,
+  Irrelevant = 2,
 }
 
 export class DeviceParameter extends Namespace<

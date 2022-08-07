@@ -738,6 +738,14 @@ agent-base@6:
   dependencies:
     debug "4"
 
+aggregate-error@^3.0.0:
+  version "3.1.0"
+  resolved "https://registry.yarnpkg.com/aggregate-error/-/aggregate-error-3.1.0.tgz#92670ff50f5359bdb7a3e0d40d0ec30c5737687a"
+  integrity sha512-4I7Td01quW/RpocfNayFdFVk1qSuoh0E7JrbRJ16nH01HhKFQ88INq9Sd+nd72zqRySlr9BmDA8xlEJ6vJMrYA==
+  dependencies:
+    clean-stack "^2.0.0"
+    indent-string "^4.0.0"
+
 ansi-escapes@^4.2.1:
   version "4.3.2"
   resolved "https://registry.yarnpkg.com/ansi-escapes/-/ansi-escapes-4.3.2.tgz#6b2291d1db7d98b6521d5f1efa42d0f3a9feb65e"
@@ -1066,6 +1074,11 @@ class-utils@^0.3.5:
     define-property "^0.2.5"
     isobject "^3.0.0"
     static-extend "^0.1.1"
+
+clean-stack@^2.0.0:
+  version "2.2.0"
+  resolved "https://registry.yarnpkg.com/clean-stack/-/clean-stack-2.2.0.tgz#ee8472dbb129e727b31e8a10a427dee9dfe4008b"
+  integrity sha512-4diC9HaTE+KRAMWhDhrGOECgWZxoevMc5TlkObMqNSsVU62PYzXZ/SMTjzyGAFF1YusgxGcSWTEXBhp0CPwQ1A==
 
 cliui@^7.0.2:
   version "7.0.4"
@@ -1676,6 +1689,11 @@ imurmurhash@^0.1.4:
   version "0.1.4"
   resolved "https://registry.yarnpkg.com/imurmurhash/-/imurmurhash-0.1.4.tgz#9218b9b2b928a238b13dc4fb6b6d576f231453ea"
   integrity sha1-khi5srkoojixPcT7a21XbyMUU+o=
+
+indent-string@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/indent-string/-/indent-string-4.0.0.tgz#624f8f4497d619b2d9768531d58f4122854d7251"
+  integrity sha512-EdDDZu4A2OyIK7Lr/2zG+w5jmbuk1DVBnEwREQvBzspBJkCEbRa8GxU1lghYcaGJCnRWibjDXlq779X1/y5xwg==
 
 inflight@^1.0.4:
   version "1.0.6"
@@ -2715,6 +2733,13 @@ optionator@^0.8.1:
     type-check "~0.3.2"
     word-wrap "~1.2.3"
 
+p-all@^3:
+  version "3.0.0"
+  resolved "https://registry.yarnpkg.com/p-all/-/p-all-3.0.0.tgz#077c023c37e75e760193badab2bad3ccd5782bfb"
+  integrity sha512-qUZbvbBFVXm6uJ7U/WDiO0fv6waBMbjlCm4E66oZdRR+egswICarIdHyVSZZHudH8T5SF8x/JG0q0duFzPnlBw==
+  dependencies:
+    p-map "^4.0.0"
+
 p-each-series@^2.1.0:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/p-each-series/-/p-each-series-2.2.0.tgz#105ab0357ce72b202a8a8b94933672657b5e2a9a"
@@ -2733,6 +2758,13 @@ p-locate@^4.1.0:
   integrity sha512-R79ZZ/0wAxKGu3oYMlz8jy/kbhsNrS7SKZ7PxEHBgJ5+F2mtFW2fK2cOtBh1cHYkQsbzFV7I+EoRKe6Yt0oK7A==
   dependencies:
     p-limit "^2.2.0"
+
+p-map@^4.0.0:
+  version "4.0.0"
+  resolved "https://registry.yarnpkg.com/p-map/-/p-map-4.0.0.tgz#bb2f95a5eda2ec168ec9274e06a747c3e2904d2b"
+  integrity sha512-/bjOqmgETBYB5BoEeGVea8dmvHb2m9GLy1E9W43yeyfP6QQCZGFNa+XRceJEuDB6zqr+gKpIAmlLebMpykw/MQ==
+  dependencies:
+    aggregate-error "^3.0.0"
 
 p-try@^2.0.0:
   version "2.2.0"
