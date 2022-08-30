@@ -14,16 +14,16 @@ functions to TypeScript. If you'd like to contribute, please feel free to do so.
 I've used Ableton.js to build a setlist manager called
 [AbleSet](https://ableset.app). AbleSet allows you to easily manage and control
 your Ableton setlists from any device, re-order songs and add notes to them, and
-get an overview of the current of your set.
+get an overview of the current state of your set.
 
-[![AbleSet Header](https://public-files.gumroad.com/variants/oplxt68bsgq1hu61t8bydfkgppr5/baaca0eb0e33dc4f9d45910b8c86623f0144cea0fe0c2093c546d17d535752eb)](https://ableset.app)
+[![AbleSet Header](https://public-files.gumroad.com/variants/oplxt68bsgq1hu61t8bydfkgppr5/baaca0eb0e33dc4f9d45910b8c86623f0144cea0fe0c2093c546d17d535752eb)](https://ableset.app/?utm_campaign=ableton-js)
 
 ## Prerequisites
 
 To use this library, you'll need to install and activate the MIDI Remote Script
 in Ableton.js. To do that, copy the `midi-script` folder of this repo to
-Ableton's Remote Scripts folder and rename it to `AbletonJS`. The MIDI Remote Scripts folder is
-usually located at:
+Ableton's Remote Scripts folder and rename it to `AbletonJS`. The MIDI Remote
+Scripts folder is usually located at:
 
 - **Windows:** {path to Ableton}\Resources\MIDI\Remote Scripts
 - **macOS:** /Applications/Ableton Live {version}/Contents/App-Resources/MIDI
