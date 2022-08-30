@@ -10,4 +10,4 @@ class Internal(Interface):
         return self
 
     def get_version(self, ns):
-        return "2.5.2"
+        return "2.5.3"
