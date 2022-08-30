@@ -123,6 +123,7 @@ export interface ObservableProperties {
   is_recording: boolean;
   loop_end: number;
   loop_start: number;
+  muted: boolean;
   name: string;
   pitch_coarse: number;
   pitch_fine: number;
@@ -143,6 +144,7 @@ export interface RawClip {
   is_midi_clip: boolean;
   start_time: number;
   end_time: number;
+  muted: boolean;
 }
 
 /**
