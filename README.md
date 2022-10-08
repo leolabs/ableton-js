@@ -51,11 +51,16 @@ import { Ableton } from "ableton-js";
 const ableton = new Ableton();
 
 const test = async () => {
+  // Observe the current playback state and tempo
   ableton.song.addListener("is_playing", (p) => console.log("Playing:", p));
   ableton.song.addListener("tempo", (t) => console.log("Tempo:", t));
 
+  // Get the current tempo
   const tempo = await ableton.song.get("tempo");
   console.log(tempo);
+  
+  // Set the tempo
+  await ableton.song.set("tempo", 85);
 };
 
 test();
