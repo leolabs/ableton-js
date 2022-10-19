@@ -54,9 +54,11 @@ class AbletonJS(ControlSurface):
         script_handle = self._c_instance.handle()
         for midi in self.tracked_midi:
             if midi[0] == "cc":
-                Live.MidiMap.forward_midi_cc(script_handle, midi_map_handle, midi[1], midi[2])
+                Live.MidiMap.forward_midi_cc(
+                    script_handle, midi_map_handle, midi[1], midi[2])
             elif midi[0] == "note":
-                Live.MidiMap.forward_midi_note(script_handle, midi_map_handle, midi[1], midi[2])
+                Live.MidiMap.forward_midi_note(
+                    script_handle, midi_map_handle, midi[1], midi[2])
 
     def receive_midi(self, midi_bytes):
         self.handlers["midi"].send_midi(midi_bytes)
@@ -77,4 +79,5 @@ class AbletonJS(ControlSurface):
             handler = self.handlers[namespace]
             handler.handle(payload)
         else:
-            self.socket.send("error", "No handler for NS " + str(namespace))
+            self.socket.send("error", "No handler for namespace " +
+                             str(namespace), payload["uuid"])
