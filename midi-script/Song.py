@@ -12,6 +12,15 @@ class Song(Interface):
     def get_ns(self, nsid):
         return self.ableton.song()
 
+    def create_audio_track(self, ns, index):
+        return Track.serialize_track(ns.create_audio_track(index))
+
+    def create_midi_track(self, ns, index):
+        return Track.serialize_track(ns.create_midi_track(index))
+
+    def create_return_track(self, ns):
+        return Track.serialize_track(ns.create_return_track())
+
     def get_clip_trigger_quantization(self, ns):
         return str(ns.clip_trigger_quantization)
 
