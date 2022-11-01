@@ -54,10 +54,10 @@ export class SongView extends Namespace<
     super(ableton, "song-view");
 
     this.transformers = {
-      selected_parameter: (param) => new DeviceParameter(this.ableton, param),
-      selected_track: (track) => new Track(this.ableton, track),
-      selected_scene: (scene) => new Scene(this.ableton, scene),
-      highlighted_clip_slot: (clipSlot) => new ClipSlot(this.ableton, clipSlot),
+      selected_parameter: (param) => new DeviceParameter(ableton, param),
+      selected_track: (track) => new Track(ableton, track),
+      selected_scene: (scene) => new Scene(ableton, scene),
+      highlighted_clip_slot: (slot) => new ClipSlot(ableton, slot),
     };
   }
 

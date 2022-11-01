@@ -199,12 +199,12 @@ export class Song extends Namespace<
     super(ableton, "song");
 
     this.transformers = {
-      cue_points: (points) => points.map((c) => new CuePoint(this.ableton, c)),
-      master_track: (track) => new Track(this.ableton, track),
-      return_tracks: (tracks) => tracks.map((t) => new Track(this.ableton, t)),
-      tracks: (tracks) => tracks.map((t) => new Track(this.ableton, t)),
-      visible_tracks: (tracks) => tracks.map((t) => new Track(this.ableton, t)),
-      scenes: (scenes) => scenes.map((s) => new Scene(this.ableton, s)),
+      cue_points: (points) => points.map((c) => new CuePoint(ableton, c)),
+      master_track: (track) => new Track(ableton, track),
+      return_tracks: (tracks) => tracks.map((t) => new Track(ableton, t)),
+      tracks: (tracks) => tracks.map((t) => new Track(ableton, t)),
+      visible_tracks: (tracks) => tracks.map((t) => new Track(ableton, t)),
+      scenes: (scenes) => scenes.map((s) => new Scene(ableton, s)),
     };
   }
 

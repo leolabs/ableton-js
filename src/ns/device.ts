@@ -52,7 +52,7 @@ export class Device extends Namespace<
     super(ableton, "device", raw.id);
 
     this.transformers = {
-      parameters: (ps) => ps.map((p) => new DeviceParameter(this.ableton, p)),
+      parameters: (ps) => ps.map((p) => new DeviceParameter(ableton, p)),
     };
   }
 }
