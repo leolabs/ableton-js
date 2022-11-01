@@ -143,7 +143,7 @@ export interface ObservableProperties {
 }
 
 export interface RawTrack {
-  id: number;
+  id: string;
   name: string;
   color: number;
   is_foldable: boolean;
@@ -172,7 +172,7 @@ export class Track extends Namespace<
   duplicateClipToArrangement(clipID: number, time: number) {
     return this.sendCommand("duplicate_clip_to_arrangement", {
       clip_id: clipID,
-      time: time
+      time: time,
     });
   }
 }

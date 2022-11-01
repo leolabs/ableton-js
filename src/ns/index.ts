@@ -4,20 +4,19 @@ export class Namespace<GP, TP, SP, OP> {
   constructor(
     protected ableton: Ableton,
     protected ns: string,
-    protected nsid?: number,
+    protected nsid?: string,
   ) {}
 
-  protected transformers: Partial<
-    { [T in Extract<keyof GP, keyof TP>]: (val: GP[T]) => TP[T] }
-  > = {};
+  protected transformers: Partial<{
+    [T in Extract<keyof GP, keyof TP>]: (val: GP[T]) => TP[T];
+  }> = {};
 
   async get<T extends keyof GP>(
     prop: T,
   ): Promise<T extends keyof TP ? TP[T] : GP[T]> {
     const res = await this.ableton.getProp(this.ns, this.nsid, String(prop));
-    const transformer = this.transformers[
-      (prop as any) as Extract<keyof GP, keyof TP>
-    ];
+    const transformer =
+      this.transformers[prop as any as Extract<keyof GP, keyof TP>];
 
     if (res !== null && transformer) {
       return transformer(res) as any;
@@ -34,9 +33,8 @@ export class Namespace<GP, TP, SP, OP> {
     prop: T,
     listener: (data: T extends keyof TP ? TP[T] : OP[T]) => any,
   ) {
-    const transformer = this.transformers[
-      (prop as any) as Extract<keyof GP, keyof TP>
-    ];
+    const transformer =
+      this.transformers[prop as any as Extract<keyof GP, keyof TP>];
     return this.ableton.addPropListener(
       this.ns,
       this.nsid,

@@ -13,7 +13,7 @@ import { getPackageVersion } from "./util/package-version";
 interface Command {
   uuid: string;
   ns: string;
-  nsid?: number;
+  nsid?: string;
   name: string;
   args?: { [k: string]: any };
 }
@@ -212,7 +212,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
    */
   async sendCommand(
     ns: string,
-    nsid: number | undefined,
+    nsid: string | undefined,
     name: string,
     args?: Record<string, any> | any[],
     timeout: number = 2000,
@@ -261,13 +261,13 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     });
   }
 
-  async getProp(ns: string, nsid: number | undefined, prop: string) {
+  async getProp(ns: string, nsid: string | undefined, prop: string) {
     return this.sendCommand(ns, nsid, "get_prop", { prop });
   }
 
   async setProp(
     ns: string,
-    nsid: number | undefined,
+    nsid: string | undefined,
     prop: string,
     value: any,
   ) {
@@ -276,7 +276,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
   async addPropListener(
     ns: string,
-    nsid: number | undefined,
+    nsid: string | undefined,
     prop: string,
     listener: (data: any) => any,
   ) {
@@ -301,7 +301,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
   async removePropListener(
     ns: string,
-    nsid: number | undefined,
+    nsid: string | undefined,
     prop: string,
     eventId: string,
     listener: (data: any) => any,

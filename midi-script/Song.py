@@ -8,9 +8,10 @@ from .Track import Track
 class Song(Interface):
     def __init__(self, c_instance, socket):
         super(Song, self).__init__(c_instance, socket)
+        self.song = self.ableton.song()
 
     def get_ns(self, nsid):
-        return self.ableton.song()
+        return self.song
 
     def create_audio_track(self, ns, index):
         return Track.serialize_track(ns.create_audio_track(index))

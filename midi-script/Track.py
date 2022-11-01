@@ -26,7 +26,6 @@ class Track(Interface):
     def get_clip_slots(self, ns):
         return list(map(ClipSlot.serialize_clip_slot, ns.clip_slots))
 
-
     def get_group_track(self, ns):
         return Track.serialize_track(ns.group_track)
 

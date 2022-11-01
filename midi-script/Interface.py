@@ -4,7 +4,11 @@ class Interface(object):
 
     @staticmethod
     def save_obj(obj):
-        obj_id = id(obj)
+        try:
+            obj_id = "live_" + str(obj._live_ptr)
+        except:
+            obj_id = "id_" + str(id(obj))
+
         Interface.obj_ids[obj_id] = obj
         return obj_id
 

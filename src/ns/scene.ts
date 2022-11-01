@@ -34,7 +34,7 @@ export interface ObservableProperties {
 
 export interface RawScene {
   color: number;
-  id: number;
+  id: string;
   name: string;
 }
 
