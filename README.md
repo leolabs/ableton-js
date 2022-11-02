@@ -58,7 +58,7 @@ const test = async () => {
   // Get the current tempo
   const tempo = await ableton.song.get("tempo");
   console.log(tempo);
-  
+
   // Set the tempo
   await ableton.song.set("tempo", 85);
 };
@@ -103,6 +103,17 @@ chunk. The last chunk always has the index 0xFF. This indicates to the JS
 library that the previous received messages should be stiched together,
 unzipped, and processed.
 
+### Caching
+
+Certain props are cached on the client to reduce the bandwidth over UDP. To do
+this, the Ableton plugin generates an MD5 hash of the prop, called ETag, and
+sends it to the client along with the data.
+
+The client stores both the ETag and the data in an LRU cache and sends the
+latest stored ETag to the plugin the next time the same prop is requested. If
+the data still matches the ETag, the plugin responds with a placeholder object
+and the client returns the cached data.
+
 ### Commands
 
 A command payload consists of the following properties:
@@ -113,7 +124,9 @@ A command payload consists of the following properties:
   "ns": "song", // The command namespace
   "nsid": null, // The namespace id, for example to address a specific track or device
   "name": "get_prop", // Command name
-  "args": { "prop": "current_song_time" } // Command arguments
+  "args": { "prop": "current_song_time" }, // Command arguments
+  "etag": "4e0794e44c7eb58bdbbbf7268e8237b4", // MD5 hash of the data if it might be cached locally
+  "cache": true // If this is true, the plugin will calculate an etag and return a placeholder if it matches the provided one
 }
 ```
 
@@ -123,7 +136,27 @@ The MIDI Script answers with a JSON object looking like this:
 {
   "data": 0.0, // The command's return value, can be of any JSON-compatible type
   "event": "result", // This can be 'result' or 'error'
-  "uuid": "a20f25a0-83e2-11e9-bbe1-bd3a580ef903"
+  "uuid": "a20f25a0-83e2-11e9-bbe1-bd3a580ef903" // The same UUID that was used to send the command
+}
+```
+
+If you're getting a cached prop, the JSON object could look like this:
+
+```js
+{
+  "data": { "data": 0.0, "etag": "4e0794e44c7eb58bdbbbf7268e8237b4" },
+  "event": "result", // This can be 'result' or 'error'
+  "uuid": "a20f25a0-83e2-11e9-bbe1-bd3a580ef903" // The same UUID that was used to send the command
+}
+```
+
+Or, if the data hasn't changed, it looks like this:
+
+```js
+{
+  "data": { "__cached": true },
+  "event": "result", // This can be 'result' or 'error'
+  "uuid": "a20f25a0-83e2-11e9-bbe1-bd3a580ef903" // The same UUID that was used to send the command
 }
 ```
 
