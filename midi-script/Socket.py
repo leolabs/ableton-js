@@ -2,6 +2,7 @@ import socket
 import json
 import struct
 import zlib
+import hashlib
 from threading import Timer
 
 

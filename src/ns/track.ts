@@ -167,6 +167,12 @@ export class Track extends Namespace<
       clip_slots: (clip_slots) =>
         clip_slots.map((c) => new ClipSlot(ableton, c)),
     };
+
+    this.cachedProps = {
+      arrangement_clips: true,
+      devices: true,
+      clip_slots: true,
+    };
   }
 
   duplicateClipToArrangement(clipID: number, time: number) {

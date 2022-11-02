@@ -69,6 +69,10 @@ export class ClipSlot extends Namespace<
       clip: (c) => (c ? new Clip(ableton, c) : null),
       color: (c) => new Color(c),
     };
+
+    this.cachedProps = {
+      clip: true,
+    };
   }
 
   /**

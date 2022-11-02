@@ -206,6 +206,15 @@ export class Song extends Namespace<
       visible_tracks: (tracks) => tracks.map((t) => new Track(ableton, t)),
       scenes: (scenes) => scenes.map((s) => new Scene(ableton, s)),
     };
+
+    this.cachedProps = {
+      cue_points: true,
+      master_track: true,
+      return_tracks: true,
+      tracks: true,
+      visible_tracks: true,
+      scenes: true,
+    };
   }
 
   public view = new SongView(this.ableton);
@@ -259,7 +268,7 @@ export class Song extends Namespace<
   }
 
   public async getData(key: string) {
-    return this.sendCommand("get_data", { key });
+    return this.sendCachedCommand("get_data", { key });
   }
 
   public async getCurrentSmpteSongTime(

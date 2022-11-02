@@ -54,5 +54,9 @@ export class Device extends Namespace<
     this.transformers = {
       parameters: (ps) => ps.map((p) => new DeviceParameter(ableton, p)),
     };
+
+    this.cachedProps = {
+      parameters: true,
+    };
   }
 }

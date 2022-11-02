@@ -51,5 +51,9 @@ export class Scene extends Namespace<
       clip_slots: (clip_slots) =>
         clip_slots.map((c) => new ClipSlot(this.ableton, c)),
     };
+
+    this.cachedProps = {
+      clip_slots: true,
+    };
   }
 }
