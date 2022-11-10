@@ -122,7 +122,7 @@ export class Midi extends Namespace<
     super(ableton, "midi");
 
     this.transformers = {
-      midi: (msg: RawMidiMessage) => new MidiMessage(msg),
+      midi: (msg) => new MidiMessage(msg as RawMidiMessage),
     };
   }
 }

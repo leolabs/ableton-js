@@ -300,12 +300,10 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       if (!cached) {
         throw new Error("Tried to get an object that isn't cached.");
       } else {
-        console.log("Using cached entry:", { cached });
         return cached.data;
       }
     } else {
       if (result.etag) {
-        console.log("Setting cached entry:", { cacheKey, result });
         this.cache.set(cacheKey, result);
       }
 

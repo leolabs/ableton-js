@@ -83,6 +83,7 @@ export interface GettableProperties {
 
 export interface TransformedProperties {
   color: Color;
+  notes: Note[];
   selected_notes: Note[];
 }
 
@@ -125,6 +126,7 @@ export interface ObservableProperties {
   loop_start: number;
   muted: boolean;
   name: string;
+  notes: NoteTuple[];
   pitch_coarse: number;
   pitch_fine: number;
   playing_position: number;
@@ -161,6 +163,7 @@ export class Clip extends Namespace<
 
     this.transformers = {
       color: (c) => new Color(c),
+      notes: (n) => (n as NoteTuple[]).map(tupleToNote),
       selected_notes: (n) => n.map(tupleToNote),
     };
   }
@@ -259,12 +262,12 @@ export class Clip extends Namespace<
     timeSpan: number,
     pitchSpan: number,
   ): Promise<Note[]> {
-    const notes: NoteTuple[] = await this.sendCommand("get_notes", [
-      fromTime,
-      fromPitch,
-      timeSpan,
-      pitchSpan,
-    ]);
+    const notes: NoteTuple[] = await this.sendCommand("get_notes", {
+      from_time: fromTime,
+      from_pitch: fromPitch,
+      time_span: timeSpan,
+      pitch_span: pitchSpan,
+    });
 
     return notes.map(tupleToNote);
   }
