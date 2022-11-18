@@ -1,23 +1,33 @@
 import { Ableton } from "..";
 
 export class Namespace<GP, TP, SP, OP> {
+  protected transformers: Partial<{
+    [T in keyof TP]: (val: T extends keyof GP ? GP[T] : unknown) => TP[T];
+  }> = {};
+
+  protected cachedProps: Partial<{
+    [T in keyof GP]: boolean;
+  }> = {};
+
   constructor(
     protected ableton: Ableton,
     protected ns: string,
-    protected nsid?: number,
+    protected nsid?: string,
   ) {}
-
-  protected transformers: Partial<
-    { [T in Extract<keyof GP, keyof TP>]: (val: GP[T]) => TP[T] }
-  > = {};
 
   async get<T extends keyof GP>(
     prop: T,
   ): Promise<T extends keyof TP ? TP[T] : GP[T]> {
-    const res = await this.ableton.getProp(this.ns, this.nsid, String(prop));
-    const transformer = this.transformers[
-      (prop as any) as Extract<keyof GP, keyof TP>
-    ];
+    const cache = !!this.cachedProps[prop];
+    const res = await this.ableton.getProp(
+      this.ns,
+      this.nsid,
+      String(prop),
+      cache,
+    );
+
+    const transformer =
+      this.transformers[prop as any as Extract<keyof GP, keyof TP>];
 
     if (res !== null && transformer) {
       return transformer(res) as any;
@@ -34,9 +44,8 @@ export class Namespace<GP, TP, SP, OP> {
     prop: T,
     listener: (data: T extends keyof TP ? TP[T] : OP[T]) => any,
   ) {
-    const transformer = this.transformers[
-      (prop as any) as Extract<keyof GP, keyof TP>
-    ];
+    const transformer =
+      this.transformers[prop as any as Extract<keyof GP, keyof TP>];
     return this.ableton.addPropListener(
       this.ns,
       this.nsid,
@@ -58,8 +67,27 @@ export class Namespace<GP, TP, SP, OP> {
   async sendCommand(
     name: string,
     args?: { [k: string]: any },
+    etag?: string,
     timeout?: number,
   ) {
-    return this.ableton.sendCommand(this.ns, this.nsid, name, args, timeout);
+    return this.ableton.sendCommand(
+      { ns: this.ns, nsid: this.nsid, name, args, etag },
+      timeout,
+    );
+  }
+
+  /**
+   * Sends a raw function invocation to Ableton and expects the
+   * result to be a CacheResponse with `data` and an `etag`.
+   */
+  protected async sendCachedCommand(
+    name: string,
+    args?: { [k: string]: any },
+    timeout?: number,
+  ) {
+    return this.ableton.sendCachedCommand(
+      { ns: this.ns, nsid: this.nsid, name, args },
+      timeout,
+    );
   }
 }

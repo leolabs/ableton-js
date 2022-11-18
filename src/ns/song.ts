@@ -6,13 +6,13 @@ import { SongView } from "./song-view";
 import { Scene, RawScene } from "./scene";
 
 export interface GettableProperties {
-  arrangement_overdub: number;
+  arrangement_overdub: boolean;
   back_to_arranger: number;
-  can_capture_midi: number;
-  can_jump_to_next_cue: number;
-  can_jump_to_prev_cue: number;
-  can_redo: number;
-  can_undo: number;
+  can_capture_midi: boolean;
+  can_jump_to_next_cue: boolean;
+  can_jump_to_prev_cue: boolean;
+  can_redo: boolean;
+  can_undo: boolean;
   clip_trigger_quantization: Quantization;
   count_in_duration: number;
   cue_points: RawCuePoint[];
@@ -23,17 +23,17 @@ export interface GettableProperties {
   is_counting_in: boolean;
   is_playing: boolean;
   last_event_time: number;
-  loop: number;
+  loop: boolean;
   loop_length: number;
   loop_start: number;
   master_track: RawTrack;
   metronome: number;
   midi_recording_quantization: RecordingQuantization;
-  nudge_down: number;
-  nudge_up: number;
-  overdub: number;
-  punch_in: number;
-  punch_out: number;
+  nudge_down: boolean;
+  nudge_up: boolean;
+  overdub: boolean;
+  punch_in: boolean;
+  punch_out: boolean;
   re_enable_automation_enabled: number;
   record_mode: number;
   return_tracks: RawTrack[];
@@ -65,7 +65,7 @@ export interface TransformedProperties {
 }
 
 export interface SettableProperties {
-  arrangement_overdub: number;
+  arrangement_overdub: boolean;
   back_to_arranger: number;
   clip_trigger_quantization: Quantization;
   count_in_duration: number;
@@ -76,17 +76,17 @@ export interface SettableProperties {
   is_counting_in: boolean;
   is_playing: boolean;
   last_event_time: number;
-  loop: number;
+  loop: boolean;
   loop_length: number;
   loop_start: number;
   master_track: number;
   metronome: number;
   midi_recording_quantization: RecordingQuantization;
-  nudge_down: number;
-  nudge_up: number;
-  overdub: number;
-  punch_in: number;
-  punch_out: number;
+  nudge_down: boolean;
+  nudge_up: boolean;
+  overdub: boolean;
+  punch_in: boolean;
+  punch_out: boolean;
   re_enable_automation_enabled: number;
   record_mode: number;
   return_tracks: number;
@@ -105,11 +105,12 @@ export interface SettableProperties {
 }
 
 export interface ObservableProperties {
-  arrangement_overdub: number;
+  arrangement_overdub: boolean;
   back_to_arranger: number;
-  can_capture_midi: number;
-  can_jump_to_next_cue: number;
-  can_jump_to_prev_cue: number;
+  can_capture_midi: boolean;
+  can_jump_to_next_cue: boolean;
+  can_jump_to_prev_cue: boolean;
+  clip_trigger_quantization: Quantization;
   count_in_duration: number;
   cue_points: number;
   current_song_time: number;
@@ -119,14 +120,15 @@ export interface ObservableProperties {
   is_counting_in: boolean;
   is_playing: boolean;
   loop_length: number;
-  loop: number;
+  loop: boolean;
   loop_start: number;
   metronome: number;
-  nudge_down: number;
-  nudge_up: number;
-  overdub: number;
-  punch_in: number;
-  punch_out: number;
+  midi_recording_quantization: RecordingQuantization;
+  nudge_down: boolean;
+  nudge_up: boolean;
+  overdub: boolean;
+  punch_in: boolean;
+  punch_out: boolean;
   re_enable_automation_enabled: number;
   record_mode: number;
   return_tracks: RawTrack[];
@@ -197,12 +199,21 @@ export class Song extends Namespace<
     super(ableton, "song");
 
     this.transformers = {
-      cue_points: (points) => points.map((c) => new CuePoint(this.ableton, c)),
-      master_track: (track) => new Track(this.ableton, track),
-      return_tracks: (tracks) => tracks.map((t) => new Track(this.ableton, t)),
-      tracks: (tracks) => tracks.map((t) => new Track(this.ableton, t)),
-      visible_tracks: (tracks) => tracks.map((t) => new Track(this.ableton, t)),
-      scenes: (scenes) => scenes.map((s) => new Scene(this.ableton, s)),
+      cue_points: (points) => points.map((c) => new CuePoint(ableton, c)),
+      master_track: (track) => new Track(ableton, track),
+      return_tracks: (tracks) => tracks.map((t) => new Track(ableton, t)),
+      tracks: (tracks) => tracks.map((t) => new Track(ableton, t)),
+      visible_tracks: (tracks) => tracks.map((t) => new Track(ableton, t)),
+      scenes: (scenes) => scenes.map((s) => new Scene(ableton, s)),
+    };
+
+    this.cachedProps = {
+      cue_points: true,
+      master_track: true,
+      return_tracks: true,
+      tracks: true,
+      visible_tracks: true,
+      scenes: true,
     };
   }
 
@@ -257,7 +268,7 @@ export class Song extends Namespace<
   }
 
   public async getData(key: string) {
-    return this.sendCommand("get_data", { key });
+    return this.sendCachedCommand("get_data", { key });
   }
 
   public async getCurrentSmpteSongTime(
@@ -286,12 +297,20 @@ export class Song extends Namespace<
     return this.sendCommand("play_selection");
   }
 
+  public async redo() {
+    return this.sendCommand("redo");
+  }
+
   public async scrubBy(amount: number) {
     return this.sendCommand("scrub_by", [amount]);
   }
 
   public async setData(key: string, value: any) {
     return this.sendCommand("set_data", [key, value]);
+  }
+
+  public async setOrDeleteCue() {
+    return this.sendCommand("set_or_delete_cue");
   }
 
   public async startPlaying() {
@@ -308,5 +327,9 @@ export class Song extends Namespace<
 
   public async tapTempo() {
     return this.sendCommand("tap_tempo");
+  }
+
+  public async undo() {
+    return this.sendCommand("undo");
   }
 }

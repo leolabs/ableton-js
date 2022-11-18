@@ -1,10 +1,18 @@
+import hashlib
+import json
+
+
 class Interface(object):
     obj_ids = dict()
     listeners = dict()
 
     @staticmethod
     def save_obj(obj):
-        obj_id = id(obj)
+        try:
+            obj_id = "live_" + str(obj._live_ptr)
+        except:
+            obj_id = "id_" + str(id(obj))
+
         Interface.obj_ids[obj_id] = obj
         return obj_id
 
@@ -20,25 +28,43 @@ class Interface(object):
     def get_ns(self, nsid):
         return Interface.obj_ids[nsid]
 
+    def send_result(self, result, uuid, etag, cache):
+        """Sends an empty response if the etag matches the result, or the result together with an etag."""
+        if not cache:
+            return self.socket.send("result", result, uuid)
+
+        def jsonReplace(o):
+            return str(o)
+
+        hash = hashlib.md5(json.dumps(
+            result, default=jsonReplace, ensure_ascii=False).encode()).hexdigest()
+
+        if hash == etag:
+            return self.socket.send("result", {"__cached": True}, uuid)
+        else:
+            return self.socket.send("result", {"data": result, "etag": hash}, uuid)
+
     def handle(self, payload):
         name = payload.get("name")
         uuid = payload.get("uuid")
+        etag = payload.get("etag")
         args = payload.get("args", {})
+        cache = payload.get("cache", False)
         ns = self.get_ns(payload.get("nsid"))
 
         try:
             # Try self-defined functions first
             if hasattr(self, name) and callable(getattr(self, name)):
                 result = getattr(self, name)(ns=ns, **args)
-                self.socket.send("result", result, uuid)
+                self.send_result(result, uuid, etag, cache)
             # Check if the function exists in the Ableton API as fallback
             elif hasattr(ns, name) and callable(getattr(ns, name)):
                 if isinstance(args, dict):
                     result = getattr(ns, name)(**args)
-                    self.socket.send("result", result, uuid)
+                    self.send_result(result, uuid, etag, cache)
                 elif isinstance(args, list):
                     result = getattr(ns, name)(*args)
-                    self.socket.send("result", result, uuid)
+                    self.send_result(result, uuid, etag, cache)
                 else:
                     self.socket.send("error", "Function call failed: " + str(args) +
                                      " are invalid arguments", uuid)

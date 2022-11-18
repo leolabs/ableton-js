@@ -11,9 +11,13 @@ class Clip(Interface):
         clip_id = Interface.save_obj(clip)
         return {
             "id": clip_id,
+            "name": clip.name,
             "color": clip.color,
             "is_audio_clip": clip.is_audio_clip,
             "is_midi_clip": clip.is_midi_clip,
+            "start_time": clip.start_time,
+            "end_time": clip.end_time,
+            "muted": clip.muted
         }
 
     def __init__(self, c_instance, socket):
@@ -21,6 +25,9 @@ class Clip(Interface):
 
     def get_available_warp_modes(self, ns):
         return list(ns.available_warp_modes)
+
+    def get_notes(self, ns, from_time=0, from_pitch=0, time_span=99999999999999, pitch_span=128):
+        return ns.get_notes(from_time, from_pitch, time_span, pitch_span)
 
     def set_notes(self, ns, notes):
         return ns.set_notes(tuple(notes))

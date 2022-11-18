@@ -54,16 +54,25 @@ export class SongView extends Namespace<
     super(ableton, "song-view");
 
     this.transformers = {
-      selected_parameter: (param) => new DeviceParameter(this.ableton, param),
-      selected_track: (track) => new Track(this.ableton, track),
-      selected_scene: (scene) => new Scene(this.ableton, scene),
-      highlighted_clip_slot: (clipSlot) => new ClipSlot(this.ableton, clipSlot),
+      selected_parameter: (param) => new DeviceParameter(ableton, param),
+      selected_track: (track) => new Track(ableton, track),
+      selected_scene: (scene) => new Scene(ableton, scene),
+      highlighted_clip_slot: (slot) => new ClipSlot(ableton, slot),
+    };
+
+    this.cachedProps = {
+      selected_parameter: true,
+      selected_track: true,
+      selected_scene: true,
+      highlighted_clip_slot: true,
     };
   }
 
   async selectDevice(device: Device) {
-    return this.ableton.sendCommand(this.ns, undefined, "select_device", {
-      device_id: device.raw.id,
+    return this.ableton.sendCommand({
+      ns: this.ns,
+      name: "select_device",
+      args: { device_id: device.raw.id },
     });
   }
 }

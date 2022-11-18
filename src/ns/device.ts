@@ -29,7 +29,7 @@ export interface ObservableProperties {
 }
 
 export interface RawDevice {
-  id: number;
+  id: string;
   name: string;
   type: DeviceType;
   class_name: string;
@@ -52,7 +52,11 @@ export class Device extends Namespace<
     super(ableton, "device", raw.id);
 
     this.transformers = {
-      parameters: (ps) => ps.map((p) => new DeviceParameter(this.ableton, p)),
+      parameters: (ps) => ps.map((p) => new DeviceParameter(ableton, p)),
+    };
+
+    this.cachedProps = {
+      parameters: true,
     };
   }
 }

@@ -1,10 +1,14 @@
 {
   "name": "ableton-js",
-  "version": "2.1.4",
+  "version": "2.7.2",
   "description": "Control Ableton Live from Node",
   "main": "index.js",
   "author": "Leo Bernard <admin@leolabs.org>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/leolabs/ableton-js.git"
+  },
   "files": [
     "**/*.js",
     "**/*.d.ts",
@@ -16,7 +20,7 @@
     "ableton10:launch": "set -- /Applications/Ableton*10* && open \"$1\"",
     "ableton11:copy-script": "set -- /Applications/Ableton*11*/Contents/App-Resources/MIDI\\ Remote\\ Scripts && rm -rf \"$1/AbletonJS\" && cp -r \"$(pwd)/midi-script\" \"$1/AbletonJS\" && rm -rf \"$1/AbletonJS/_Framework\"",
     "ableton11:launch": "set -- /Applications/Ableton*11* && open \"$1\"",
-    "ableton:logs": "tail -f ~/Library/Preferences/Ableton/*/Log.txt | grep -i -e RemoteScriptError -e RemoteScriptMessage | grep -i -e AbletonJS",
+    "ableton:logs": "tail -f ~/Library/Preferences/Ableton/*/Log.txt | grep -i -e RemoteScriptError -e RemoteScriptMessage",
     "ableton:kill": "pkill -KILL -f \"Ableton Live\"",
     "ableton10:start": "yarn ableton:kill; yarn ableton:clean && yarn ableton10:copy-script && yarn ableton10:launch && yarn ableton:logs",
     "ableton11:start": "yarn ableton:kill; yarn ableton:clean && yarn ableton11:copy-script && yarn ableton11:launch && yarn ableton:logs",
@@ -28,12 +32,6 @@
     "test": "jest --runInBand"
   },
   "devDependencies": {
-    "@babel/cli": "^7.14.3",
-    "@babel/core": "^7.14.3",
-    "@babel/plugin-proposal-class-properties": "^7.13.0",
-    "@babel/plugin-proposal-object-rest-spread": "^7.14.4",
-    "@babel/preset-env": "^7.14.4",
-    "@babel/preset-typescript": "^7.13.0",
     "@types/jest": "^26.0.23",
     "@types/node": "^15.6.1",
     "@types/node-uuid": "^0.0.28",
@@ -42,13 +40,13 @@
     "auto-changelog": "^2.3.0",
     "jest": "^27.0.3",
     "jest-extended": "^0.11.5",
-    "jsdoc-babel": "^0.5.0",
-    "jsdoc-to-markdown": "^7.0.1",
+    "p-all": "^3",
     "ts-jest": "^27.0.1",
     "ts-node": "^10.0.0",
     "typescript": "^4.3.2"
   },
   "dependencies": {
+    "lru-cache": "^7.14.0",
     "semver": "^7.3.5",
     "uuid": "^8.3.2"
   }

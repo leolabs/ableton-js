@@ -2,6 +2,7 @@ import socket
 import json
 import struct
 import zlib
+import hashlib
 from threading import Timer
 
 
@@ -22,16 +23,21 @@ class Socket(object):
     def set_message(func):
         Socket.show_message = func
 
-    def __init__(self, handler, remotehost='127.0.0.1', remoteport=9031, localhost='127.0.0.1', localport=9041):
+    def __init__(self, handler, remotehost='127.0.0.1', remoteport=39031, localhost='127.0.0.1', localport=39041):
         self.input_handler = handler
-
-        self._socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        self._socket.setblocking(0)
-
         self._local_addr = (localhost, localport)
         self._remote_addr = (remotehost, remoteport)
+        self.init_socket()
+
+    def init_socket(self):
+        self._socket = socket.socket(
+            socket.AF_INET, socket.SOCK_DGRAM)
+        self._socket.setblocking(0)
 
         self.bind()
+
+    def shutdown(self):
+        self._socket.close()
 
     def bind(self):
         try:
@@ -69,32 +75,32 @@ class Socket(object):
         try:
             self._sendto(json.dumps(
                 {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace, ensure_ascii=False))
+        except socket.error as e:
+            self.log_message("Socket error: " + str(e.args))
+            self.log_message("Restarting socket...")
+            self.shutdown()
+            self.init_socket()
         except Exception as e:
             error = str(type(e).__name__) + ': ' + str(e.args)
-            self._sendto(json.dumps(
-                {"event": "error", "data": error, "uuid": uuid}, default=jsonReplace, ensure_ascii=False))
-            self.log_message("Socket Error " + name +
-                             "(" + str(uuid) + "): " + str(e))
-
-    def shutdown(self):
-        self._socket.close()
+            self.log_message("Error " + name + "(" + str(uuid) + "): " + error)
 
     def process(self):
         try:
             buffer = bytes()
+            num_messages = 0
             while 1:
-                data = self._socket.recv(65536)
+                data = self._socket.recv(8192)
                 if len(data) and self.input_handler:
                     buffer += data[1:]
+                    num_messages += 1
 
                     # \xFF for Live 10 (Python2) and 255 for Live 11 (Python3)
-                    if(data[0] == b'\xFF' or data[0] == 255):
+                    if (data[0] == b'\xFF' or data[0] == 255):
                         unzipped = zlib.decompress(buffer)
                         payload = json.loads(unzipped)
-
-                        self.log_message("Receiving: " + str(payload))
                         self.input_handler(payload)
                         buffer = bytes()
+                        num_messages = 0
         except socket.error as e:
             return
         except Exception as e:

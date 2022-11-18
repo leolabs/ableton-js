@@ -45,7 +45,7 @@ export interface ObservableProperties {
 }
 
 export interface RawClipSlot {
-  id: number;
+  id: string;
   color: number;
   has_clip: boolean;
   is_playing: boolean;
@@ -68,6 +68,10 @@ export class ClipSlot extends Namespace<
     this.transformers = {
       clip: (c) => (c ? new Clip(ableton, c) : null),
       color: (c) => new Color(c),
+    };
+
+    this.cachedProps = {
+      clip: true,
     };
   }
 

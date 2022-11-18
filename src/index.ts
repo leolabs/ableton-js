@@ -3,15 +3,22 @@ import { EventEmitter } from "events";
 import { v4 } from "uuid";
 import semver from "semver";
 import { unzipSync, deflateSync } from "zlib";
+import LruCache from "lru-cache";
+
 import { Song } from "./ns/song";
 import { Internal } from "./ns/internal";
+import { Application } from "./ns/application";
+import { Midi } from "./ns/midi";
 import { getPackageVersion } from "./util/package-version";
+import { Cache, isCached, CacheResponse } from "./util/cache";
 
 interface Command {
   uuid: string;
   ns: string;
-  nsid?: number;
+  nsid?: string;
   name: string;
+  etag?: string;
+  cache?: boolean;
   args?: { [k: string]: any };
 }
 
@@ -43,33 +50,59 @@ export class TimeoutError extends Error {
   }
 }
 
+export interface AbletonOptions {
+  host?: string;
+  sendPort?: number;
+  listenPort?: number;
+  heartbeatInterval?: number;
+  cacheOptions?: LruCache.Options<string, any>;
+}
+
 export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   private client: dgram.Socket;
   private msgMap = new Map<
     string,
-    { res: (data: any) => any; rej: (data: any) => any }
+    {
+      res: (data: any) => any;
+      rej: (data: any) => any;
+      clearTimeout: () => any;
+    }
   >();
   private eventListeners = new Map<string, Array<(data: any) => any>>();
   private heartbeatInterval: NodeJS.Timeout;
-  private _isConnected = true;
+  private _isConnected = false;
   private cancelConnectionEvent = false;
   private buffer: Buffer[] = [];
   private latency: number = 0;
 
-  public song = new Song(this);
-  public internal = new Internal(this);
+  private host: string;
+  private sendPort: number;
+  private listenPort: number;
 
-  constructor(
-    private host = "127.0.0.1",
-    private sendPort = 9041,
-    private listenPort = 9031,
-    heartbeatInterval = 2000,
-  ) {
+  public cache: Cache;
+  public song = new Song(this);
+  public application = new Application(this);
+  public internal = new Internal(this);
+  public midi = new Midi(this);
+
+  constructor(options?: AbletonOptions) {
     super();
-    this.client = dgram.createSocket({ type: "udp4", reuseAddr: true });
-    this.client.bind(this.listenPort, host);
+
+    this.host = options?.host ?? "127.0.0.1";
+    this.sendPort = options?.sendPort ?? 39041;
+    this.listenPort = options?.listenPort ?? 39031;
+
+    this.client = dgram.createSocket({ type: "udp4" });
+    this.client.bind(this.listenPort, this.host);
     this.client.addListener("message", this.handleIncoming.bind(this));
-    this.heartbeatInterval = setInterval(async () => {
+
+    this.cache = new LruCache<string, any>({
+      max: 500,
+      ttl: 1000 * 60 * 10,
+      ...options?.cacheOptions,
+    });
+
+    const heartbeat = async () => {
       this.cancelConnectionEvent = false;
 
       try {
@@ -82,11 +115,18 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
         if (this._isConnected && !this.cancelConnectionEvent) {
           this._isConnected = false;
           this.eventListeners.clear();
+          this.msgMap.forEach((msg) => msg.clearTimeout());
           this.msgMap.clear();
           this.emit("disconnect", "heartbeat");
         }
       }
-    }, heartbeatInterval);
+    };
+
+    this.heartbeatInterval = setInterval(
+      heartbeat,
+      options?.heartbeatInterval ?? 2000,
+    );
+    heartbeat();
 
     this.internal
       .get("version")
@@ -159,8 +199,9 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     }
 
     if (data.event === "disconnect") {
-      this.msgMap.clear();
       this.eventListeners.clear();
+      this.msgMap.forEach((msg) => msg.clearTimeout());
+      this.msgMap.clear();
       if (this._isConnected === true) {
         this._isConnected = false;
         this.cancelConnectionEvent = true;
@@ -183,7 +224,12 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       return eventCallback.forEach((cb) => cb(data.data));
     }
 
-    this.emit("error", "Message could not be assigned to any request: " + msg);
+    if (data.uuid) {
+      this.emit(
+        "error",
+        "Message could not be assigned to any request: " + msg,
+      );
+    }
   }
 
   /**
@@ -191,30 +237,26 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
    * A good starting point in general is the `song` prop.
    */
   async sendCommand(
-    ns: string,
-    nsid: number | undefined,
-    name: string,
-    args?: Record<string, any> | any[],
+    command: Omit<Command, "uuid">,
     timeout: number = 2000,
   ): Promise<any> {
     return new Promise((res, rej) => {
       const msgId = v4();
       const payload: Command = {
         uuid: msgId,
-        ns,
-        nsid,
-        name,
-        args,
+        ...command,
       };
       const msg = JSON.stringify(payload);
 
       const timeoutId = setTimeout(() => {
-        const arg = JSON.stringify(args);
-        const cls = nsid ? `${ns}(${nsid})` : ns;
+        const arg = JSON.stringify(command.args);
+        const cls = command.nsid
+          ? `${command.ns}(${command.nsid})`
+          : command.ns;
         rej(
           new TimeoutError(
             [
-              `The command ${cls}.${name}(${arg}) timed out after ${timeout} ms.`,
+              `The command ${cls}.${command.name}(${arg}) timed out after ${timeout} ms.`,
               `Please make sure that Ableton is running and that you have the latest`,
               `version of AbletonJS' midi script installed and renamed to "AbletonJS", listening on port`,
               `${this.sendPort} and sending on port ${this.listenPort}.`,
@@ -226,42 +268,90 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
       const currentTimestamp = Date.now();
       this.msgMap.set(msgId, {
-        res: (data: any) => {
+        res: (result: any) => {
           this.setPing(Date.now() - currentTimestamp);
           clearTimeout(timeoutId);
-          res(data);
+          res(result);
         },
         rej,
+        clearTimeout: () => {
+          clearTimeout(timeoutId);
+        },
       });
 
       this.sendRaw(msg);
     });
   }
 
-  async getProp(ns: string, nsid: number | undefined, prop: string) {
-    return this.sendCommand(ns, nsid, "get_prop", { prop });
+  async sendCachedCommand(
+    command: Omit<Command, "uuid" | "cache">,
+    timeout?: number,
+  ) {
+    const args = command.args?.prop ?? JSON.stringify(command.args);
+    const cacheKey = [command.ns, command.nsid, args].filter(Boolean).join("/");
+    const cached = this.cache.get(cacheKey);
+
+    const result: CacheResponse = await this.sendCommand(
+      { ...command, etag: cached?.etag, cache: true },
+      timeout,
+    );
+
+    if (isCached(result)) {
+      if (!cached) {
+        throw new Error("Tried to get an object that isn't cached.");
+      } else {
+        return cached.data;
+      }
+    } else {
+      if (result.etag) {
+        this.cache.set(cacheKey, result);
+      }
+
+      return result.data;
+    }
+  }
+
+  async getProp(
+    ns: string,
+    nsid: string | undefined,
+    prop: string,
+    cache?: boolean,
+  ) {
+    const params = { ns, nsid, name: "get_prop", args: { prop } };
+
+    if (cache) {
+      return this.sendCachedCommand(params);
+    } else {
+      return this.sendCommand(params);
+    }
   }
 
   async setProp(
     ns: string,
-    nsid: number | undefined,
+    nsid: string | undefined,
     prop: string,
     value: any,
   ) {
-    return this.sendCommand(ns, nsid, "set_prop", { prop, value });
+    return this.sendCommand({
+      ns,
+      nsid,
+      name: "set_prop",
+      args: { prop, value },
+    });
   }
 
   async addPropListener(
     ns: string,
-    nsid: number | undefined,
+    nsid: string | undefined,
     prop: string,
     listener: (data: any) => any,
   ) {
     const eventId = v4();
-    const result = await this.sendCommand(ns, nsid, "add_listener", {
-      prop,
+    const result = await this.sendCommand({
+      ns,
       nsid,
-      eventId,
+      name: "add_listener",
+      args: { prop, nsid, eventId },
     });
 
     if (!this.eventListeners.has(result)) {
@@ -278,7 +368,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
   async removePropListener(
     ns: string,
-    nsid: number | undefined,
+    nsid: string | undefined,
     prop: string,
     eventId: string,
     listener: (data: any) => any,
@@ -298,9 +388,23 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
     if (listeners.length === 1) {
       this.eventListeners.delete(eventId);
-      await this.sendCommand(ns, nsid, "remove_listener", { prop, nsid });
+      await this.sendCommand({
+        ns,
+        nsid,
+        name: "remove_listener",
+        args: { prop, nsid },
+      });
       return true;
     }
+  }
+
+  /**
+   * Removes all event listeners that were attached to properties.
+   * This is useful for clearing all listeners when Live
+   * disconnects, for example.
+   */
+  removeAllPropListeners() {
+    this.eventListeners.clear();
   }
 
   sendRaw(msg: string) {

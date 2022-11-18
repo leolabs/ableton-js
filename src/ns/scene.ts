@@ -34,7 +34,7 @@ export interface ObservableProperties {
 
 export interface RawScene {
   color: number;
-  id: number;
+  id: string;
   name: string;
 }
 
@@ -50,6 +50,10 @@ export class Scene extends Namespace<
     this.transformers = {
       clip_slots: (clip_slots) =>
         clip_slots.map((c) => new ClipSlot(this.ableton, c)),
+    };
+
+    this.cachedProps = {
+      clip_slots: true,
     };
   }
 }

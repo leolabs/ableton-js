@@ -19,11 +19,5 @@ class DeviceParameter(Interface):
     def __init__(self, c_instance, socket):
         super(DeviceParameter, self).__init__(c_instance, socket)
 
-    def get_automation_state(self, ns):
-        return str(ns.automation_state)
-
-    def get_state(self, ns):
-        return str(ns.state)
-
     def get_value_items(self, ns):
         return list(ns.value_items)

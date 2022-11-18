@@ -2,11 +2,13 @@ import { Ableton } from "..";
 import { Namespace } from ".";
 import { Device, RawDevice } from "./device";
 import { ClipSlot, RawClipSlot } from "./clip-slot";
+import { Clip, RawClip } from "./clip";
 import { Color } from "../util/color";
 
 // TODO: Implement commented-out properties properly
 export interface GettableProperties {
   arm: boolean;
+  arrangement_clips: RawClip[];
   // available_input_routing_channels: unknown;
   // available_input_routing_types: unknown;
   // available_output_routing_channels: unknown;
@@ -25,7 +27,7 @@ export interface GettableProperties {
   current_output_sub_routing: string;
   devices: RawDevice[];
   fired_slot_index: number;
-  fold_state: number;
+  fold_state: boolean;
   group_track: RawTrack | null;
   has_audio_input: boolean;
   has_audio_output: boolean;
@@ -65,6 +67,7 @@ export interface TransformedProperties {
   color: Color;
   devices: Device[];
   clip_slots: ClipSlot[];
+  arrangement_clips: Clip[];
 }
 
 export interface SettableProperties {
@@ -96,6 +99,7 @@ export interface SettableProperties {
 
 export interface ObservableProperties {
   arm: number;
+  arrangement_clips: RawClip[];
   // available_input_routing_channels: number;
   // available_input_routing_types: number;
   // available_output_routing_channels: number;
@@ -139,9 +143,11 @@ export interface ObservableProperties {
 }
 
 export interface RawTrack {
-  id: number;
+  id: string;
   name: string;
   color: number;
+  is_foldable: boolean;
+  is_grouped: boolean;
 }
 
 export class Track extends Namespace<
@@ -154,10 +160,25 @@ export class Track extends Namespace<
     super(ableton, "track", raw.id);
 
     this.transformers = {
+      arrangement_clips: (clips: RawClip[]) =>
+        clips.map((clip) => new Clip(ableton, clip)),
       color: (c) => new Color(c),
-      devices: (devices) => devices.map((d) => new Device(this.ableton, d)),
+      devices: (devices) => devices.map((d) => new Device(ableton, d)),
       clip_slots: (clip_slots) =>
-        clip_slots.map((c) => new ClipSlot(this.ableton, c)),
+        clip_slots.map((c) => new ClipSlot(ableton, c)),
     };
+
+    this.cachedProps = {
+      arrangement_clips: true,
+      devices: true,
+      clip_slots: true,
+    };
+  }
+
+  duplicateClipToArrangement(clipID: number, time: number) {
+    return this.sendCommand("duplicate_clip_to_arrangement", {
+      clip_id: clipID,
+      time: time,
+    });
   }
 }

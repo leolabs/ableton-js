@@ -8,9 +8,19 @@ from .Track import Track
 class Song(Interface):
     def __init__(self, c_instance, socket):
         super(Song, self).__init__(c_instance, socket)
+        self.song = self.ableton.song()
 
     def get_ns(self, nsid):
-        return self.ableton.song()
+        return self.song
+
+    def create_audio_track(self, ns, index):
+        return Track.serialize_track(ns.create_audio_track(index))
+
+    def create_midi_track(self, ns, index):
+        return Track.serialize_track(ns.create_midi_track(index))
+
+    def create_return_track(self, ns):
+        return Track.serialize_track(ns.create_return_track())
 
     def get_clip_trigger_quantization(self, ns):
         return str(ns.clip_trigger_quantization)
