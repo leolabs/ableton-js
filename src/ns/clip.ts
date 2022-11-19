@@ -38,6 +38,11 @@ export enum LaunchQuantization {
   QThirtySecond = 14,
 }
 
+interface WarpMarker {
+  beat_time: number;
+  sample_time: number;
+}
+
 export interface GettableProperties {
   available_warp_modes: WarpMode[];
   color: number;
@@ -77,6 +82,7 @@ export interface GettableProperties {
   velocity_amount: number;
   //view: unknown;
   warp_mode: WarpMode;
+  warp_markers: WarpMarker[]; // Only supported in ableton 11
   warping: boolean;
   will_record_on_start: boolean;
 }
