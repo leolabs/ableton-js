@@ -56,4 +56,12 @@ export class Scene extends Namespace<
       clip_slots: true,
     };
   }
+
+  /**
+   * Fire the scene directly. Will fire all clip slots
+   * that this scene owns and select the scene itself.
+   */
+  async fire() {
+    return this.sendCommand("fire");
+  }
 }
