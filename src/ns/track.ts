@@ -179,9 +179,9 @@ export class Track extends Namespace<
    * Duplicates the given clip into the arrangement of this track at the provided destination time and returns it.
    * When the type of the clip and the type of the track are incompatible, a runtime error is raised.
    */
-  duplicateClipToArrangement(clipOrId: Clip | number, time: number) {
+  duplicateClipToArrangement(clipOrId: Clip | string, time: number) {
     return this.sendCommand("duplicate_clip_to_arrangement", {
-      clip_id: typeof clipOrId === "number" ? clipOrId : clipOrId.raw.id,
+      clip_id: typeof clipOrId === "string" ? clipOrId : clipOrId.raw.id,
       time: time,
     });
   }
