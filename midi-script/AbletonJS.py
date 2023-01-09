@@ -1,5 +1,4 @@
 from __future__ import absolute_import
-import sys
 
 from .Socket import Socket
 from .Interface import Interface
@@ -7,6 +6,7 @@ from .Application import Application
 from .CuePoint import CuePoint
 from .Device import Device
 from .DeviceParameter import DeviceParameter
+from .MixerDevice import MixerDevice
 from .Scene import Scene
 from .Song import Song
 from .SongView import SongView
@@ -15,6 +15,7 @@ from .Internal import Internal
 from .ClipSlot import ClipSlot
 from .Clip import Clip
 from .Midi import Midi
+
 from _Framework.ControlSurface import ControlSurface
 import Live
 
@@ -30,17 +31,18 @@ class AbletonJS(ControlSurface):
 
         self.handlers = {
             "application": Application(c_instance, self.socket, self.application()),
-            "internal": Internal(c_instance, self.socket),
             "cue-point": CuePoint(c_instance, self.socket),
             "device": Device(c_instance, self.socket),
             "device-parameter": DeviceParameter(c_instance, self.socket),
+            "internal": Internal(c_instance, self.socket),
+            "midi": Midi(c_instance, self.socket, self.tracked_midi, self.request_rebuild_midi_map),
+            "mixer-device": MixerDevice(c_instance, self.socket),
             "scene": Scene(c_instance, self.socket),
             "song": Song(c_instance, self.socket),
             "song-view": SongView(c_instance, self.socket),
             "track": Track(c_instance, self.socket),
             "clip_slot": ClipSlot(c_instance, self.socket),
             "clip": Clip(c_instance, self.socket),
-            "midi": Midi(c_instance, self.socket, self.tracked_midi, self.request_rebuild_midi_map)
         }
 
         self.recv_loop = Live.Base.Timer(

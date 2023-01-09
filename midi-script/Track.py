@@ -1,5 +1,7 @@
 from __future__ import absolute_import
+
 from .Interface import Interface
+from .MixerDevice import MixerDevice
 from .Device import Device
 from .Clip import Clip
 from .ClipSlot import ClipSlot
@@ -28,6 +30,9 @@ class Track(Interface):
 
     def get_group_track(self, ns):
         return Track.serialize_track(ns.group_track)
+
+    def get_mixer_device(self, ns):
+        return MixerDevice.serialize_mixer_device(ns.mixer_device)
 
     def duplicate_clip_to_arrangement(self, ns, clip_id, time):
         return ns.duplicate_clip_to_arrangement(self.get_obj(clip_id), time)
