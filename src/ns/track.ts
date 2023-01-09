@@ -2,6 +2,7 @@ import { Ableton } from "..";
 import { Namespace } from ".";
 import { Device, RawDevice } from "./device";
 import { ClipSlot, RawClipSlot } from "./clip-slot";
+import { MixerDevice, RawMixerDevice } from "./mixer-device";
 import { Clip, RawClip } from "./clip";
 import { Color } from "../util/color";
 
@@ -47,7 +48,7 @@ export interface GettableProperties {
   is_part_of_selection: boolean;
   is_showing_chains: boolean;
   is_visible: boolean;
-  //mixer_device: number;
+  mixer_device: RawMixerDevice;
   mute: boolean;
   muted_via_solo: boolean;
   name: string;
@@ -68,6 +69,7 @@ export interface TransformedProperties {
   devices: Device[];
   clip_slots: ClipSlot[];
   arrangement_clips: Clip[];
+  mixer_device: MixerDevice;
 }
 
 export interface SettableProperties {
@@ -166,6 +168,7 @@ export class Track extends Namespace<
       devices: (devices) => devices.map((d) => new Device(ableton, d)),
       clip_slots: (clip_slots) =>
         clip_slots.map((c) => new ClipSlot(ableton, c)),
+      mixer_device: (mixer_device) => new MixerDevice(ableton, mixer_device),
     };
 
     this.cachedProps = {
