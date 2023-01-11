@@ -1,9 +1,9 @@
 import { Ableton } from "..";
 
 export class Namespace<GP, TP, SP, OP> {
-  protected transformers: Partial<{
+  protected transformers: {
     [T in keyof TP]: (val: T extends keyof GP ? GP[T] : unknown) => TP[T];
-  }> = {};
+  } = {} as any;
 
   protected cachedProps: Partial<{
     [T in keyof GP]: boolean;
