@@ -21,7 +21,7 @@ class Device(Interface):
         super(Device, self).__init__(c_instance, socket)
 
     def get_parameters(self, ns):
-        return list(list(map(DeviceParameter.serialize_device_paramater, ns.parameters)))
+        return list(list(map(DeviceParameter.serialize_device_parameter, ns.parameters)))
 
     def get_type(self, ns):
         return str(ns.type)

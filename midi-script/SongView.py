@@ -17,7 +17,7 @@ class SongView(Interface):
         return ns.select_device(Interface.get_obj(device_id))
 
     def get_selected_parameter(self, ns):
-        return DeviceParameter.serialize_device_paramater(ns.selected_parameter)
+        return DeviceParameter.serialize_device_parameter(ns.selected_parameter)
 
     def get_selected_track(self, ns):
         return Track.serialize_track(ns.selected_track)
@@ -36,4 +36,3 @@ class SongView(Interface):
 
     def set_highlighted_clip_slot(self, ns, slot_id):
         ns.highlighted_clip_slot = Interface.get_obj(slot_id)
-

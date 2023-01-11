@@ -4,13 +4,13 @@ from .Interface import Interface
 
 class DeviceParameter(Interface):
     @staticmethod
-    def serialize_device_paramater(param):
+    def serialize_device_parameter(param):
         if param is None:
             return None
 
-        device_paramater_id = Interface.save_obj(param)
+        device_parameter_id = Interface.save_obj(param)
         return {
-            "id": device_paramater_id,
+            "id": device_parameter_id,
             "name": param.name,
             "value": param.value,
             "is_quantized": param.is_quantized
