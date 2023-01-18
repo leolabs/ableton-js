@@ -1,5 +1,6 @@
 import { Ableton } from "..";
 import { Namespace } from ".";
+import { ApplicationView } from "./application-view";
 
 export interface GettableProperties {
   bugfix_version: number;
@@ -29,6 +30,8 @@ export class Application extends Namespace<
   constructor(ableton: Ableton) {
     super(ableton, "application");
   }
+
+  public view = new ApplicationView(this.ableton);
 
   public async pressCurrentDialogButton(index: number) {
     return this.sendCommand("press_current_dialog_button", [index]);

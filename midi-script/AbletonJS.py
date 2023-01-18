@@ -3,6 +3,7 @@ from __future__ import absolute_import
 from .Socket import Socket
 from .Interface import Interface
 from .Application import Application
+from .ApplicationView import ApplicationView
 from .CuePoint import CuePoint
 from .Device import Device
 from .DeviceParameter import DeviceParameter
@@ -31,6 +32,7 @@ class AbletonJS(ControlSurface):
 
         self.handlers = {
             "application": Application(c_instance, self.socket, self.application()),
+            "application-view": ApplicationView(c_instance, self.socket, self.application()),
             "cue-point": CuePoint(c_instance, self.socket),
             "device": Device(c_instance, self.socket),
             "device-parameter": DeviceParameter(c_instance, self.socket),
