@@ -1,8 +1,6 @@
 from __future__ import absolute_import
 from .Interface import Interface
 
-import Live
-
 
 class Application(Interface):
     def __init__(self, c_instance, socket, application):

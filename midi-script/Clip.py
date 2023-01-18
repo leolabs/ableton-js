@@ -23,9 +23,6 @@ class Clip(Interface):
     def __init__(self, c_instance, socket):
         super(Clip, self).__init__(c_instance, socket)
 
-    def get_available_warp_modes(self, ns):
-        return list(ns.available_warp_modes)
-
     def get_notes(self, ns, from_time=0, from_pitch=0, time_span=99999999999999, pitch_span=128):
         return ns.get_notes(from_time, from_pitch, time_span, pitch_span)
 

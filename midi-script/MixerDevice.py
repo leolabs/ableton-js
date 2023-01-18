@@ -32,7 +32,7 @@ class MixerDevice(Interface):
         return DeviceParameter.serialize_device_parameter(ns.right_split_stereo)
 
     def get_sends(self, ns):
-        return list(map(DeviceParameter.serialize_device_parameter, ns.sends))
+        return map(DeviceParameter.serialize_device_parameter, ns.sends)
 
     def get_song_tempo(self, ns):
         return DeviceParameter.serialize_device_parameter(ns.song_tempo)

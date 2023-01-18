@@ -16,4 +16,4 @@ class Scene(Interface):
         super(Scene, self).__init__(c_instance, socket)
 
     def get_clip_slots(self, ns):
-        return list(list(map(ClipSlot.serialize_clip_slot, ns.clip_slots)))
+        return map(ClipSlot.serialize_clip_slot, ns.clip_slots)

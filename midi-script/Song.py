@@ -27,7 +27,7 @@ class Song(Interface):
 
     def get_cue_points(self, ns):
         sorted_points = sorted(ns.cue_points, key=lambda cue: cue.time)
-        return list(map(CuePoint.serialize_cue_point, sorted_points))
+        return map(CuePoint.serialize_cue_point, sorted_points)
 
     def get_master_track(self, ns):
         return Track.serialize_track(ns.master_track)
@@ -36,16 +36,16 @@ class Song(Interface):
         return str(ns.midi_recording_quantization)
 
     def get_return_tracks(self, ns):
-        return list(map(Track.serialize_track, ns.return_tracks))
+        return map(Track.serialize_track, ns.return_tracks)
 
     def get_scenes(self, ns):
-        return list(map(Scene.serialize_scene, ns.scenes))
+        return map(Scene.serialize_scene, ns.scenes)
 
     def get_tracks(self, ns):
-        return list(map(Track.serialize_track, ns.tracks))
+        return map(Track.serialize_track, ns.tracks)
 
     def get_visible_tracks(self, ns):
-        return list(map(Track.serialize_track, ns.visible_tracks))
+        return map(Track.serialize_track, ns.visible_tracks)
 
     def get_data(self, ns, key):
         return ns.get_data(key, None)

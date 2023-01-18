@@ -20,13 +20,13 @@ class Track(Interface):
         super(Track, self).__init__(c_instance, socket)
 
     def get_arrangement_clips(self, ns):
-        return list(map(Clip.serialize_clip, ns.arrangement_clips))
+        return map(Clip.serialize_clip, ns.arrangement_clips)
 
     def get_devices(self, ns):
-        return list(map(Device.serialize_device, ns.devices))
+        return map(Device.serialize_device, ns.devices)
 
     def get_clip_slots(self, ns):
-        return list(map(ClipSlot.serialize_clip_slot, ns.clip_slots))
+        return map(ClipSlot.serialize_clip_slot, ns.clip_slots)
 
     def get_group_track(self, ns):
         return Track.serialize_track(ns.group_track)

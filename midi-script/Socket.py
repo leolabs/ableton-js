@@ -5,6 +5,8 @@ import zlib
 import hashlib
 from threading import Timer
 
+import Live
+
 
 def split_by_n(seq, n):
     '''A generator to divide a sequence into chunks of n units.'''
@@ -70,6 +72,8 @@ class Socket(object):
 
     def send(self, name, obj=None, uuid=None):
         def jsonReplace(o):
+            if isinstance(o, (map, Live.Base.FloatVector, Live.Base.IntVector, Live.Base.ObjectVector, Live.Base.StringVector, Live.Base.Vector)):
+                return list(o)
             return str(o)
 
         try:
