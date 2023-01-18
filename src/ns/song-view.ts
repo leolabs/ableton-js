@@ -29,8 +29,8 @@ export interface SettableProperties {
   draw_mode: boolean;
   follow_song: boolean;
   highlighted_clip_slot: number;
-  selected_scene: number;
-  selected_track: number;
+  selected_scene: RawScene['id'];
+  selected_track: RawTrack['id'];
 }
 
 export interface ObservableProperties {
