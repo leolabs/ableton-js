@@ -6,10 +6,10 @@ export type DetailView = "Detail" | "Detail/Clip" | "Detail/DeviceChain";
 export type View = "Browser" | DocumentView | DetailView;
 
 export enum NavDirection {
-  "up",
-  "down",
-  "left",
-  "right",
+  Up,
+  Down,
+  Left,
+  Right,
 }
 
 export interface GettableProperties {
