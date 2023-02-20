@@ -6,14 +6,40 @@ import { MixerDevice, RawMixerDevice } from "./mixer-device";
 import { Clip, RawClip } from "./clip";
 import { Color } from "../util/color";
 
+export enum RoutingLayout {
+  Mono = 1,
+  Stereo = 2,
+}
+
+export interface RoutingChannel {
+  display_name: string;
+  layout: RoutingLayout;
+}
+
+export enum RoutingCategory {
+  External,
+  Rewire,
+  Resampling,
+  Master,
+  Track,
+  ParentGroupTrack,
+  None,
+  Invalid,
+}
+
+export interface RoutingType {
+  display_name: string;
+  category: RoutingCategory;
+}
+
 // TODO: Implement commented-out properties properly
 export interface GettableProperties {
   arm: boolean;
   arrangement_clips: RawClip[];
-  // available_input_routing_channels: unknown;
-  // available_input_routing_types: unknown;
-  // available_output_routing_channels: unknown;
-  // available_output_routing_types: unknown;
+  available_input_routing_channels: RoutingChannel[];
+  available_input_routing_types: RoutingType[];
+  available_output_routing_channels: RoutingChannel[];
+  available_output_routing_types: RoutingType[];
   can_be_armed: boolean;
   can_be_frozen: boolean;
   can_show_chains: boolean;
@@ -38,10 +64,10 @@ export interface GettableProperties {
   input_meter_left: number;
   input_meter_level: number;
   input_meter_right: number;
-  // input_routing_channel: number;
-  // input_routing_type: number;
-  // input_routings: number;
-  // input_sub_routings: number;
+  // input_routing_channel: unknown;
+  // input_routing_type: unknown;
+  // input_routings: unknown;
+  // input_sub_routings: unknown;
   is_foldable: boolean;
   is_frozen: boolean;
   is_grouped: boolean;
@@ -55,13 +81,13 @@ export interface GettableProperties {
   output_meter_left: number;
   output_meter_level: number;
   output_meter_right: number;
-  // output_routing_channel: number;
-  // output_routing_type: number;
-  // output_routings: number;
-  // output_sub_routings: number;
+  // output_routing_channel: unknown;
+  // output_routing_type: unknown;
+  // output_routings: unknown;
+  // output_sub_routings: unknown;
   playing_slot_index: number;
   solo: number;
-  //view: number;
+  //view: unknown;
 }
 
 export interface TransformedProperties {
