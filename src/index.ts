@@ -270,6 +270,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     }
 
     this.clientState = "closed";
+    this._isConnected = false;
   }
 
   /**
