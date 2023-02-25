@@ -179,7 +179,11 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       const timeout = new Promise((_, rej) =>
         setTimeout(() => rej("Connection timed out."), timeoutMs),
       );
-      await Promise.race([connection, timeout]);
+      await Promise.race([
+        connection,
+        this.internal.get("ping").catch(() => {}),
+        timeout,
+      ]);
     } else {
       await connection;
     }
