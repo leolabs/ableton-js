@@ -94,6 +94,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   private clientPortFile: string;
   private serverPortFile: string;
   private logger: Logger | undefined;
+  private clientState: "closed" | "starting" | "started" = "closed";
 
   constructor(private options?: AbletonOptions) {
     super();
@@ -125,6 +126,15 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
    * in the given time. Should be higher than 2000ms to avoid false positives.
    */
   async start(timeoutMs?: number) {
+    if (this.clientState !== "closed") {
+      this.logger?.warn(
+        "Tried call start, but client is already " + this.clientState,
+      );
+      return;
+    }
+
+    this.clientState = "starting";
+
     this.client = dgram.createSocket({ type: "udp4" });
     this.client.addListener("message", this.handleIncoming.bind(this));
 
@@ -176,6 +186,8 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
     this.logger?.info("Got connection!");
 
+    this.clientState = "started";
+
     const heartbeat = async () => {
       this.cancelConnectionEvent = false;
 
@@ -207,7 +219,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       .then((v) => {
         const jsVersion = getPackageVersion();
         if (semver.lt(v, jsVersion)) {
-          console.warn(
+          this.logger?.warn(
             `The installed version of your AbletonJS plugin (${v}) is lower than the JS library (${jsVersion}).`,
             "Please update your AbletonJS plugin to the latest version: https://git.io/JvaOu",
           );
@@ -230,8 +242,10 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
         this.client?.once("close", res),
       );
       this.client.close();
-      return closePromise;
+      await closePromise;
     }
+
+    this.clientState = "closed";
   }
 
   /**
