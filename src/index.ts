@@ -219,6 +219,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     this.logger?.info("Got connection!");
 
     this.clientState = "started";
+    this.handleConnect("start");
 
     const heartbeat = async () => {
       try {
@@ -332,7 +333,9 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
         this.serverPort = data.data.port;
       }
 
-      return this.handleConnect("realtime");
+      return this.handleConnect(
+        this.clientState === "starting" ? "start" : "realtime",
+      );
     }
 
     const eventCallback = this.eventListeners.get(data.event);
