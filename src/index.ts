@@ -1,9 +1,13 @@
+import os from "os";
+import path from "path";
 import dgram from "dgram";
 import { EventEmitter } from "events";
 import { v4 } from "uuid";
 import semver from "semver";
 import { unzipSync, deflateSync } from "zlib";
 import LruCache from "lru-cache";
+import { unwatchFile, watchFile } from "fs";
+import { readFile, writeFile } from "fs/promises";
 
 import { Song } from "./ns/song";
 import { Internal } from "./ns/internal";
@@ -11,6 +15,7 @@ import { Application } from "./ns/application";
 import { Midi } from "./ns/midi";
 import { getPackageVersion } from "./util/package-version";
 import { Cache, isCached, CacheResponse } from "./util/cache";
+import { Logger } from "./util/logger";
 
 interface Command {
   uuid: string;
@@ -56,6 +61,7 @@ export interface AbletonOptions {
   listenPort?: number;
   heartbeatInterval?: number;
   cacheOptions?: LruCache.Options<string, any>;
+  logger?: Logger;
 }
 
 export class Ableton extends EventEmitter implements ConnectionEventEmitter {
@@ -87,6 +93,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
   constructor(options?: AbletonOptions) {
     super();
+  private logger: Logger | undefined;
 
     this.host = options?.host ?? "127.0.0.1";
     this.sendPort = options?.sendPort ?? 39041;
@@ -95,6 +102,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     this.client = dgram.createSocket({ type: "udp4" });
     this.client.bind(this.listenPort, this.host);
     this.client.addListener("message", this.handleIncoming.bind(this));
+    this.logger = options?.logger;
 
     this.cache = new LruCache<string, any>({
       max: 500,
