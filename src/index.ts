@@ -17,6 +17,9 @@ import { getPackageVersion } from "./util/package-version";
 import { Cache, isCached, CacheResponse } from "./util/cache";
 import { Logger } from "./util/logger";
 
+const SERVER_PORT_FILE = "ableton-js-server.port";
+const CLIENT_PORT_FILE = "ableton-js-client.port";
+
 interface Command {
   uuid: string;
   ns: string;
@@ -56,16 +59,15 @@ export class TimeoutError extends Error {
 }
 
 export interface AbletonOptions {
-  host?: string;
-  sendPort?: number;
-  listenPort?: number;
+  serverPortFile?: string;
+  clientPortFile?: string;
   heartbeatInterval?: number;
   cacheOptions?: LruCache.Options<string, any>;
   logger?: Logger;
 }
 
 export class Ableton extends EventEmitter implements ConnectionEventEmitter {
-  private client: dgram.Socket;
+  private client: dgram.Socket | undefined;
   private msgMap = new Map<
     string,
     {
@@ -75,15 +77,13 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     }
   >();
   private eventListeners = new Map<string, Array<(data: any) => any>>();
-  private heartbeatInterval: NodeJS.Timeout;
+  private heartbeatInterval: NodeJS.Timeout | undefined;
   private _isConnected = false;
   private cancelConnectionEvent = false;
   private buffer: Buffer[] = [];
   private latency: number = 0;
 
-  private host: string;
-  private sendPort: number;
-  private listenPort: number;
+  private serverPort: number | undefined;
 
   public cache: Cache;
   public song = new Song(this);
@@ -91,17 +91,13 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   public internal = new Internal(this);
   public midi = new Midi(this);
 
-  constructor(options?: AbletonOptions) {
-    super();
+  private clientPortFile: string;
+  private serverPortFile: string;
   private logger: Logger | undefined;
 
-    this.host = options?.host ?? "127.0.0.1";
-    this.sendPort = options?.sendPort ?? 39041;
-    this.listenPort = options?.listenPort ?? 39031;
+  constructor(private options?: AbletonOptions) {
+    super();
 
-    this.client = dgram.createSocket({ type: "udp4" });
-    this.client.bind(this.listenPort, this.host);
-    this.client.addListener("message", this.handleIncoming.bind(this));
     this.logger = options?.logger;
 
     this.cache = new LruCache<string, any>({
@@ -109,6 +105,59 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       ttl: 1000 * 60 * 10,
       ...options?.cacheOptions,
     });
+
+    this.clientPortFile = path.join(
+      os.tmpdir(),
+      this.options?.clientPortFile ?? CLIENT_PORT_FILE,
+    );
+
+    this.serverPortFile = path.join(
+      os.tmpdir(),
+      this.options?.serverPortFile ?? SERVER_PORT_FILE,
+    );
+  }
+
+  /** Starts the server and waits for a connection with Live to be established. */
+  async start() {
+    this.client = dgram.createSocket({ type: "udp4" });
+    this.client.addListener("message", this.handleIncoming.bind(this));
+
+    this.client.addListener("listening", async () => {
+      const clientPort = this.client?.address().port;
+      this.logger?.info("Bound to port:", { clientPort });
+      // Write used port to a file to Live can read from it
+      await writeFile(this.clientPortFile, String(clientPort));
+    });
+
+    this.client.bind(undefined, "127.0.0.1");
+
+    // Wait for the server port file to exist
+    await new Promise<void>(async (res) => {
+      try {
+        const serverPort = await readFile(this.serverPortFile);
+        this.serverPort = Number(serverPort.toString());
+        this.logger?.info("Server port:", { port: this.serverPort });
+        res();
+      } catch (e) {}
+
+      watchFile(this.serverPortFile, async (curr) => {
+        if (curr.isFile()) {
+          const serverPort = await readFile(this.serverPortFile);
+          const newPort = Number(serverPort.toString());
+
+          if (!isNaN(newPort) && newPort !== this.serverPort) {
+            this.logger?.info("Server port changed:", { port: newPort });
+            this.serverPort = Number(serverPort.toString());
+          }
+
+          res();
+        }
+      });
+    });
+
+    this.logger?.info("Checking connection...");
+    await new Promise((res) => this.once("connect", res));
+    this.logger?.info("Got connection!");
 
     const heartbeat = async () => {
       this.cancelConnectionEvent = false;
@@ -132,7 +181,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
     this.heartbeatInterval = setInterval(
       heartbeat,
-      options?.heartbeatInterval ?? 2000,
+      this.options?.heartbeatInterval ?? 2000,
     );
     heartbeat();
 
@@ -150,10 +199,22 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       .catch(() => {});
   }
 
-  close() {
+  /** Closes the client */
+  async close() {
     this.cancelConnectionEvent = true;
-    clearInterval(this.heartbeatInterval);
-    this.client.close();
+    unwatchFile(this.serverPortFile);
+
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+    }
+
+    if (this.client) {
+      const closePromise = new Promise((res) =>
+        this.client?.once("close", res),
+      );
+      this.client.close();
+      return closePromise;
+    }
   }
 
   /**
@@ -219,6 +280,13 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     }
 
     if (data.event === "connect") {
+      if (data.data.port && data.data.port !== this.serverPort) {
+        this.logger?.info("Got new server port via connect:", {
+          port: data.data.port,
+        });
+        this.serverPort = data.data.port;
+      }
+
       if (this._isConnected === false) {
         this._isConnected = true;
         this.cancelConnectionEvent = true;
@@ -266,8 +334,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
             [
               `The command ${cls}.${command.name}(${arg}) timed out after ${timeout} ms.`,
               `Please make sure that Ableton is running and that you have the latest`,
-              `version of AbletonJS' midi script installed and renamed to "AbletonJS", listening on port`,
-              `${this.sendPort} and sending on port ${this.listenPort}.`,
+              `version of AbletonJS' MIDI script installed and renamed to "AbletonJS".`,
             ].join(" "),
             payload,
           ),
@@ -416,6 +483,12 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   }
 
   sendRaw(msg: string) {
+    if (!this.client || !this.serverPort) {
+      throw new Error(
+        "The client hasn't been started yet. Please call start() first.",
+      );
+    }
+
     const buffer = deflateSync(Buffer.from(msg));
 
     // Based on this thread, 7500 bytes seems like a safe value
@@ -430,7 +503,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
         Buffer.alloc(1, i + 1 === chunks ? 255 : i),
         buffer.slice(i * byteLimit, i * byteLimit + byteLimit),
       ]);
-      this.client.send(chunk, 0, chunk.length, this.sendPort, this.host);
+      this.client.send(chunk, 0, chunk.length, this.serverPort, "127.0.0.1");
     }
   }
 

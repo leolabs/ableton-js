@@ -2,7 +2,8 @@ import socket
 import json
 import struct
 import zlib
-import hashlib
+import os
+import tempfile
 from threading import Timer
 
 import Live
@@ -15,6 +16,13 @@ def split_by_n(seq, n):
         seq = seq[n:]
 
 
+server_port_file = "ableton-js-server.port"
+client_port_file = "ableton-js-client.port"
+
+client_port_path = os.path.join(tempfile.gettempdir(), client_port_file)
+server_port_path = os.path.join(tempfile.gettempdir(), server_port_file)
+
+
 class Socket(object):
 
     @staticmethod
@@ -25,11 +33,29 @@ class Socket(object):
     def set_message(func):
         Socket.show_message = func
 
-    def __init__(self, handler, remotehost='127.0.0.1', remoteport=39031, localhost='127.0.0.1', localport=39041):
+    def __init__(self, handler):
         self.input_handler = handler
-        self._local_addr = (localhost, localport)
-        self._remote_addr = (remotehost, remoteport)
+        self._server_addr = ('127.0.0.1', 0)
+        self._client_addr = ('127.0.0.1', 39031)
+        self.read_remote_port()
         self.init_socket()
+
+    def read_remote_port(self):
+        '''Reads the port our client is listening on'''
+        try:
+            with open(client_port_path) as file:
+                port = int(file.read())
+                if port != self._client_addr[1]:
+                    self.log_message("Client port changed: " + str(port))
+                    self._client_addr = ('127.0.0.1', port)
+
+                    if hasattr(self, "_socket"):
+                        self.send("connect", {"port": self._server_addr[1]})
+        except Exception as e:
+            self.log_message("Couldn't read remote port:", str(e.args))
+
+        t = Timer(1, self.read_remote_port)
+        t.start()
 
     def init_socket(self):
         self._socket = socket.socket(
@@ -43,12 +69,20 @@ class Socket(object):
 
     def bind(self):
         try:
-            self._socket.bind(self._local_addr)
-            self.log_message('Starting on: ' + str(self._local_addr) +
-                             ', remote addr: ' + str(self._remote_addr))
+            self._socket.bind(self._server_addr)
+            port = self._socket.getsockname()[1]
+
+            # Write the chosen port to a file
+            with open(server_port_path, "w") as file:
+                file.write(str(port))
+
+            self.send("connect", {"port": port})
+
+            self.log_message('Starting on: ' + str(self._socket.getsockname()) +
+                             ', remote addr: ' + str(self._client_addr))
         except Exception as e:
             msg = 'ERROR: Cannot bind to ' + \
-                str(self._local_addr) + ': ' + \
+                str(self._server_addr) + ': ' + \
                 str(e.args) + ', trying again. ' + \
                 'If this keeps happening, try restarting your computer.'
             self.show_message(msg)
@@ -64,13 +98,13 @@ class Socket(object):
         limit = 7500
 
         if len(compressed) < limit:
-            self._socket.sendto(b'\xFF' + compressed, self._remote_addr)
+            self._socket.sendto(b'\xFF' + compressed, self._client_addr)
         else:
             chunks = list(split_by_n(compressed, limit))
             count = len(chunks)
             for i, chunk in enumerate(chunks):
                 count_byte = struct.pack("B", i if i + 1 < count else 255)
-                self._socket.sendto(count_byte + chunk, self._remote_addr)
+                self._socket.sendto(count_byte + chunk, self._client_addr)
 
     def send(self, name, obj=None, uuid=None):
         def jsonReplace(o):

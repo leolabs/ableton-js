@@ -52,8 +52,6 @@ class AbletonJS(ControlSurface):
 
         self.recv_loop.start()
 
-        self.socket.send("connect")
-
     def build_midi_map(self, midi_map_handle):
         script_handle = self._c_instance.handle()
         for midi in self.tracked_midi:

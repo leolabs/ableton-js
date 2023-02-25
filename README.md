@@ -51,6 +51,9 @@ import { Ableton } from "ableton-js";
 const ableton = new Ableton();
 
 const test = async () => {
+  // Establishes a connection with Live
+  await ableton.start();
+
   // Observe the current playback state and tempo
   ableton.song.addListener("is_playing", (p) => console.log("Playing:", p));
   ableton.song.addListener("tempo", (t) => console.log("Tempo:", t));
@@ -93,6 +96,11 @@ ab.on("ping", (ping) => console.log("Ping:", ping, "ms"));
 Ableton.js uses UDP to communicate with the MIDI Script. Each message is a JSON
 object containing required data and a UUID so request and response can be
 associated with each other.
+
+### Used Ports
+
+Both the client and the server bind to a random available port and store that
+port in a local file so the other side knows which port to send messages to.
 
 ### Compression and Chunking
 
