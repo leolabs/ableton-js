@@ -121,6 +121,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   private handleConnect(type: ConnectEventType) {
     if (!this._isConnected) {
       this._isConnected = true;
+      this.logger?.info("Live connected", { type });
       this.emit("connect", type);
     }
   }
@@ -131,6 +132,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       this.eventListeners.clear();
       this.msgMap.forEach((msg) => msg.clearTimeout());
       this.msgMap.clear();
+      this.logger?.info("Live disconnected", { type });
       this.emit("disconnect", type);
     }
   }
