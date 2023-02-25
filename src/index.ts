@@ -290,6 +290,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       }
     } catch (e) {
       this.buffer = [];
+      this.logger?.warn("Couldn't handle message:", { error: e });
       this.emit("error", e);
     }
   }
@@ -336,6 +337,9 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
         "error",
         "Message could not be assigned to any request: " + msg,
       );
+      this.logger?.warn("Message could not be assigned to any request:", {
+        msg,
+      });
     }
   }
 
