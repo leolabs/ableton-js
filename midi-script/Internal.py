@@ -13,4 +13,4 @@ class Internal(Interface):
         return True
 
     def get_version(self, ns):
-        return "2.9.1"
+        return "3.0.0"
