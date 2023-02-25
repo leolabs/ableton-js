@@ -117,14 +117,20 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     );
   }
 
-  /** Starts the server and waits for a connection with Live to be established. */
-  async start() {
+  /**
+   * Starts the server and waits for a connection with Live to be established.
+   *
+   * @param timeoutMs
+   * If set, the function will throw an error if it can't establish a connection
+   * in the given time. Should be higher than 2000ms to avoid false positives.
+   */
+  async start(timeoutMs?: number) {
     this.client = dgram.createSocket({ type: "udp4" });
     this.client.addListener("message", this.handleIncoming.bind(this));
 
     this.client.addListener("listening", async () => {
       const clientPort = this.client?.address().port;
-      this.logger?.info("Bound to port:", { clientPort });
+      this.logger?.info("Bound client to port:", { clientPort });
       // Write used port to a file to Live can read from it
       await writeFile(this.clientPortFile, String(clientPort));
     });
@@ -140,6 +146,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
         res();
       } catch (e) {}
 
+      // Set up a watcher in case the server port changes
       watchFile(this.serverPortFile, async (curr) => {
         if (curr.isFile()) {
           const serverPort = await readFile(this.serverPortFile);
@@ -156,7 +163,17 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     });
 
     this.logger?.info("Checking connection...");
-    await new Promise((res) => this.once("connect", res));
+    const connection = new Promise((res) => this.once("connect", res));
+
+    if (timeoutMs) {
+      const timeout = new Promise((_, rej) =>
+        setTimeout(() => rej("Connection timed out."), timeoutMs),
+      );
+      await Promise.race([connection, timeout]);
+    } else {
+      await connection;
+    }
+
     this.logger?.info("Got connection!");
 
     const heartbeat = async () => {
