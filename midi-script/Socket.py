@@ -46,9 +46,11 @@ class Socket(object):
             self._socket.bind(self._local_addr)
             self.log_message('Starting on: ' + str(self._local_addr) +
                              ', remote addr: ' + str(self._remote_addr))
-        except:
+        except Exception as e:
             msg = 'ERROR: Cannot bind to ' + \
-                str(self._local_addr) + ', port in use. Trying again...'
+                str(self._local_addr) + ': ' + \
+                str(e.args) + ', trying again. ' + \
+                'If this keeps happening, try restarting your computer.'
             self.show_message(msg)
             self.log_message(msg)
             t = Timer(5, self.bind)
