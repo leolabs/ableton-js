@@ -80,7 +80,6 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   private eventListeners = new Map<string, Array<(data: any) => any>>();
   private heartbeatInterval: NodeJS.Timeout | undefined;
   private _isConnected = false;
-  private cancelConnectionEvent = false;
   private buffer: Buffer[] = [];
   private latency: number = 0;
 
@@ -222,8 +221,6 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     this.clientState = "started";
 
     const heartbeat = async () => {
-      this.cancelConnectionEvent = false;
-
       try {
         await this.internal.get("ping");
         this.handleConnect("heartbeat");
@@ -254,7 +251,6 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
   /** Closes the client */
   async close() {
-    this.cancelConnectionEvent = true;
     unwatchFile(this.serverPortFile);
 
     if (this.heartbeatInterval) {
