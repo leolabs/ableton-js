@@ -9,5 +9,8 @@ class Internal(Interface):
     def get_ns(self, nsid):
         return self
 
+    def get_ping(self, nsid):
+        return True
+
     def get_version(self, ns):
         return "2.9.1"

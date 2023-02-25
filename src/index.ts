@@ -106,7 +106,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       this.cancelConnectionEvent = false;
 
       try {
-        await this.song.get("current_song_time");
+        await this.internal.get("ping");
         if (!this._isConnected && !this.cancelConnectionEvent) {
           this._isConnected = true;
           this.emit("connect", "heartbeat");

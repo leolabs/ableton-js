@@ -5,6 +5,7 @@ import semver from "semver";
 
 export interface GettableProperties {
   version: string;
+  ping: boolean;
 }
 
 export interface TransformedProperties {}
