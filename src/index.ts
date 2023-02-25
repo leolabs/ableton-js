@@ -36,11 +36,12 @@ interface Response {
   data: any;
 }
 
-type ConnectionEventType = "realtime" | "heartbeat";
+type DisconnectEventType = "realtime" | "heartbeat";
+type ConnectEventType = DisconnectEventType | "start";
 
 interface ConnectionEventEmitter {
-  on(e: "connect", l: (t: ConnectionEventType) => void): this;
-  on(e: "disconnect", l: (t: ConnectionEventType) => void): this;
+  on(e: "connect", l: (t: ConnectEventType) => void): this;
+  on(e: "disconnect", l: (t: DisconnectEventType) => void): this;
   on(e: "message", l: (t: any) => void): this;
   on(e: "error", l: (t: Error) => void): this;
   on(e: "ping", l: (t: number) => void): this;
@@ -116,6 +117,23 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       os.tmpdir(),
       this.options?.serverPortFile ?? SERVER_PORT_FILE,
     );
+  }
+
+  private handleConnect(type: ConnectEventType) {
+    if (!this._isConnected) {
+      this._isConnected = true;
+      this.emit("connect", type);
+    }
+  }
+
+  private handleDisconnect(type: DisconnectEventType) {
+    if (this._isConnected) {
+      this._isConnected = false;
+      this.eventListeners.clear();
+      this.msgMap.forEach((msg) => msg.clearTimeout());
+      this.msgMap.clear();
+      this.emit("disconnect", type);
+    }
   }
 
   /**
@@ -197,18 +215,9 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
       try {
         await this.internal.get("ping");
-        if (!this._isConnected && !this.cancelConnectionEvent) {
-          this._isConnected = true;
-          this.emit("connect", "heartbeat");
-        }
+        this.handleConnect("heartbeat");
       } catch (e) {
-        if (this._isConnected && !this.cancelConnectionEvent) {
-          this._isConnected = false;
-          this.eventListeners.clear();
-          this.msgMap.forEach((msg) => msg.clearTimeout());
-          this.msgMap.clear();
-          this.emit("disconnect", "heartbeat");
-        }
+        this.handleDisconnect("heartbeat");
       }
     };
 
@@ -303,15 +312,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     }
 
     if (data.event === "disconnect") {
-      this.eventListeners.clear();
-      this.msgMap.forEach((msg) => msg.clearTimeout());
-      this.msgMap.clear();
-      if (this._isConnected === true) {
-        this._isConnected = false;
-        this.cancelConnectionEvent = true;
-        this.emit("disconnect", "realtime");
-      }
-      return;
+      return this.handleDisconnect("realtime");
     }
 
     if (data.event === "connect") {
@@ -322,12 +323,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
         this.serverPort = data.data.port;
       }
 
-      if (this._isConnected === false) {
-        this._isConnected = true;
-        this.cancelConnectionEvent = true;
-        this.emit("connect", "realtime");
-      }
-      return;
+      return this.handleConnect("realtime");
     }
 
     const eventCallback = this.eventListeners.get(data.event);
