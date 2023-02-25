@@ -76,8 +76,11 @@ class AbletonJS(ControlSurface):
         super(AbletonJS, self).disconnect()
 
     def command_handler(self, payload):
-        self.log_message("Received command: " + str(payload))
         namespace = payload["ns"]
+
+        # Don't clutter the logs
+        if not (namespace == "internal" and payload["name"] == "get_prop" and payload["args"]["prop"] == "ping"):
+            self.log_message("Received command: " + str(payload))
 
         if namespace in self.handlers:
             handler = self.handlers[namespace]
