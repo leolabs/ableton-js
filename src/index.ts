@@ -137,6 +137,21 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   }
 
   /**
+   * If connected, returns immediately. Otherwise,
+   * it waits for a connection event before returning.
+   */
+  async waitForConnection() {
+    if (this._isConnected) {
+      return;
+    } else {
+      return Promise.race([
+        new Promise((res) => this.once("connect", res)),
+        this.internal.get("ping").catch(() => {}),
+      ]);
+    }
+  }
+
+  /**
    * Starts the server and waits for a connection with Live to be established.
    *
    * @param timeoutMs
@@ -191,17 +206,13 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     });
 
     this.logger?.info("Checking connection...");
-    const connection = new Promise((res) => this.once("connect", res));
+    const connection = this.waitForConnection();
 
     if (timeoutMs) {
       const timeout = new Promise((_, rej) =>
         setTimeout(() => rej("Connection timed out."), timeoutMs),
       );
-      await Promise.race([
-        connection,
-        this.internal.get("ping").catch(() => {}),
-        timeout,
-      ]);
+      await Promise.race([connection, timeout]);
     } else {
       await connection;
     }
