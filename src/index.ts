@@ -145,7 +145,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     } else {
       return Promise.race([
         new Promise((res) => this.once("connect", res)),
-        this.internal.get("ping").catch(() => {}),
+        this.internal.get("ping").catch(() => new Promise(() => {})),
       ]);
     }
   }
