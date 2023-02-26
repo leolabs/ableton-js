@@ -143,16 +143,16 @@ class Socket(object):
                 return list(o)
             return str(o)
 
+        data = None
+
         try:
-            self._sendto(json.dumps(
-                {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace, ensure_ascii=False))
+            data = json.dumps(
+                {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace, ensure_ascii=False)
+            self._sendto(data)
         except socket.error as e:
-            self.log_message("Socket error: " + str(e.args))
-            self.log_message("Server: " + str(self._server_addr) +
-                             ", client: " + str(self._client_addr))
-            self.log_message("Restarting socket...")
-            self._socket.close()
-            self.init_socket()
+            self.log_message("Socket error: " + str(e.args) + ", server: " + str(self._server_addr) +
+                             ", client: " + str(self._client_addr) + ", socket: " + str(self._socket))
+            self.log_message("Data:" + data)
         except Exception as e:
             error = str(type(e).__name__) + ': ' + str(e.args)
             self.log_message("Error " + name + "(" + str(uuid) + "): " + error)
