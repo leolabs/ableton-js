@@ -109,7 +109,7 @@ class Socket(object):
             self.send("connect", {"port": port})
             self.show_message("Started server on port " + str(port))
 
-            self.log_message('Starting on: ' + str(self._socket.getsockname()) +
+            self.log_message('Started on: ' + str(self._socket.getsockname()) +
                              ', remote addr: ' + str(self._client_addr))
         except Exception as e:
             msg = 'ERROR: Cannot bind to ' + \
@@ -148,6 +148,8 @@ class Socket(object):
                 {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace, ensure_ascii=False))
         except socket.error as e:
             self.log_message("Socket error: " + str(e.args))
+            self.log_message("Server: " + str(self._server_addr) +
+                             ", client: " + str(self._client_addr))
             self.log_message("Restarting socket...")
             self._socket.close()
             self.init_socket()
