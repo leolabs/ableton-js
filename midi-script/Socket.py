@@ -107,6 +107,7 @@ class Socket(object):
                     file.write(str(port))
 
             self.send("connect", {"port": port})
+            self.show_message("Started server on port " + str(port))
 
             self.log_message('Starting on: ' + str(self._socket.getsockname()) +
                              ', remote addr: ' + str(self._client_addr))
