@@ -37,6 +37,7 @@ class Socket(object):
         self.input_handler = handler
         self._server_addr = ('127.0.0.1', 0)
         self._client_addr = ('127.0.0.1', 39031)
+        self.remote_port_file = None
         self.read_remote_port()
         self.init_socket()
 
@@ -55,19 +56,25 @@ class Socket(object):
     def read_remote_port(self):
         '''Reads the port our client is listening on'''
         try:
-            with open(client_port_path) as file:
-                port = int(file.read())
-                if port != self._client_addr[1]:
-                    self.log_message("Client port changed: " + str(port))
-                    self._client_addr = ('127.0.0.1', port)
+            if self.remote_port_file == None or self.remote_port_file.closed:
+                self.log_message("Opening remote port file...")
+                self.remote_port_file = open(client_port_path)
 
-                    if hasattr(self, "_socket"):
-                        self.send("connect", {"port": self._server_addr[1]})
+            self.remote_port_file.seek(0)
+            port = int(self.remote_port_file.read())
+
+            if port != self._client_addr[1]:
+                self.log_message("Client port changed: " + str(port))
+                self._client_addr = ('127.0.0.1', port)
+
+                if hasattr(self, "_socket"):
+                    self.send("connect", {"port": self._server_addr[1]})
         except Exception as e:
             self.log_message("Couldn't read remote port:", str(e.args))
+            if self.remote_port_file:
+                self.remote_port_file.close()
 
-        t = Timer(1, self.read_remote_port)
-        t.start()
+        Timer(1, self.read_remote_port).start()
 
     def init_socket(self):
         self._socket = socket.socket(
@@ -78,6 +85,8 @@ class Socket(object):
 
     def shutdown(self):
         self._socket.close()
+        if self.remote_port_file:
+            self.remote_port_file.close()
 
     def bind(self, try_stored=False):
         try:
@@ -139,7 +148,7 @@ class Socket(object):
         except socket.error as e:
             self.log_message("Socket error: " + str(e.args))
             self.log_message("Restarting socket...")
-            self.shutdown()
+            self._socket.close()
             self.init_socket()
         except Exception as e:
             error = str(type(e).__name__) + ': ' + str(e.args)
