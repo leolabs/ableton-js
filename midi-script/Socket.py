@@ -40,6 +40,18 @@ class Socket(object):
         self.read_remote_port()
         self.init_socket()
 
+    def read_last_server_port(self):
+        try:
+            with open(server_port_path) as file:
+                port = int(file.read())
+
+            self.log_message("Stored server port: " + str(port))
+            return port
+        except Exception as e:
+            self.log_message(
+                "Couldn't read stored server port: " + str(e.args))
+            return None
+
     def read_remote_port(self):
         '''Reads the port our client is listening on'''
         try:
@@ -62,19 +74,28 @@ class Socket(object):
             socket.AF_INET, socket.SOCK_DGRAM)
         self._socket.setblocking(0)
 
-        self.bind()
+        self.bind(True)
 
     def shutdown(self):
         self._socket.close()
 
-    def bind(self):
+    def bind(self, try_stored=False):
         try:
+            stored_port = self.read_last_server_port()
+
+            # Try the port we used last time first
+            if try_stored and stored_port:
+                self._server_addr = ("127.0.0.1", stored_port)
+            else:
+                self._server_addr = ("127.0.0.1", 0)
+
             self._socket.bind(self._server_addr)
             port = self._socket.getsockname()[1]
 
             # Write the chosen port to a file
-            with open(server_port_path, "w") as file:
-                file.write(str(port))
+            if stored_port != port:
+                with open(server_port_path, "w") as file:
+                    file.write(str(port))
 
             self.send("connect", {"port": port})
 
