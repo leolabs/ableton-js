@@ -90,7 +90,8 @@ class Interface(object):
             value = self.get_prop(ns, prop)
             return self.socket.send(eventId, value)
 
-        self.log_message("Attaching listener")
+        self.log_message("Attaching listener: " +
+                         key + ", event ID: " + eventId)
         add_fn(fn)
         self.listeners[key] = {"id": eventId, "fn": fn}
         return eventId
