@@ -337,7 +337,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       // cancel it to prevent a double disconnect/connect event.
       this.cancelDisconnectEvent = true;
 
-      if (data.data.port && data.data.port !== this.serverPort) {
+      if (data.data?.port && data.data?.port !== this.serverPort) {
         this.logger?.info("Got new server port via connect:", {
           port: data.data.port,
         });
