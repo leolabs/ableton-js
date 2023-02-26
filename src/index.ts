@@ -95,6 +95,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   private serverPortFile: string;
   private logger: Logger | undefined;
   private clientState: "closed" | "starting" | "started" = "closed";
+  private cancelDisconnectEvent = false;
 
   constructor(private options?: AbletonOptions) {
     super();
@@ -228,7 +229,11 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
         await this.internal.get("ping");
         this.handleConnect("heartbeat");
       } catch (e) {
-        this.handleDisconnect("heartbeat");
+        if (!this.cancelDisconnectEvent) {
+          this.handleDisconnect("heartbeat");
+        }
+      } finally {
+        this.cancelDisconnectEvent = false;
       }
     };
 
@@ -328,6 +333,10 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     }
 
     if (data.event === "connect") {
+      // If some heartbeat ping from the old connection is still pending,
+      // cancel it to prevent a double disconnect/connect event.
+      this.cancelDisconnectEvent = true;
+
       if (data.data.port && data.data.port !== this.serverPort) {
         this.logger?.info("Got new server port via connect:", {
           port: data.data.port,
