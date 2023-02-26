@@ -35,11 +35,16 @@ class Socket(object):
 
     def __init__(self, handler):
         self.input_handler = handler
-        self._server_addr = ('127.0.0.1', 0)
-        self._client_addr = ('127.0.0.1', 39031)
-        self.remote_port_file = None
+        self._server_addr = ("0.0.0.0", 0)
+        self._client_addr = ("127.0.0.1", 39031)
+        self._socket = None
+
         self.read_remote_port()
-        self.init_socket()
+        self.init_socket(True)
+
+        self.file_timer = Live.Base.Timer(callback=self.read_remote_port,
+                                          interval=1000, repeat=True)
+        self.file_timer.start()
 
     def read_last_server_port(self):
         try:
@@ -56,61 +61,64 @@ class Socket(object):
     def read_remote_port(self):
         '''Reads the port our client is listening on'''
         try:
-            if self.remote_port_file == None or self.remote_port_file.closed:
-                self.log_message("Opening remote port file...")
-                self.remote_port_file = open(client_port_path)
+            old_port = self._client_addr[1]
 
-            self.remote_port_file.seek(0)
-            port = int(self.remote_port_file.read())
+            with open(client_port_path) as file:
+                port = int(file.read())
 
-            if port != self._client_addr[1]:
-                self.log_message("Client port changed: " + str(port))
-                self._client_addr = ('127.0.0.1', port)
+                if port != old_port:
+                    self.log_message("[" + str(id(self)) + "] Client port changed from " +
+                                     str(old_port) + " to " + str(port))
+                    self._client_addr = ("127.0.0.1", port)
 
-                if hasattr(self, "_socket"):
-                    self.send("connect", {"port": self._server_addr[1]})
+                    if self._socket:
+                        self.send("connect", {"port": self._server_addr[1]})
         except Exception as e:
-            self.log_message("Couldn't read remote port:", str(e.args))
-            if self.remote_port_file:
-                self.remote_port_file.close()
-
-        Timer(1, self.read_remote_port).start()
-
-    def init_socket(self):
-        self._socket = socket.socket(
-            socket.AF_INET, socket.SOCK_DGRAM)
-        self._socket.setblocking(0)
-
-        self.bind(True)
+            self.log_message("Couldn't read file: " + str(e.args))
 
     def shutdown(self):
+        self.log_message("Shutting down...")
+        self.file_timer.stop()
         self._socket.close()
-        if self.remote_port_file:
-            self.remote_port_file.close()
 
-    def bind(self, try_stored=False):
+    def init_socket(self, try_stored=False):
+        self.log_message(
+            "Initializing socket, from stored: " + str(try_stored))
+
         try:
             stored_port = self.read_last_server_port()
 
             # Try the port we used last time first
             if try_stored and stored_port:
-                self._server_addr = ("127.0.0.1", stored_port)
+                self._server_addr = ("0.0.0.0", stored_port)
             else:
-                self._server_addr = ("127.0.0.1", 0)
+                self._server_addr = ("0.0.0.0", 0)
 
+            self._socket = socket.socket(
+                socket.AF_INET, socket.SOCK_DGRAM)
+            self._socket.setblocking(0)
             self._socket.bind(self._server_addr)
             port = self._socket.getsockname()[1]
 
             # Write the chosen port to a file
-            if stored_port != port:
-                with open(server_port_path, "w") as file:
-                    file.write(str(port))
+            try:
+                if stored_port != port:
+                    with open(server_port_path, "w") as file:
+                        file.write(str(port))
+            except Exception as e:
+                self.log_message("Couldn't save port in file: " + str(e.args))
+                raise e
 
-            self.send("connect", {"port": port})
+            try:
+                self.send("connect", {"port": self._server_addr[1]})
+            except Exception as e:
+                self.log_message("Couldn't send connect to " +
+                                 str(self._client_addr) + ": " + str(e.args))
+
             self.show_message("Started server on port " + str(port))
 
-            self.log_message('Started on: ' + str(self._socket.getsockname()) +
-                             ', remote addr: ' + str(self._client_addr))
+            self.log_message('Started server on: ' + str(self._socket.getsockname()) +
+                             ', client addr: ' + str(self._client_addr))
         except Exception as e:
             msg = 'ERROR: Cannot bind to ' + \
                 str(self._server_addr) + ': ' + \
@@ -118,7 +126,8 @@ class Socket(object):
                 'If this keeps happening, try restarting your computer.'
             self.show_message(msg)
             self.log_message(msg)
-            t = Timer(5, self.bind)
+            self.log_message("Client address: " + str(self._client_addr))
+            t = Timer(5, self.init_socket)
             t.start()
 
     def _sendto(self, msg):
