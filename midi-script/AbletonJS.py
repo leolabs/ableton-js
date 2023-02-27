@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 
+from .version import version
 from .Socket import Socket
 from .Interface import Interface
 from .Application import Application
@@ -24,6 +25,8 @@ import Live
 class AbletonJS(ControlSurface):
     def __init__(self, c_instance):
         super(AbletonJS, self).__init__(c_instance)
+        self.log_message("Starting AbletonJS " + version + "...")
+
         self.tracked_midi = set()
 
         Socket.set_log(self.log_message)

@@ -124,9 +124,9 @@ class Socket(object):
                 str(self._server_addr) + ': ' + \
                 str(e.args) + ', trying again. ' + \
                 'If this keeps happening, try restarting your computer.'
-            self.show_message(msg)
             self.log_message(msg)
             self.log_message("Client address: " + str(self._client_addr))
+            self.show_message(msg)
             t = Timer(5, self.init_socket)
             t.start()
 

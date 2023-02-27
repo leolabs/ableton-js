@@ -1,5 +1,6 @@
 from __future__ import absolute_import
 from .Interface import Interface
+from .version import version
 
 
 class Internal(Interface):
@@ -13,4 +14,4 @@ class Internal(Interface):
         return True
 
     def get_version(self, ns):
-        return "3.1.3"
+        return version
