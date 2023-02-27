@@ -35,7 +35,7 @@ class Socket(object):
 
     def __init__(self, handler):
         self.input_handler = handler
-        self._server_addr = ("0.0.0.0", 0)
+        self._server_addr = ("127.0.0.1", 0)
         self._client_addr = ("127.0.0.1", 39031)
         self._socket = None
 
@@ -90,9 +90,9 @@ class Socket(object):
 
             # Try the port we used last time first
             if try_stored and stored_port:
-                self._server_addr = ("0.0.0.0", stored_port)
+                self._server_addr = ("127.0.0.1", stored_port)
             else:
-                self._server_addr = ("0.0.0.0", 0)
+                self._server_addr = ("127.0.0.1", 0)
 
             self._socket = socket.socket(
                 socket.AF_INET, socket.SOCK_DGRAM)
