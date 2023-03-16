@@ -174,13 +174,28 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     this.client.addListener("message", this.handleIncoming.bind(this));
 
     this.client.addListener("listening", async () => {
-      const clientPort = this.client?.address().port;
-      this.logger?.info("Bound client to port:", { clientPort });
-      // Write used port to a file to Live can read from it
-      await writeFile(this.clientPortFile, String(clientPort));
+      const port = this.client?.address().port;
+      this.logger?.info("Client is bound and listening", { port });
+      // Write used port to a file so Live can read from it
+      await writeFile(this.clientPortFile, String(port));
     });
 
-    this.client.bind(undefined, "127.0.0.1");
+    try {
+      // Try binding to the port that was used last for better start performance
+      this.logger?.info("Checking if a stored port exists", {
+        file: this.clientPortFile,
+      });
+      const clientPort = await readFile(this.clientPortFile);
+      const port = Number(clientPort.toString());
+      this.logger?.info("Trying to bind to the most recent port", { port });
+      this.client.bind(port, "127.0.0.1");
+    } catch (error) {
+      this.logger?.info(
+        "Couldn't bind to last port, binding to any free port instead",
+        { error },
+      );
+      this.client.bind(undefined, "127.0.0.1");
+    }
 
     // Wait for the server port file to exist
     await new Promise<void>(async (res) => {
@@ -259,6 +274,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
   /** Closes the client */
   async close() {
+    this.logger?.info("Closing the client");
     unwatchFile(this.serverPortFile);
 
     if (this.heartbeatInterval) {
@@ -275,6 +291,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
     this.clientState = "closed";
     this._isConnected = false;
+    this.logger?.info("Client closed");
   }
 
   /**
