@@ -106,7 +106,7 @@ export interface SettableProperties {
   current_input_sub_routing: string;
   current_monitoring_state: number;
   current_output_routing: string;
-  current_output_sub_routing: number;
+  current_output_sub_routing: string;
   fired_slot_index: number;
   fold_state: number;
   implicit_arm: boolean;
