@@ -9,6 +9,6 @@ export const withAbleton = async (callback: (ab: Ableton) => Promise<void>) => {
   try {
     await callback(ab);
   } finally {
-    ab.close();
+    await ab.close();
   }
 };
