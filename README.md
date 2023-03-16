@@ -48,7 +48,8 @@ Example:
 ```typescript
 import { Ableton } from "ableton-js";
 
-const ableton = new Ableton();
+// Log all messages to the console
+const ableton = new Ableton({ logger: console });
 
 const test = async () => {
   // Establishes a connection with Live
@@ -60,7 +61,7 @@ const test = async () => {
 
   // Get the current tempo
   const tempo = await ableton.song.get("tempo");
-  console.log(tempo);
+  console.log("Current tempo:", tempo);
 
   // Set the tempo
   await ableton.song.set("tempo", 85);
