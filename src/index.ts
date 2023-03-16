@@ -163,7 +163,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   async start(timeoutMs?: number) {
     if (this.clientState !== "closed") {
       this.logger?.warn(
-        "Tried call start, but client is already " + this.clientState,
+        "Tried calling start, but client is already " + this.clientState,
       );
       return;
     }
