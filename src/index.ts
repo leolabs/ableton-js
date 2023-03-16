@@ -372,10 +372,6 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     }
 
     if (data.uuid) {
-      this.emit(
-        "error",
-        "Message could not be assigned to any request: " + msg,
-      );
       this.logger?.warn("Message could not be assigned to any request:", {
         msg,
       });
