@@ -36,8 +36,8 @@ class Interface(object):
         def jsonReplace(o):
             return str(o)
 
-        hash = hashlib.md5(json.dumps(
-            result, default=jsonReplace, ensure_ascii=False).encode()).hexdigest()
+        response = json.dumps(result, default=jsonReplace, ensure_ascii=False)
+        hash = hashlib.md5(response.encode("utf-8", "replace")).hexdigest()
 
         if hash == etag:
             return self.socket.send("result", {"__cached": True}, uuid)
@@ -72,6 +72,7 @@ class Interface(object):
                 self.socket.send("error", "Function call failed: " + payload["name"] +
                                  " doesn't exist or isn't callable", uuid)
         except Exception as e:
+            self.log_message("Handler Error: " + str(e.args))
             self.socket.send("error", str(e.args[0]), uuid)
 
     def add_listener(self, ns, prop, eventId, nsid="Default"):
