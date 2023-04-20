@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from .Interface import Interface
 from .CuePoint import CuePoint
+from .Device import Device
 from .Scene import Scene
 from .Track import Track
 
@@ -29,6 +30,9 @@ class Song(Interface):
         sorted_points = sorted(ns.cue_points, key=lambda cue: cue.time)
         return map(CuePoint.serialize_cue_point, sorted_points)
 
+    def get_appointed_device(self, ns):
+        return Device.serialize_device(ns.appointed_device)
+
     def get_master_track(self, ns):
         return Track.serialize_track(ns.master_track)
 
@@ -53,3 +57,6 @@ class Song(Interface):
     def get_current_smpte_song_time(self, ns, timeFormat):
         time = ns.get_current_smpte_song_time(timeFormat)
         return {'hours': time.hours, 'minutes': time.minutes, 'seconds': time.seconds, 'frames': time.frames}
+
+    def set_appointed_device(self, ns, device_id):
+        ns.appointed_device = Interface.get_obj(device_id)

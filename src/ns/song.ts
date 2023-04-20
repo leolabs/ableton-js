@@ -4,8 +4,10 @@ import { Track, RawTrack } from "./track";
 import { CuePoint, RawCuePoint } from "./cue-point";
 import { SongView } from "./song-view";
 import { Scene, RawScene } from "./scene";
+import { RawDevice } from "./device";
 
 export interface GettableProperties {
+  appointed_device: RawDevice;
   arrangement_overdub: boolean;
   back_to_arranger: number;
   can_capture_midi: boolean;
@@ -65,6 +67,7 @@ export interface TransformedProperties {
 }
 
 export interface SettableProperties {
+  appointed_device: string;
   arrangement_overdub: boolean;
   back_to_arranger: number;
   clip_trigger_quantization: Quantization;
@@ -105,6 +108,7 @@ export interface SettableProperties {
 }
 
 export interface ObservableProperties {
+  appointed_device: RawDevice;
   arrangement_overdub: boolean;
   back_to_arranger: number;
   can_capture_midi: boolean;
