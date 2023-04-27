@@ -1,6 +1,8 @@
 import hashlib
 import json
 
+from .Config import DEBUG
+
 
 class Interface(object):
     obj_ids = dict()
@@ -24,6 +26,10 @@ class Interface(object):
         self.ableton = c_instance
         self.socket = socket
         self.log_message = c_instance.log_message
+
+    def log_debug(self, message: str):
+        if DEBUG:
+            self.log_message(message)
 
     def get_ns(self, nsid):
         return Interface.obj_ids[nsid]
@@ -82,24 +88,25 @@ class Interface(object):
             raise Exception("Listener " + str(prop) + " does not exist.")
 
         key = str(nsid) + ":" + prop
-        self.log_message("Listener key: " + key)
+        self.log_debug("Listener key: " + key)
+
         if key in self.listeners:
-            self.log_message("Key already has a listener")
+            self.log_debug("Key already has a listener")
             return self.listeners[key]["id"]
 
         def fn():
             value = self.get_prop(ns, prop)
             return self.socket.send(eventId, value)
 
-        self.log_message("Attaching listener: " +
-                         key + ", event ID: " + eventId)
+        self.log_debug("Attaching listener: " +
+                       key + ", event ID: " + eventId)
         add_fn(fn)
         self.listeners[key] = {"id": eventId, "fn": fn}
         return eventId
 
     def remove_listener(self, ns, prop, nsid="Default"):
         key = str(nsid) + ":" + prop
-        self.log_message("Remove key: " + key)
+        self.log_debug("Remove key: " + key)
         if key not in self.listeners:
             raise Exception("Listener " + str(prop) + " does not exist.")
 

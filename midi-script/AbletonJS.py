@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 from .version import version
+from .Config import DEBUG
 from .Socket import Socket
 from .Interface import Interface
 from .Application import Application
@@ -80,7 +81,7 @@ class AbletonJS(ControlSurface):
         namespace = payload["ns"]
 
         # Don't clutter the logs
-        if not (namespace == "internal" and payload["name"] == "get_prop" and payload["args"]["prop"] == "ping"):
+        if not (namespace == "internal" and payload["name"] == "get_prop" and payload["args"]["prop"] == "ping") and DEBUG:
             self.log_message("Received command: " + str(payload))
 
         if namespace in self.handlers:
