@@ -24,7 +24,6 @@
     "ableton10:start": "yarn ableton:kill; yarn ableton:clean && yarn ableton:copy-script && yarn ableton10:launch && yarn ableton:logs",
     "ableton11:start": "yarn ableton:kill; yarn ableton:clean && yarn ableton:copy-script && yarn ableton11:launch && yarn ableton:logs",
     "prepublishOnly": "yarn build",
-    "postinstall": "node hooks/postinstall.js",
     "build:doc": "jsdoc2md --files src/**/*.ts --configure ./jsdoc2md.json > ./API.md",
     "version": "node hooks/prepublish.js && git add midi-script/version.py && auto-changelog -p -l 100 && git add CHANGELOG.md",
     "build": "tsc",
@@ -32,6 +31,7 @@
   },
   "devDependencies": {
     "@types/jest": "^26.0.23",
+    "@types/lodash": "^4.14.194",
     "@types/node": "^15.6.1",
     "@types/node-uuid": "^0.0.28",
     "@types/semver": "^7.3.6",
@@ -39,6 +39,7 @@
     "auto-changelog": "^2.3.0",
     "jest": "^27.0.3",
     "jest-extended": "^0.11.5",
+    "lodash": "^4.17.21",
     "p-all": "^3",
     "ts-jest": "^27.0.1",
     "ts-node": "^10.0.0",
