@@ -16,7 +16,7 @@
   ],
   "scripts": {
     "ableton:clean": "rm -f midi-script/AbletonJS/*.pyc",
-    "ableton:copy-script": "set -- ~/Music/Ableton/User\\ Library/Remote\\ Scripts && rm -rf \"$1/AbletonJS\" && cp -r \"$(pwd)/midi-script\" \"$1/AbletonJS\" && rm -rf \"$1/AbletonJS/_Framework\"",
+    "ableton:copy-script": "set -- ~/Music/Ableton/User\\ Library/Remote\\ Scripts && mkdir -p \"$1\" && rm -rf \"$1/AbletonJS\" && cp -r \"$(pwd)/midi-script\" \"$1/AbletonJS\" && rm -rf \"$1/AbletonJS/_Framework\"",
     "ableton10:launch": "set -- /Applications/Ableton*10* && open \"$1\"",
     "ableton11:launch": "set -- /Applications/Ableton*11* && open \"$1\"",
     "ableton:logs": "tail -n 50 -f ~/Library/Preferences/Ableton/*/Log.txt | grep -i -e RemoteScriptError -e RemoteScriptMessage",
