@@ -27,7 +27,7 @@ class Interface(object):
         self.socket = socket
         self.log_message = c_instance.log_message
 
-    def log_debug(self, message: str):
+    def log_debug(self, message):
         if DEBUG:
             self.log_message(message)
 
