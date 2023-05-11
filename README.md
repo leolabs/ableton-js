@@ -6,7 +6,7 @@ Ableton.js lets you control your instance or instances of Ableton using Node.js.
 It tries to cover as many functions as possible.
 
 This package is still a work-in-progress. My goal is to expose all of
-[Ableton's MIDI Remote Script](https://julienbayle.studio/PythonLiveAPI_documentation/Live10.0.2.xml)
+[Ableton's MIDI Remote Script](https://nsuspray.github.io/Live_API_Doc/11.0.0.xml)
 functions to TypeScript. If you'd like to contribute, please feel free to do so.
 
 ## Sponsored Message
