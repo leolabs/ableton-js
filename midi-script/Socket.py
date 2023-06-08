@@ -37,6 +37,8 @@ class Socket(object):
         self.input_handler = handler
         self._server_addr = ("127.0.0.1", 0)
         self._client_addr = ("127.0.0.1", 39031)
+        self._port_file_last_modified = 0
+        self._last_error = ""
         self._socket = None
 
         self.read_remote_port()
@@ -45,6 +47,11 @@ class Socket(object):
         self.file_timer = Live.Base.Timer(callback=self.read_remote_port,
                                           interval=1000, repeat=True)
         self.file_timer.start()
+
+    def log_once(self, msg):
+        if self._last_error != msg:
+            self._last_error = msg
+            self.log_message(msg)
 
     def read_last_server_port(self):
         try:
@@ -60,6 +67,22 @@ class Socket(object):
 
     def read_remote_port(self):
         '''Reads the port our client is listening on'''
+
+        try:
+            file = os.stat(client_port_path)
+
+            print("Client port file modified: " + str(file.st_mtime) +
+                  " – last: " + str(self._port_file_last_modified))
+
+            if file.st_mtime > self._port_file_last_modified:
+                self._port_file_last_modified = file.st_mtime
+            else:
+                # If the file hasn't changed, don't try to open it
+                return
+        except Exception as e:
+            self.log_once("Couldn't stat remote port file: " + str(e.args))
+            return
+
         try:
             old_port = self._client_addr[1]
 
@@ -74,7 +97,7 @@ class Socket(object):
                     if self._socket:
                         self.send("connect", {"port": self._server_addr[1]})
         except Exception as e:
-            self.log_message("Couldn't read file: " + str(e.args))
+            self.log_once("Couldn't read remote port file: " + str(e.args))
 
     def shutdown(self):
         self.log_message("Shutting down...")
@@ -106,7 +129,7 @@ class Socket(object):
                     with open(server_port_path, "w") as file:
                         file.write(str(port))
             except Exception as e:
-                self.log_message("Couldn't save port in file: " + str(e.args))
+                self.log_once("Couldn't save port in file: " + str(e.args))
                 raise e
 
             try:
@@ -124,8 +147,8 @@ class Socket(object):
                 str(self._server_addr) + ': ' + \
                 str(e.args) + ', trying again. ' + \
                 'If this keeps happening, try restarting your computer.'
-            self.log_message(msg)
-            self.log_message("Client address: " + str(self._client_addr))
+            self.log_once(msg + "(Client address: " +
+                          str(self._client_addr) + ")")
             self.show_message(msg)
             t = Timer(5, self.init_socket)
             t.start()
