@@ -23,11 +23,8 @@ get an overview of the current state of your set.
 To use this library, you'll need to install and activate the MIDI Remote Script
 in Ableton.js. To do that, copy the `midi-script` folder of this repo to
 Ableton's Remote Scripts folder and rename it to `AbletonJS`. The MIDI Remote
-Scripts folder is usually located at:
-
-- **Windows:** {path to Ableton}\Resources\MIDI\Remote Scripts
-- **macOS:** /Applications/Ableton Live {version}/Contents/App-Resources/MIDI
-  Remote Scripts
+Scripts folder is usually located at
+`~/Music/Ableton/User Library/Remote Scripts`
 
 After starting Ableton Live, add the script to your list of control surfaces:
 
