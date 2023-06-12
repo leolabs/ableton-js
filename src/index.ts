@@ -60,12 +60,48 @@ export class TimeoutError extends Error {
 }
 
 export interface AbletonOptions {
+  /**
+   * Name of the file containing the port of the Remote Script. This
+   * file is expected to be in the OS' tmp directory.
+   *
+   * @default ableton-js-server.port
+   */
   serverPortFile?: string;
+
+  /**
+   * Name of the file containing the port of the client. This file
+   * is created in the OS' tmp directory if it doesn't exist yet.
+   *
+   * @default ableton-js-client.port
+   */
   clientPortFile?: string;
+
+  /**
+   * Defines how regularly ableton-js should ping the Remote Script
+   * to check if it's still reachable, in milliseconds.
+   *
+   * @default 2000
+   */
   heartbeatInterval?: number;
+
+  /**
+   * Defines how long ableton-js waits for an answer from the Remote
+   * Script after sending a command before throwing a timeout error.
+   *
+   * @default 2000
+   */
+  commandTimeoutMs?: number;
+
+  /**
+   * Options for the response cache.
+   */
   cacheOptions?: LruCache.Options<string, any>;
+
+  /**
+   * Set this to allow ableton-js to log messages. If you set this to
+   * `console`, log messages are printed to the standard output.
+   */
   logger?: Logger;
-  commandTimeout?: number;
 }
 
 export class Ableton extends EventEmitter implements ConnectionEventEmitter {
@@ -391,7 +427,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
         ...command,
       };
       const msg = JSON.stringify(payload);
-      const timeout = this.options?.commandTimeout ?? 2000;
+      const timeout = this.options?.commandTimeoutMs ?? 2000;
 
       const timeoutId = setTimeout(() => {
         const arg = JSON.stringify(command.args);
