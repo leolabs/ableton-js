@@ -64,30 +64,26 @@ export class Namespace<GP, TP, SP, OP> {
    * Sends a raw function invocation to Ableton.
    * This should be used with caution.
    */
-  async sendCommand(
-    name: string,
-    args?: { [k: string]: any },
-    etag?: string,
-    timeout?: number,
-  ) {
-    return this.ableton.sendCommand(
-      { ns: this.ns, nsid: this.nsid, name, args, etag },
-      timeout,
-    );
+  async sendCommand(name: string, args?: { [k: string]: any }, etag?: string) {
+    return this.ableton.sendCommand({
+      ns: this.ns,
+      nsid: this.nsid,
+      name,
+      args,
+      etag,
+    });
   }
 
   /**
    * Sends a raw function invocation to Ableton and expects the
    * result to be a CacheResponse with `data` and an `etag`.
    */
-  protected async sendCachedCommand(
-    name: string,
-    args?: { [k: string]: any },
-    timeout?: number,
-  ) {
-    return this.ableton.sendCachedCommand(
-      { ns: this.ns, nsid: this.nsid, name, args },
-      timeout,
-    );
+  protected async sendCachedCommand(name: string, args?: { [k: string]: any }) {
+    return this.ableton.sendCachedCommand({
+      ns: this.ns,
+      nsid: this.nsid,
+      name,
+      args,
+    });
   }
 }

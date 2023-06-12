@@ -65,6 +65,7 @@ export interface AbletonOptions {
   heartbeatInterval?: number;
   cacheOptions?: LruCache.Options<string, any>;
   logger?: Logger;
+  commandTimeout?: number;
 }
 
 export class Ableton extends EventEmitter implements ConnectionEventEmitter {
@@ -382,10 +383,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
    * Sends a raw command to Ableton. Usually, you won't need this.
    * A good starting point in general is the `song` prop.
    */
-  async sendCommand(
-    command: Omit<Command, "uuid">,
-    timeout: number = 2000,
-  ): Promise<any> {
+  async sendCommand(command: Omit<Command, "uuid">): Promise<any> {
     return new Promise((res, rej) => {
       const msgId = v4();
       const payload: Command = {
@@ -393,6 +391,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
         ...command,
       };
       const msg = JSON.stringify(payload);
+      const timeout = this.options?.commandTimeout ?? 2000;
 
       const timeoutId = setTimeout(() => {
         const arg = JSON.stringify(command.args);
@@ -428,18 +427,16 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     });
   }
 
-  async sendCachedCommand(
-    command: Omit<Command, "uuid" | "cache">,
-    timeout?: number,
-  ) {
+  async sendCachedCommand(command: Omit<Command, "uuid" | "cache">) {
     const args = command.args?.prop ?? JSON.stringify(command.args);
     const cacheKey = [command.ns, command.nsid, args].filter(Boolean).join("/");
     const cached = this.cache.get(cacheKey);
 
-    const result: CacheResponse = await this.sendCommand(
-      { ...command, etag: cached?.etag, cache: true },
-      timeout,
-    );
+    const result: CacheResponse = await this.sendCommand({
+      ...command,
+      etag: cached?.etag,
+      cache: true,
+    });
 
     if (isCached(result)) {
       if (!cached) {
