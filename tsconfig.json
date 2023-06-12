@@ -3,7 +3,7 @@
   "exclude": [],
   "compilerOptions": {
     "module": "commonjs",
-    "target": "ES5",
+    "target": "ES2022",
     "strict": true,
     "declaration": true,
     "esModuleInterop": true,
