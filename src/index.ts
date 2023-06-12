@@ -93,6 +93,14 @@ export interface AbletonOptions {
   commandTimeoutMs?: number;
 
   /**
+   * Defines how long ableton-js waits for an answer from the Remote
+   * Script after sending a command logging a warning about the delay.
+   *
+   * @default 1000
+   */
+  commandWarnMs?: number;
+
+  /**
    * Options for the response cache.
    */
   cacheOptions?: LruCache.Options<string, any>;
@@ -449,7 +457,16 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       const currentTimestamp = Date.now();
       this.msgMap.set(msgId, {
         res: (result: any) => {
-          this.setPing(Date.now() - currentTimestamp);
+          const duration = Date.now() - currentTimestamp;
+
+          if (duration > (this.options?.commandWarnMs ?? 1000)) {
+            this.logger?.warn(`Command took longer than expected`, {
+              command,
+              duration,
+            });
+          }
+
+          this.setPing(duration);
           clearTimeout(timeoutId);
           res(result);
         },
