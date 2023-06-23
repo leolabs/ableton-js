@@ -55,6 +55,11 @@ class AbletonJS(ControlSurface):
             callback=self.socket.process, interval=10, repeat=True)
 
         self.recv_loop.start()
+        self.tick()
+
+    def tick(self):
+        self.socket.process()
+        self.schedule_message(1, self.tick)
 
     def build_midi_map(self, midi_map_handle):
         script_handle = self._c_instance.handle()
