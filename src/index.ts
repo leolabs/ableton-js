@@ -140,7 +140,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   private serverPortFile: string;
   private logger: Logger | undefined;
   private clientState: "closed" | "starting" | "started" = "closed";
-  private cancelDisconnectEvent = false;
+  private cancelDisconnectEvents: Array<() => unknown> = [];
 
   constructor(private options?: AbletonOptions) {
     super();
@@ -285,15 +285,27 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     this.handleConnect("start");
 
     const heartbeat = async () => {
+      // Add a cancel function to the array of heartbeats
+      let canceled = false;
+      const cancel = () => {
+        canceled = true;
+        this.logger?.debug("Cancelled heartbeat");
+      };
+      this.cancelDisconnectEvents.push(cancel);
+
       try {
         await this.internal.get("ping");
         this.handleConnect("heartbeat");
       } catch (e) {
-        if (!this.cancelDisconnectEvent) {
+        this.logger?.warn("Heartbeat failed:", { error: e, canceled });
+        // If the heartbeat has been canceled, don't emit a disconnect event
+        if (!canceled) {
           this.handleDisconnect("heartbeat");
         }
       } finally {
-        this.cancelDisconnectEvent = false;
+        this.cancelDisconnectEvents = this.cancelDisconnectEvents.filter(
+          (e) => e !== cancel,
+        );
       }
     };
 
@@ -397,7 +409,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     if (data.event === "connect") {
       // If some heartbeat ping from the old connection is still pending,
       // cancel it to prevent a double disconnect/connect event.
-      this.cancelDisconnectEvent = true;
+      this.cancelDisconnectEvents.forEach((cancel) => cancel());
 
       if (data.data?.port && data.data?.port !== this.serverPort) {
         this.logger?.info("Got new server port via connect:", {
