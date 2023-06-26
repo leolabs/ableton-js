@@ -174,6 +174,7 @@ export interface RawTrack {
   id: string;
   name: string;
   color: number;
+  color_index: number;
   is_foldable: boolean;
   is_grouped: boolean;
 }

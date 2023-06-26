@@ -148,6 +148,7 @@ export interface RawClip {
   id: string;
   name: string;
   color: number;
+  color_index: number;
   is_audio_clip: boolean;
   is_midi_clip: boolean;
   start_time: number;
