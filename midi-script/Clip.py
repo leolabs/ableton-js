@@ -13,6 +13,7 @@ class Clip(Interface):
             "id": clip_id,
             "name": clip.name,
             "color": clip.color,
+            "color_index": clip.color_index,
             "is_audio_clip": clip.is_audio_clip,
             "is_midi_clip": clip.is_midi_clip,
             "start_time": clip.start_time,

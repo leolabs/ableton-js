@@ -14,7 +14,14 @@ class Track(Interface):
             return None
 
         track_id = Interface.save_obj(track)
-        return {"id": track_id, "name": track.name, "color": track.color, "is_foldable": track.is_foldable, "is_grouped": track.is_grouped}
+        return {
+            "id": track_id,
+            "name": track.name,
+            "color": track.color,
+            "color_index": track.color_index,
+            "is_foldable": track.is_foldable,
+            "is_grouped": track.is_grouped
+        }
 
     @staticmethod
     def serialize_routing_channel(channel):
