@@ -19,8 +19,8 @@ def split_by_n(seq, n):
 server_port_file = "ableton-js-server.port"
 client_port_file = "ableton-js-client.port"
 
-client_port_path = os.path.join(tempfile.gettempdir(), client_port_file)
 server_port_path = os.path.join(tempfile.gettempdir(), server_port_file)
+client_port_path = os.path.join(tempfile.gettempdir(), client_port_file)
 
 
 class Socket(object):
@@ -37,21 +37,21 @@ class Socket(object):
         self.input_handler = handler
         self._server_addr = ("127.0.0.1", 0)
         self._client_addr = ("127.0.0.1", 39031)
-        self._port_file_last_modified = 0
         self._last_error = ""
         self._socket = None
 
         self.read_remote_port()
         self.init_socket(True)
 
-        self.file_timer = Live.Base.Timer(callback=self.read_remote_port,
-                                          interval=1000, repeat=True)
-        self.file_timer.start()
-
     def log_once(self, msg):
         if self._last_error != msg:
             self._last_error = msg
             self.log_message(msg)
+
+    def set_client_port(self, port):
+        self.log_message("Setting client port: ", str(port))
+        self.show_message("Client connected on port " + str(port))
+        self._client_addr = ("127.0.0.1", int(port))
 
     def read_last_server_port(self):
         try:
@@ -69,16 +69,7 @@ class Socket(object):
         '''Reads the port our client is listening on'''
 
         try:
-            file = os.stat(client_port_path)
-
-            print("Client port file modified: " + str(file.st_mtime) +
-                  " – last: " + str(self._port_file_last_modified))
-
-            if file.st_mtime > self._port_file_last_modified:
-                self._port_file_last_modified = file.st_mtime
-            else:
-                # If the file hasn't changed, don't try to open it
-                return
+            os.stat(client_port_path)
         except Exception as e:
             self.log_once("Couldn't stat remote port file: " + str(e.args))
             return
@@ -101,7 +92,6 @@ class Socket(object):
 
     def shutdown(self):
         self.log_message("Shutting down...")
-        self.file_timer.stop()
         self._socket.close()
 
     def init_socket(self, try_stored=False):

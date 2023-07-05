@@ -222,26 +222,12 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     this.client.addListener("listening", async () => {
       const port = this.client?.address().port;
       this.logger?.info("Client is bound and listening", { port });
-      // Write used port to a file so Live can read from it
+
+      // Write used port to a file so Live can read from it on startup
       await writeFile(this.clientPortFile, String(port));
     });
 
-    try {
-      // Try binding to the port that was used last for better start performance
-      this.logger?.info("Checking if a stored port exists", {
-        file: this.clientPortFile,
-      });
-      const clientPort = await readFile(this.clientPortFile);
-      const port = Number(clientPort.toString());
-      this.logger?.info("Trying to bind to the most recent port", { port });
-      this.client.bind(port, "127.0.0.1");
-    } catch (error) {
-      this.logger?.info(
-        "Couldn't bind to last port, binding to any free port instead",
-        { error },
-      );
-      this.client.bind(undefined, "127.0.0.1");
-    }
+    this.client.bind(undefined, "127.0.0.1");
 
     // Wait for the server port file to exist
     await new Promise<void>(async (res) => {
@@ -250,7 +236,11 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
         this.serverPort = Number(serverPort.toString());
         this.logger?.info("Server port:", { port: this.serverPort });
         res();
-      } catch (e) {}
+      } catch (e) {
+        this.logger?.info(
+          "Server doesn't seem to be online yet, waiting for it to go online...",
+        );
+      }
 
       // Set up a watcher in case the server port changes
       watchFile(this.serverPortFile, async (curr) => {
@@ -267,6 +257,16 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
         }
       });
     });
+
+    // Send used port to Live in case the plugin is already started
+    try {
+      const port = this.client.address().port;
+      this.logger?.info("Sending port to Live:", { port });
+      const result = await this.setProp("internal", "", "client_port", port);
+      this.logger?.info("Got response from Live:", { port, result });
+    } catch (e) {
+      this.logger?.info("Live doesn't seem to be loaded yet, waiting...");
+    }
 
     this.logger?.info("Checking connection...");
     const connection = this.waitForConnection();
