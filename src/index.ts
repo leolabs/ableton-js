@@ -262,8 +262,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     try {
       const port = this.client.address().port;
       this.logger?.info("Sending port to Live:", { port });
-      const result = await this.setProp("internal", "", "client_port", port);
-      this.logger?.info("Got response from Live:", { port, result });
+      await this.setProp("internal", "", "client_port", port);
     } catch (e) {
       this.logger?.info("Live doesn't seem to be loaded yet, waiting...");
     }
