@@ -297,9 +297,9 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
         await this.internal.get("ping");
         this.handleConnect("heartbeat");
       } catch (e) {
-        this.logger?.warn("Heartbeat failed:", { error: e, canceled });
         // If the heartbeat has been canceled, don't emit a disconnect event
-        if (!canceled) {
+        if (!canceled && this._isConnected) {
+          this.logger?.warn("Heartbeat failed:", { error: e, canceled });
           this.handleDisconnect("heartbeat");
         }
       } finally {
