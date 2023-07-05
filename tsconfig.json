@@ -1,6 +1,6 @@
 {
   "include": ["./src/**/*", "./scripts/**/*"],
-  "exclude": [],
+  "exclude": ["**/*.spec.ts"],
   "compilerOptions": {
     "module": "commonjs",
     "target": "ES2022",

@@ -1,6 +1,6 @@
+import { describe, it, expect } from "vitest";
 import { withAbleton } from "../util/tests";
 import { GettableProperties } from "./song";
-import "jest-extended";
 
 const gettableProps: (keyof GettableProperties)[] = [
   "arrangement_overdub",
@@ -60,15 +60,15 @@ describe("Song", () => {
   it("should return the proper types for properties", async () => {
     await withAbleton(async (ab) => {
       const songTime = await ab.song.get("current_song_time");
-      expect(songTime).toBeNumber();
+      expect(songTime).toBeTypeOf("number");
 
       const clipTriggerQuantization = await ab.song.get(
         "clip_trigger_quantization",
       );
-      expect(clipTriggerQuantization).toBeString();
+      expect(clipTriggerQuantization).toBeTypeOf("string");
 
       const isPlaying = await ab.song.get("is_playing");
-      expect(isPlaying).toBeBoolean();
+      expect(isPlaying).toBeTypeOf("boolean");
     });
   });
 

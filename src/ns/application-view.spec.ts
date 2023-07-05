@@ -1,6 +1,6 @@
+import { describe, it } from "vitest";
 import { withAbleton } from "../util/tests";
 import { GettableProperties } from "./application-view";
-import "jest-extended";
 
 const gettableProps: (keyof GettableProperties)[] = [
   "browse_mode",

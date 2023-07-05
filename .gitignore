@@ -13,6 +13,7 @@ build/
 .vscode/settings.json
 
 test.ts
+test-script.ts
 test-udp.ts
 
 ### Node ###

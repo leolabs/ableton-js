@@ -1,3 +1,4 @@
+import { describe, it, expect } from "vitest";
 import { getPackageVersion } from "./package-version";
 import { valid } from "semver";
 

@@ -1,3 +1,4 @@
+import { describe, it } from "vitest";
 import { withAbleton } from "../util/tests";
 import { GettableProperties } from "./song-view";
 

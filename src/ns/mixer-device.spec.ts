@@ -1,6 +1,6 @@
+import { describe, it } from "vitest";
 import { withAbleton } from "../util/tests";
 import { GettableProperties } from "./mixer-device";
-import "jest-extended";
 
 const gettableProps: (keyof GettableProperties)[] = [
   //"crossfade_assign", (not applicable to the master track)
