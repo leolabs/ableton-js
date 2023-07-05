@@ -1,6 +1,7 @@
 import os from "os";
 import path from "path";
 import dgram from "dgram";
+import { truncate } from "lodash";
 import { EventEmitter } from "events";
 import { v4 } from "uuid";
 import semver from "semver";
@@ -450,7 +451,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       const timeout = this.options?.commandTimeoutMs ?? 2000;
 
       const timeoutId = setTimeout(() => {
-        const arg = JSON.stringify(command.args);
+        const arg = truncate(JSON.stringify(command.args), { length: 100 });
         const cls = command.nsid
           ? `${command.ns}(${command.nsid})`
           : command.ns;
