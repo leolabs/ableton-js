@@ -211,7 +211,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       this.logger?.warn(
         "Tried calling start, but client is already " + this.clientState,
       );
-      return;
+      return this.waitForConnection();
     }
 
     this.clientState = "starting";
