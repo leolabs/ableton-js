@@ -251,6 +251,12 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
           if (!isNaN(newPort) && newPort !== this.serverPort) {
             this.logger?.info("Server port changed:", { port: newPort });
             this.serverPort = Number(serverPort.toString());
+
+            if (this.client) {
+              const port = this.client.address().port;
+              this.logger?.info("Sending port to Live:", { port });
+              await this.setProp("internal", "", "client_port", port);
+            }
           }
 
           res();
