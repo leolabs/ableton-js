@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from .version import version
-from .Config import DEBUG
+from .Config import DEBUG, FAST_POLLING
 from .Socket import Socket
 from .Interface import Interface
 from .Application import Application
@@ -51,11 +51,13 @@ class AbletonJS(ControlSurface):
             "clip": Clip(c_instance, self.socket),
         }
 
-        self.recv_loop = Live.Base.Timer(
-            callback=self.socket.process, interval=10, repeat=True)
-
-        self.recv_loop.start()
         self.tick()
+
+        if FAST_POLLING:
+            self.recv_loop = Live.Base.Timer(
+                callback=self.socket.process, interval=10, repeat=True)
+
+            self.recv_loop.start()
 
     def tick(self):
         self.socket.process()
@@ -76,7 +78,8 @@ class AbletonJS(ControlSurface):
 
     def disconnect(self):
         self.log_message("Disconnecting")
-        self.recv_loop.stop()
+        if FAST_POLLING:
+            self.recv_loop.stop()
         self.socket.send("disconnect")
         self.socket.shutdown()
         Interface.listeners.clear()
