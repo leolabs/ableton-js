@@ -1,4 +1,5 @@
 from __future__ import absolute_import
+import time
 
 from .version import version
 from .Config import DEBUG, FAST_POLLING
@@ -51,6 +52,7 @@ class AbletonJS(ControlSurface):
             "clip": Clip(c_instance, self.socket),
         }
 
+        self._last_tick = time.time() * 1000
         self.tick()
 
         if FAST_POLLING:
@@ -60,7 +62,21 @@ class AbletonJS(ControlSurface):
             self.recv_loop.start()
 
     def tick(self):
+        tick_time = time.time() * 1000
+
+        if tick_time - self._last_tick > 200:
+            self.log_message("UDP tick is lagging, delta: " +
+                             str(round(tick_time - self._last_tick)) + "ms")
+
+        self._last_tick = tick_time
         self.socket.process()
+
+        process_time = time.time() * 1000
+
+        if process_time - tick_time > 100:
+            self.log_message("UDP processing is taking long, delta: " +
+                             str(round(tick_time - process_time)) + "ms")
+
         self.schedule_message(1, self.tick)
 
     def build_midi_map(self, midi_map_handle):
