@@ -114,6 +114,12 @@ class Socket(object):
             self._socket.bind(self._server_addr)
             port = self._socket.getsockname()[1]
 
+            # Get the chunk limit of the socket, minus 1 for the ordering byte
+            self._chunk_limit = self._socket.getsockopt(
+                socket.SOL_SOCKET, socket.SO_SNDBUF) - 1
+
+            self.log_message("Chunk limit: " + str(self._chunk_limit))
+
             # Write the chosen port to a file
             try:
                 if stored_port != port:
@@ -147,17 +153,14 @@ class Socket(object):
     def _sendto(self, msg):
         '''Send a raw message to the client, compressed and chunked, if necessary'''
         compressed = zlib.compress(msg.encode("utf8")) + b'\n'
-        # Based on this thread, 7500 bytes seems like a safe value
-        # https://stackoverflow.com/questions/22819214/udp-message-too-long
-        limit = 7500
 
         if self._socket == None:
             return
 
-        if len(compressed) < limit:
+        if len(compressed) < self._chunk_limit:
             self._socket.sendto(b'\xFF' + compressed, self._client_addr)
         else:
-            chunks = list(split_by_n(compressed, limit))
+            chunks = list(split_by_n(compressed, self._chunk_limit))
             count = len(chunks)
             for i, chunk in enumerate(chunks):
                 count_byte = struct.pack("B", i if i + 1 < count else 255)
@@ -188,7 +191,7 @@ class Socket(object):
             buffer = bytes()
             num_messages = 0
             while 1:
-                data = self._socket.recv(8192)
+                data = self._socket.recv(65536)
                 if len(data) and self.input_handler:
                     buffer += data[1:]
                     num_messages += 1
