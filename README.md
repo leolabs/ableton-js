@@ -103,11 +103,11 @@ port in a local file so the other side knows which port to send messages to.
 ### Compression and Chunking
 
 To allow sending large JSON payloads, requests to and responses from the MIDI
-Script are compressed using gzip and chunked every 7500 bytes. The first byte of
-every message contains the chunk index (0x00-0xFF) followed by the gzipped
-chunk. The last chunk always has the index 0xFF. This indicates to the JS
-library that the previous received messages should be stiched together,
-unzipped, and processed.
+Script are compressed using gzip and chunked to fit into the maximum allowed
+package size. The first byte of every message chunk contains the chunk index
+(0x00-0xFF) followed by the gzipped chunk. The last chunk always has the index
+0xFF. This indicates to the JS library that the previous received messages
+should be stiched together, unzipped, and processed.
 
 ### Caching
 
