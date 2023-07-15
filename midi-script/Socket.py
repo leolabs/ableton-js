@@ -93,6 +93,7 @@ class Socket(object):
     def shutdown(self):
         self.log_message("Shutting down...")
         self._socket.close()
+        self._socket = None
 
     def init_socket(self, try_stored=False):
         self.log_message(
@@ -149,6 +150,9 @@ class Socket(object):
         # Based on this thread, 7500 bytes seems like a safe value
         # https://stackoverflow.com/questions/22819214/udp-message-too-long
         limit = 7500
+
+        if self._socket == None:
+            return
 
         if len(compressed) < limit:
             self._socket.sendto(b'\xFF' + compressed, self._client_addr)
