@@ -637,9 +637,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
     const buffer = deflateSync(Buffer.from(msg));
 
-    // Based on this thread, 7500 bytes seems like a safe value
-    // https://stackoverflow.com/questions/22819214/udp-message-too-long
-    const byteLimit = 7500;
+    const byteLimit = this.client.getSendBufferSize() - 1;
     const chunks = Math.ceil(buffer.byteLength / byteLimit);
 
     // Split the message into chunks if it becomes too large
