@@ -41,7 +41,6 @@ export interface SettableProperties {}
 
 export interface ObservableProperties {
   filter_type: never;
-  filter_type_has_listener: boolean;
   // remote script stalls when hotswap is activated, so we only get a bang when deactivated
   hotswap_target: BrowserItem;
 }
