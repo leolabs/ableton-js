@@ -1,10 +1,6 @@
 import { Ableton } from "..";
 import { Namespace } from ".";
 
-export interface BrowserItemIterator {
-  [Symbol.iterator](): Iterator<BrowserItem>;
-}
-
 export interface BrowserItemVector {
   append: (browserItemVector: BrowserItemVector) => void;
   extend: (browserItemVector: BrowserItemVector) => void;
@@ -68,9 +64,5 @@ export class BrowserItem extends Namespace<
       source: true,
       uri: true,
     };
-  }
-
-  public async get_iter_children() {
-    return this.sendCommand("get_iter_children");
   }
 }
