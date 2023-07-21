@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 from .Interface import Interface
-from .Browser import Browser
+
+
 class Application(Interface):
     def __init__(self, c_instance, socket, application):
         super(Application, self).__init__(c_instance, socket)
@@ -9,9 +10,6 @@ class Application(Interface):
 
     def get_ns(self, nsid=None):
         return self.application
-    
-    def get_browser(self, ns):
-        return Browser.serialize_browser(ns.browser)
 
     def get_major_version(self, ns):
         return ns.get_major_version()

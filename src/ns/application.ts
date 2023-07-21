@@ -33,13 +33,9 @@ export class Application extends Namespace<
 > {
   constructor(ableton: Ableton) {
     super(ableton, "application");
-
-    this.transformers = {
-      browser: (browser) => new Browser(ableton, browser)
-    };
   }
-  
 
+  public browser = new Browser(this.ableton);
   public view = new ApplicationView(this.ableton);
 
   public async pressCurrentDialogButton(index: number) {

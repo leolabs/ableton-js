@@ -56,8 +56,8 @@ export class Browser extends Namespace<
   SettableProperties,
   ObservableProperties
 > {
-  constructor(ableton: Ableton, public raw: RawBrowser) {
-    super(ableton, "browser", raw.id);
+  constructor(ableton: Ableton) {
+    super(ableton, "browser");
 
     const makeBrowserItems = (items: RawBrowserItem[]) =>
       items.map((item) => new BrowserItem(ableton, item));
