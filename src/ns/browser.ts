@@ -99,14 +99,17 @@ export class Browser extends Namespace<
     };
   }
 
+  /** Loads the provided browser item. */
   public async loadItem(item: BrowserItem) {
     return this.sendCommand("load_item", { id: item.raw.id });
   }
 
+  /** Previews the provided browser item. */
   public async previewItem(item: BrowserItem) {
     return this.sendCommand("preview_item", { id: item.raw.id });
   }
 
+  /** Stops the current preview. */
   public async stopPreview() {
     return this.sendCommand("stop_preview");
   }
