@@ -35,6 +35,7 @@ export interface TransformedProperties {
   sounds: BrowserItem[];
   user_library: BrowserItem[];
   user_folders: BrowserItem[];
+  hotswap_target: BrowserItem;
 }
 
 export interface SettableProperties {}
@@ -76,6 +77,7 @@ export class Browser extends Namespace<
       sounds: makeBrowserItems,
       user_library: makeBrowserItems,
       user_folders: makeBrowserItems,
+      hotswap_target: (t) => new BrowserItem(ableton, t),
     };
 
     this.cachedProps = {
