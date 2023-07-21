@@ -58,38 +58,25 @@ export class Browser extends Namespace<
 > {
   constructor(ableton: Ableton, public raw: RawBrowser) {
     super(ableton, "browser", raw.id);
+
+    const makeBrowserItems = (items: RawBrowserItem[]) =>
+      items.map((item) => new BrowserItem(ableton, item));
+
     this.transformers = {
-      audio_effects: (audio_effects) =>
-        audio_effects.map(
-          (audio_effect) => new BrowserItem(ableton, audio_effect),
-        ),
-      clips: (clips) => clips.map((clip) => new BrowserItem(ableton, clip)),
-      colors: (colors) =>
-        colors.map((color) => new BrowserItem(ableton, color)),
-      current_project: (current_project) =>
-        current_project.map((c) => new BrowserItem(ableton, c)),
-      drums: (drums) => drums.map((drum) => new BrowserItem(ableton, drum)),
-      instruments: (instruments) =>
-        instruments.map((instrument) => new BrowserItem(ableton, instrument)),
-      max_for_live: (max_for_live) =>
-        max_for_live.map((max) => new BrowserItem(ableton, max)),
-      midi_effects: (midi_effects) =>
-        midi_effects.map(
-          (midi_effect) => new BrowserItem(ableton, midi_effect),
-        ),
-      packs: (packs) => packs.map((pack) => new BrowserItem(ableton, pack)),
-      plugins: (plugins) =>
-        plugins.map((plugin) => new BrowserItem(ableton, plugin)),
-      samples: (samples) =>
-        samples.map((sample) => new BrowserItem(ableton, sample)),
-      sounds: (sounds) =>
-        sounds.map((sound) => new BrowserItem(ableton, sound)),
-      user_library: (user_library) =>
-        user_library.map((user) => new BrowserItem(ableton, user)),
-      user_folders: (user_folders) =>
-        user_folders.map(
-          (user_folder) => new BrowserItem(ableton, user_folder),
-        ),
+      audio_effects: makeBrowserItems,
+      clips: makeBrowserItems,
+      colors: makeBrowserItems,
+      current_project: makeBrowserItems,
+      drums: makeBrowserItems,
+      instruments: makeBrowserItems,
+      max_for_live: makeBrowserItems,
+      midi_effects: makeBrowserItems,
+      packs: makeBrowserItems,
+      plugins: makeBrowserItems,
+      samples: makeBrowserItems,
+      sounds: makeBrowserItems,
+      user_library: makeBrowserItems,
+      user_folders: makeBrowserItems,
     };
 
     this.cachedProps = {
