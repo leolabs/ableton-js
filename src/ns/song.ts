@@ -6,6 +6,7 @@ import { SongView } from "./song-view";
 import { Scene, RawScene } from "./scene";
 import { RawDevice } from "./device";
 
+
 export interface GettableProperties {
   appointed_device: RawDevice;
   arrangement_overdub: boolean;
@@ -66,6 +67,13 @@ export interface TransformedProperties {
   scenes: Scene[];
 }
 
+export enum DeviceInsertMode {
+  default = "default",
+  left = "left",
+  right = "right",
+}
+
+
 export interface SettableProperties {
   appointed_device: string;
   arrangement_overdub: boolean;
@@ -76,6 +84,7 @@ export interface SettableProperties {
   exclusive_arm: number;
   exclusive_solo: number;
   groove_amount: number;
+  insert_mode: DeviceInsertMode;
   is_counting_in: boolean;
   is_playing: boolean;
   last_event_time: number;
@@ -222,7 +231,6 @@ export class Song extends Namespace<
   }
 
   public view = new SongView(this.ableton);
-
   public async beginUndoStep() {
     return this.sendCommand("begin_undo_step");
   }
@@ -335,5 +343,8 @@ export class Song extends Namespace<
 
   public async undo() {
     return this.sendCommand("undo");
+  }
+  public async set_insert_mode(args: DeviceInsertMode) {
+    return this.sendCommand("set_insert_mode", {args});
   }
 }

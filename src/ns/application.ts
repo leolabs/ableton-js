@@ -1,6 +1,7 @@
 import { Ableton } from "..";
 import { Namespace } from ".";
 import { ApplicationView } from "./application-view";
+import { Browser, RawBrowser } from "./browser";
 
 export interface GettableProperties {
   bugfix_version: number;
@@ -10,10 +11,13 @@ export interface GettableProperties {
   current_dialog_button_count: number;
   current_dialog_message: string;
   open_dialog_count: number;
+  browser: RawBrowser;
   // More properties are available
 }
 
-export interface TransformedProperties {}
+export interface TransformedProperties {
+  browser: Browser;
+}
 
 export interface SettableProperties {}
 
@@ -31,6 +35,7 @@ export class Application extends Namespace<
     super(ableton, "application");
   }
 
+  public browser = new Browser(this.ableton);
   public view = new ApplicationView(this.ableton);
 
   public async pressCurrentDialogButton(index: number) {
