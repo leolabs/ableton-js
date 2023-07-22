@@ -3,21 +3,6 @@ from .Interface import Interface
 from .BrowserItem import BrowserItem
 
 
-def is_browser_item(obj):
-    required_attributes = ['iter_children']
-    return all(hasattr(obj, attr) for attr in required_attributes)
-
-
-def get_all_items(iterable):
-    item_list = []
-    for item in iterable:
-        if is_browser_item(item):
-            item_list.extend(item.children)
-        else:
-            item_list.append(item)
-    return item_list
-
-
 class Browser(Interface):
     def __init__(self, c_instance, socket, application):
         super(Browser, self).__init__(c_instance, socket)
