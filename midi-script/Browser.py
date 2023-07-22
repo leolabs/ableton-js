@@ -72,10 +72,10 @@ class Browser(Interface):
         return BrowserItem.serialize_browser_item(ns.hotswap_target)
 
     def load_item(self, ns, id):
-        ns.load_item(self.get_obj(id))
+        return ns.load_item(self.get_obj(id))
 
     def preview_item(self, ns, id):
-        ns.preview_item(self.get_obj(id))
+        return ns.preview_item(self.get_obj(id))
 
     def stop_preview(self, ns):
-        ns.stop_preview()
+        return ns.stop_preview()
