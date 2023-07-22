@@ -1,14 +1,9 @@
 import { Ableton } from "..";
 import { Namespace } from ".";
 
-export interface BrowserItemVector {
-  append: (browserItemVector: BrowserItemVector) => void;
-  extend: (browserItemVector: BrowserItemVector) => void;
-}
-
 export interface RawBrowserItem {
   id: string;
-  iter_children: RawBrowserItem[];
+  children: RawBrowserItem[];
   name: string;
   is_loadable: boolean;
   is_selected: boolean;
@@ -19,19 +14,18 @@ export interface RawBrowserItem {
 }
 
 export interface GettableProperties {
-  children: BrowserItemVector;
+  children: RawBrowserItem[];
   is_device: boolean;
   is_folder: boolean;
   is_loadable: boolean;
   is_selected: boolean;
   name: string;
-  iter_children: RawBrowserItem[];
   source: string;
   uri: string;
 }
 
 export interface TransformedProperties {
-  iter_children: BrowserItem[];
+  children: BrowserItem[];
 }
 
 export interface SettableProperties {}
@@ -47,10 +41,7 @@ export class BrowserItem extends Namespace<
   constructor(ableton: Ableton, public raw: RawBrowserItem) {
     super(ableton, "browser-item", raw.id);
     this.transformers = {
-      iter_children: (iter_children) =>
-        iter_children.map(
-          (iter_children) => new BrowserItem(ableton, iter_children),
-        ),
+      children: (children) => children.map((c) => new BrowserItem(ableton, c)),
     };
 
     this.cachedProps = {
@@ -59,7 +50,6 @@ export class BrowserItem extends Namespace<
       is_folder: true,
       is_loadable: false,
       is_selected: false,
-      iter_children: true,
       name: true,
       source: true,
       uri: true,

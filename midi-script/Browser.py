@@ -27,46 +27,46 @@ class Browser(Interface):
         return self.application.browser
 
     def get_audio_effects(self, ns):
-        return map(BrowserItem.serialize_browser_item, [*ns.audio_effects.iter_children])
+        return map(BrowserItem.serialize_browser_item, ns.audio_effects.children)
 
     def get_clips(self, ns):
-        return map(BrowserItem.serialize_browser_item, [*ns.clips.iter_children])
+        return map(BrowserItem.serialize_browser_item, ns.clips.children)
 
     def get_colors(self, ns):
-        return map(BrowserItem.serialize_browser_item, [*ns.colors])
+        return map(BrowserItem.serialize_browser_item, ns.colors)
 
     def get_current_project(self, ns):
-        return map(BrowserItem.serialize_browser_item, [*ns.current_project.iter_children])
+        return map(BrowserItem.serialize_browser_item, ns.current_project.children)
 
     def get_drums(self, ns):
-        return map(BrowserItem.serialize_browser_item, [*ns.drums.iter_children])
+        return map(BrowserItem.serialize_browser_item, ns.drums.children)
 
     def get_instruments(self, ns):
-        return map(BrowserItem.serialize_browser_item, [*ns.instruments.iter_children])
+        return map(BrowserItem.serialize_browser_item, ns.instruments.children)
 
     def get_max_for_live(self, ns):
-        return map(BrowserItem.serialize_browser_item, [*ns.max_for_live.iter_children])
+        return map(BrowserItem.serialize_browser_item, ns.max_for_live.children)
 
     def get_midi_effects(self, ns):
-        return map(BrowserItem.serialize_browser_item, [*ns.midi_effects.iter_children])
+        return map(BrowserItem.serialize_browser_item, ns.midi_effects.children)
 
     def get_packs(self, ns):
-        return map(BrowserItem.serialize_browser_item, [*ns.packs.iter_children])
+        return map(BrowserItem.serialize_browser_item, ns.packs.children)
 
     def get_plugins(self, ns):
-        return map(BrowserItem.serialize_browser_item, [*ns.plugins.iter_children])
+        return map(BrowserItem.serialize_browser_item, ns.plugins.children)
 
     def get_samples(self, ns):
-        return map(BrowserItem.serialize_browser_item, [*ns.samples.iter_children])
+        return map(BrowserItem.serialize_browser_item, ns.samples.children)
 
     def get_sounds(self, ns):
-        return map(BrowserItem.serialize_browser_item, [*ns.sounds.iter_children])
+        return map(BrowserItem.serialize_browser_item, ns.sounds.children)
 
     def get_user_folders(self, ns):
-        return map(BrowserItem.serialize_browser_item, [*ns.user_folders])
+        return map(BrowserItem.serialize_browser_item, ns.user_folders)
 
     def get_user_library(self, ns):
-        return map(BrowserItem.serialize_browser_item, [*ns.user_library.iter_children])
+        return map(BrowserItem.serialize_browser_item, ns.user_library.children)
 
     def get_hotswap_target(self, ns):
         return BrowserItem.serialize_browser_item(ns.hotswap_target)

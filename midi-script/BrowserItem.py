@@ -22,5 +22,5 @@ class BrowserItem(Interface):
     def __init__(self, c_instance, socket):
         super(BrowserItem, self).__init__(c_instance, socket)
 
-    def get_iter_children(self, ns):
-        return map(BrowserItem.serialize_browser_item, [*ns.iter_children])
+    def get_children(self, ns):
+        return map(BrowserItem.serialize_browser_item, ns.children)
