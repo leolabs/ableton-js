@@ -1,3 +1,3 @@
 DEBUG = False
 
-FAST_POLLING = False
+FAST_POLLING = True
