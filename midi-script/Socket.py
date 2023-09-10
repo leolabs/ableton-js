@@ -4,7 +4,6 @@ import struct
 import zlib
 import os
 import tempfile
-from threading import Timer
 
 from .Logging import logger
 
@@ -36,6 +35,7 @@ class Socket(object):
         self._client_addr = ("127.0.0.1", 39031)
         self._last_error = ""
         self._socket = None
+        self._chunk_limit = None
 
         self.read_remote_port()
         self.init_socket(True)
@@ -147,14 +147,15 @@ class Socket(object):
             self.log_error_once(msg + "(Client address: " +
                                 str(self._client_addr) + ")")
             self.show_message(msg)
-            t = Timer(5, self.init_socket)
+            t = Live.Base.Timer(
+                callback=self.init_socket, interval=5000, repeat=False)
             t.start()
 
     def _sendto(self, msg):
         '''Send a raw message to the client, compressed and chunked, if necessary'''
         compressed = zlib.compress(msg.encode("utf8")) + b'\n'
 
-        if self._socket == None:
+        if self._socket == None or self._chunk_limit == None:
             return
 
         if len(compressed) < self._chunk_limit:
