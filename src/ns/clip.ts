@@ -303,6 +303,8 @@ export class Clip extends Namespace<
 
   /**
    * Deletes all notes that start in the given area.
+   *
+   * @deprecated starting with Live 11, use `removeNotesExtended` instead
    */
   removeNotes(
     fromTime: number,
@@ -311,6 +313,23 @@ export class Clip extends Namespace<
     pitchSpan: number,
   ) {
     return this.sendCommand("remove_notes", [
+      fromTime,
+      fromPitch,
+      timeSpan,
+      pitchSpan,
+    ]);
+  }
+
+  /**
+   * Deletes all notes that start in the given area.
+   */
+  removeNotesExtended(
+    fromTime: number,
+    fromPitch: number,
+    timeSpan: number,
+    pitchSpan: number,
+  ) {
+    return this.sendCommand("remove_notes_extended", [
       fromTime,
       fromPitch,
       timeSpan,
