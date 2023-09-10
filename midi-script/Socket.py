@@ -204,7 +204,7 @@ class Socket(object):
                         buffer = bytes()
                         num_messages = 0
         except socket.error as e:
-            if (e.errno != 35):
+            if (e.errno != 35 and e.errno != 10035 and e.errno != 10054):
                 self.log_message("Socket error: " + str(e.args))
             return
         except Exception as e:
