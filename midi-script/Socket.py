@@ -6,6 +6,8 @@ import os
 import tempfile
 from threading import Timer
 
+from .Logging import logger
+
 import Live
 
 
@@ -24,11 +26,6 @@ client_port_path = os.path.join(tempfile.gettempdir(), client_port_file)
 
 
 class Socket(object):
-
-    @staticmethod
-    def set_log(func):
-        Socket.log_message = func
-
     @staticmethod
     def set_message(func):
         Socket.show_message = func
@@ -43,13 +40,13 @@ class Socket(object):
         self.read_remote_port()
         self.init_socket(True)
 
-    def log_once(self, msg):
+    def log_error_once(self, msg):
         if self._last_error != msg:
             self._last_error = msg
-            self.log_message(msg)
+            logger.error(msg)
 
     def set_client_port(self, port):
-        self.log_message("Setting client port: ", str(port))
+        logger.info("Setting client port: ", str(port))
         self.show_message("Client connected on port " + str(port))
         self._client_addr = ("127.0.0.1", int(port))
 
@@ -58,10 +55,10 @@ class Socket(object):
             with open(server_port_path) as file:
                 port = int(file.read())
 
-            self.log_message("Stored server port: " + str(port))
+            logger.info("Stored server port: " + str(port))
             return port
         except Exception as e:
-            self.log_message(
+            logger.info(
                 "Couldn't read stored server port: " + str(e.args))
             return None
 
@@ -71,7 +68,8 @@ class Socket(object):
         try:
             os.stat(client_port_path)
         except Exception as e:
-            self.log_once("Couldn't stat remote port file: " + str(e.args))
+            self.log_error_once(
+                "Couldn't stat remote port file: " + str(e.args))
             return
 
         try:
@@ -81,22 +79,23 @@ class Socket(object):
                 port = int(file.read())
 
                 if port != old_port:
-                    self.log_message("[" + str(id(self)) + "] Client port changed from " +
-                                     str(old_port) + " to " + str(port))
+                    logger.info("[" + str(id(self)) + "] Client port changed from " +
+                                str(old_port) + " to " + str(port))
                     self._client_addr = ("127.0.0.1", port)
 
                     if self._socket:
                         self.send("connect", {"port": self._server_addr[1]})
         except Exception as e:
-            self.log_once("Couldn't read remote port file: " + str(e.args))
+            self.log_error_once(
+                "Couldn't read remote port file: " + str(e.args))
 
     def shutdown(self):
-        self.log_message("Shutting down...")
+        logger.info("Shutting down...")
         self._socket.close()
         self._socket = None
 
     def init_socket(self, try_stored=False):
-        self.log_message(
+        logger.info(
             "Initializing socket, from stored: " + str(try_stored))
 
         try:
@@ -118,7 +117,7 @@ class Socket(object):
             self._chunk_limit = self._socket.getsockopt(
                 socket.SOL_SOCKET, socket.SO_SNDBUF) - 1
 
-            self.log_message("Chunk limit: " + str(self._chunk_limit))
+            logger.info("Chunk limit: " + str(self._chunk_limit))
 
             # Write the chosen port to a file
             try:
@@ -126,26 +125,27 @@ class Socket(object):
                     with open(server_port_path, "w") as file:
                         file.write(str(port))
             except Exception as e:
-                self.log_once("Couldn't save port in file: " + str(e.args))
+                self.log_error_once(
+                    "Couldn't save port in file: " + str(e.args))
                 raise e
 
             try:
                 self.send("connect", {"port": self._server_addr[1]})
             except Exception as e:
-                self.log_message("Couldn't send connect to " +
-                                 str(self._client_addr) + ": " + str(e.args))
+                logger.info("Couldn't send connect to " +
+                            str(self._client_addr) + ": " + str(e.args))
 
             self.show_message("Started server on port " + str(port))
 
-            self.log_message('Started server on: ' + str(self._socket.getsockname()) +
-                             ', client addr: ' + str(self._client_addr))
+            logger.info('Started server on: ' + str(self._socket.getsockname()) +
+                        ', client addr: ' + str(self._client_addr))
         except Exception as e:
             msg = 'ERROR: Cannot bind to ' + \
                 str(self._server_addr) + ': ' + \
                 str(e.args) + ', trying again. ' + \
                 'If this keeps happening, try restarting your computer.'
-            self.log_once(msg + "(Client address: " +
-                          str(self._client_addr) + ")")
+            self.log_error_once(msg + "(Client address: " +
+                                str(self._client_addr) + ")")
             self.show_message(msg)
             t = Timer(5, self.init_socket)
             t.start()
@@ -179,12 +179,12 @@ class Socket(object):
                 {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace, ensure_ascii=False)
             self._sendto(data)
         except socket.error as e:
-            self.log_message("Socket error: " + str(e.args) + ", server: " + str(self._server_addr) +
-                             ", client: " + str(self._client_addr) + ", socket: " + str(self._socket))
-            self.log_message("Data:" + data)
+            logger.info("Socket error: " + str(e.args) + ", server: " + str(self._server_addr) +
+                        ", client: " + str(self._client_addr) + ", socket: " + str(self._socket))
+            logger.info("Data:" + data)
         except Exception as e:
             error = str(type(e).__name__) + ': ' + str(e.args)
-            self.log_message("Error " + name + "(" + str(uuid) + "): " + error)
+            logger.info("Error " + name + "(" + str(uuid) + "): " + error)
 
     def process(self):
         try:
@@ -205,7 +205,7 @@ class Socket(object):
                         num_messages = 0
         except socket.error as e:
             if (e.errno != 35 and e.errno != 10035 and e.errno != 10054):
-                self.log_message("Socket error: " + str(e.args))
+                logger.info("Socket error: " + str(e.args))
             return
         except Exception as e:
-            self.log_message("Error while processing: " + str(e.args))
+            logger.info("Error while processing: " + str(e.args))

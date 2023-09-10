@@ -2,6 +2,7 @@ import hashlib
 import json
 
 from .Config import DEBUG
+from .Logging import logger
 
 
 class Interface(object):
@@ -25,11 +26,10 @@ class Interface(object):
     def __init__(self, c_instance, socket):
         self.ableton = c_instance
         self.socket = socket
-        self.log_message = c_instance.log_message
 
     def log_debug(self, message):
         if DEBUG:
-            self.log_message(message)
+            logger.debug(message)
 
     def get_ns(self, nsid):
         return Interface.obj_ids[nsid]
@@ -78,7 +78,7 @@ class Interface(object):
                 self.socket.send("error", "Function call failed: " + payload["name"] +
                                  " doesn't exist or isn't callable", uuid)
         except Exception as e:
-            self.log_message("Handler Error: " + str(e.args))
+            logger.error("Handler Error: " + str(e.args))
             self.socket.send("error", str(e.args[0]), uuid)
 
     def add_listener(self, ns, prop, eventId, nsid="Default"):

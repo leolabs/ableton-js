@@ -3,6 +3,7 @@ import time
 
 from .version import version
 from .Config import DEBUG, FAST_POLLING
+from .Logging import logger
 from .Socket import Socket
 from .Interface import Interface
 from .Application import Application
@@ -29,11 +30,10 @@ import Live
 class AbletonJS(ControlSurface):
     def __init__(self, c_instance):
         super(AbletonJS, self).__init__(c_instance)
-        self.log_message("Starting AbletonJS " + version + "...")
+        logger.info("Starting AbletonJS " + version + "...")
 
         self.tracked_midi = set()
 
-        Socket.set_log(self.log_message)
         Socket.set_message(self.show_message)
         self.socket = Socket(self.command_handler)
 
@@ -69,8 +69,8 @@ class AbletonJS(ControlSurface):
         tick_time = time.time() * 1000
 
         if tick_time - self._last_tick > 200:
-            self.log_message("UDP tick is lagging, delta: " +
-                             str(round(tick_time - self._last_tick)) + "ms")
+            logger.warn("UDP tick is lagging, delta: " +
+                        str(round(tick_time - self._last_tick)) + "ms")
 
         self._last_tick = tick_time
         self.socket.process()
@@ -78,8 +78,8 @@ class AbletonJS(ControlSurface):
         process_time = time.time() * 1000
 
         if process_time - tick_time > 100:
-            self.log_message("UDP processing is taking long, delta: " +
-                             str(round(tick_time - process_time)) + "ms")
+            logger.warn("UDP processing is taking long, delta: " +
+                        str(round(tick_time - process_time)) + "ms")
 
         self.schedule_message(1, self.tick)
 
@@ -97,7 +97,7 @@ class AbletonJS(ControlSurface):
         self.handlers["midi"].send_midi(midi_bytes)
 
     def disconnect(self):
-        self.log_message("Disconnecting")
+        logger.info("Disconnecting")
         if FAST_POLLING:
             self.recv_loop.stop()
         self.socket.send("disconnect")
@@ -110,7 +110,7 @@ class AbletonJS(ControlSurface):
 
         # Don't clutter the logs
         if not (namespace == "internal" and payload["name"] == "get_prop" and payload["args"]["prop"] == "ping") and DEBUG:
-            self.log_message("Received command: " + str(payload))
+            logger.debug("Received command: " + str(payload))
 
         if namespace in self.handlers:
             handler = self.handlers[namespace]

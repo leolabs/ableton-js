@@ -6,7 +6,6 @@ class Application(Interface):
     def __init__(self, c_instance, socket, application):
         super(Application, self).__init__(c_instance, socket)
         self.application = application
-        self.log_message("Version: " + self.get_version(self.get_ns()))
 
     def get_ns(self, nsid=None):
         return self.application

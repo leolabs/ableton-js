@@ -1,6 +1,7 @@
 from __future__ import absolute_import
 
 from .Interface import Interface
+from .Logging import logger
 
 
 class Midi(Interface):
@@ -22,11 +23,12 @@ class Midi(Interface):
                 midi_type = output.get("type")
                 if midi_type != "cc" and midi_type != "note":
                     raise ValueError("invalid midi type " + str(midi_type))
-                self.outputs.add((midi_type, output.get("channel"), output.get("target")))
+                self.outputs.add((midi_type, output.get(
+                    "channel"), output.get("target")))
             except ValueError as e:
-                self.log_message(e)
+                logger.error(e)
             except:
-                self.log_message("invalid midi output requested: " + str(output))
+                logger.error("invalid midi output requested: " + str(output))
 
     def remove_midi_listener(self, fn):
         self.event_id = None
@@ -38,10 +40,10 @@ class Midi(Interface):
             raise Exception("Listener " + str(prop) + " does not exist.")
 
         if self.event_id is not None:
-            self.log_message("midi listener already exists")
+            logger.warn("midi listener already exists")
             return self.event_id
 
-        self.log_message("Attaching midi listener")
+        logger.info("Attaching midi listener")
 
         self.tracked_midi.clear()
         self.tracked_midi.update(self.outputs)
