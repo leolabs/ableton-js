@@ -40,10 +40,10 @@ class Midi(Interface):
             raise Exception("Listener " + str(prop) + " does not exist.")
 
         if self.event_id is not None:
-            logger.warn("midi listener already exists")
+            logger.warning("MIDI listener already exists")
             return self.event_id
 
-        logger.info("Attaching midi listener")
+        logger.info("Attaching MIDI listener")
 
         self.tracked_midi.clear()
         self.tracked_midi.update(self.outputs)

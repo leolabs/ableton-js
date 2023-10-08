@@ -69,8 +69,8 @@ class AbletonJS(ControlSurface):
         tick_time = time.time() * 1000
 
         if tick_time - self._last_tick > 200:
-            logger.warn("UDP tick is lagging, delta: " +
-                        str(round(tick_time - self._last_tick)) + "ms")
+            logger.warning("UDP tick is lagging, delta: " +
+                           str(round(tick_time - self._last_tick)) + "ms")
 
         self._last_tick = tick_time
         self.socket.process()
@@ -78,8 +78,8 @@ class AbletonJS(ControlSurface):
         process_time = time.time() * 1000
 
         if process_time - tick_time > 100:
-            logger.warn("UDP processing is taking long, delta: " +
-                        str(round(tick_time - process_time)) + "ms")
+            logger.warning("UDP processing is taking long, delta: " +
+                           str(round(tick_time - process_time)) + "ms")
 
         self.schedule_message(1, self.tick)
 
