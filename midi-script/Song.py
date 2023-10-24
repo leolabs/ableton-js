@@ -69,3 +69,10 @@ class Song(Interface):
     def set_insert_mode(self,ns, args):
         self._insert_mode = INSERT_MODES.get(str(args), INSERT_MODES['default'])
         self.song.view.selected_track.view.device_insert_mode = self._insert_mode
+
+    def safe_stop_playing(self, ns):
+        if self.song.is_playing:
+            self.song.stop_playing()
+            return True
+
+        return False

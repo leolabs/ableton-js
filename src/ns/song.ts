@@ -6,7 +6,6 @@ import { SongView } from "./song-view";
 import { Scene, RawScene } from "./scene";
 import { RawDevice } from "./device";
 
-
 export interface GettableProperties {
   appointed_device: RawDevice;
   arrangement_overdub: boolean;
@@ -72,7 +71,6 @@ export enum DeviceInsertMode {
   left = "left",
   right = "right",
 }
-
 
 export interface SettableProperties {
   appointed_device: string;
@@ -337,6 +335,10 @@ export class Song extends Namespace<
     return this.sendCommand("stop_playing");
   }
 
+  public async safeStopPlaying() {
+    return this.sendCommand("safe_stop_playing");
+  }
+
   public async tapTempo() {
     return this.sendCommand("tap_tempo");
   }
@@ -345,6 +347,6 @@ export class Song extends Namespace<
     return this.sendCommand("undo");
   }
   public async set_insert_mode(args: DeviceInsertMode) {
-    return this.sendCommand("set_insert_mode", {args});
+    return this.sendCommand("set_insert_mode", { args });
   }
 }
