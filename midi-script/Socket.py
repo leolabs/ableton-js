@@ -46,7 +46,7 @@ class Socket(object):
             logger.error(msg)
 
     def set_client_port(self, port):
-        logger.info("Setting client port: ", str(port))
+        logger.info("Setting client port: " + str(port))
         self.show_message("Client connected on port " + str(port))
         self._client_addr = ("127.0.0.1", int(port))
 
