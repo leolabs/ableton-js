@@ -5,6 +5,7 @@ import { ClipSlot, RawClipSlot } from "./clip-slot";
 import { MixerDevice, RawMixerDevice } from "./mixer-device";
 import { Clip, RawClip } from "./clip";
 import { Color } from "../util/color";
+import { TrackView } from "./track-view";
 
 export enum RoutingLayout {
   Mono = 1,
@@ -185,8 +186,11 @@ export class Track extends Namespace<
   SettableProperties,
   ObservableProperties
 > {
+  view: TrackView;
+
   constructor(ableton: Ableton, public raw: RawTrack) {
     super(ableton, "track", raw.id);
+    this.view = new TrackView(this.ableton, raw.id);
 
     this.transformers = {
       arrangement_clips: (clips: RawClip[]) =>

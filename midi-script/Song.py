@@ -4,18 +4,12 @@ from .CuePoint import CuePoint
 from .Device import Device
 from .Scene import Scene
 from .Track import Track
-import Live
-
-INSERT_MODES = {'default': Live.Track.DeviceInsertMode.default,
-                'left': Live.Track.DeviceInsertMode.selected_left,
-                'right': Live.Track.DeviceInsertMode.selected_right}
 
 
 class Song(Interface):
     def __init__(self, c_instance, socket):
         super(Song, self).__init__(c_instance, socket)
         self.song = self.ableton.song()
-        self._insert_mode = INSERT_MODES['default']
 
     def get_ns(self, nsid):
         return self.song
@@ -66,11 +60,6 @@ class Song(Interface):
 
     def set_appointed_device(self, ns, device_id):
         ns.appointed_device = Interface.get_obj(device_id)
-
-    def set_insert_mode(self, ns, args):
-        self._insert_mode = INSERT_MODES.get(
-            str(args), INSERT_MODES['default'])
-        self.song.view.selected_track.view.device_insert_mode = self._insert_mode
 
     def safe_stop_playing(self, ns):
         if self.song.is_playing:
