@@ -230,20 +230,24 @@ export class Song extends Namespace<
     return this.sendCommand("continue_playing");
   }
 
-  public async createAudioTrack(index?: number) {
-    return this.sendCommand("create_audio_track", { index });
+  public async createAudioTrack(index = -1) {
+    const result = await this.sendCommand("create_audio_track", { index });
+    return new Track(this.ableton, result);
   }
 
-  public async createMidiTrack(index?: number) {
-    return this.sendCommand("create_midi_track", { index });
+  public async createMidiTrack(index = -1) {
+    const result = await this.sendCommand("create_midi_track", { index });
+    return new Track(this.ableton, result);
   }
 
   public async createReturnTrack() {
-    return this.sendCommand("create_return_track");
+    const result = await this.sendCommand("create_return_track");
+    return new Track(this.ableton, result);
   }
 
-  public async createScene(index?: number) {
-    return this.sendCommand("create_scene", [index ?? -1]);
+  public async createScene(index = -1) {
+    const result = await this.sendCommand("create_scene", { index });
+    return new Scene(this.ableton, result);
   }
 
   public async deleteReturnTrack(index: number) {

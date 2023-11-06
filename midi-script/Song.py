@@ -23,6 +23,9 @@ class Song(Interface):
     def create_return_track(self, ns):
         return Track.serialize_track(ns.create_return_track())
 
+    def create_scene(self, ns, index):
+        return Scene.serialize_scene(ns.create_scene(index))
+
     def get_clip_trigger_quantization(self, ns):
         return str(ns.clip_trigger_quantization)
 

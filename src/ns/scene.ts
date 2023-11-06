@@ -1,6 +1,7 @@
 import { Ableton } from "..";
 import { Namespace } from ".";
 import { ClipSlot, RawClipSlot } from "./clip-slot";
+import { Color } from "../util/color";
 
 export interface GettableProperties {
   clip_slots: RawClipSlot[];
@@ -13,6 +14,7 @@ export interface GettableProperties {
 }
 
 export interface TransformedProperties {
+  color: Color;
   clip_slots: ClipSlot[];
 }
 
@@ -48,6 +50,7 @@ export class Scene extends Namespace<
     super(ableton, "scene", raw.id);
 
     this.transformers = {
+      color: (c) => new Color(c),
       clip_slots: (clip_slots) =>
         clip_slots.map((c) => new ClipSlot(this.ableton, c)),
     };
