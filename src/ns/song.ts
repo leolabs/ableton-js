@@ -243,7 +243,7 @@ export class Song extends Namespace<
   }
 
   public async createScene(index?: number) {
-    return this.sendCommand("create_scene", [index]);
+    return this.sendCommand("create_scene", [index ?? -1]);
   }
 
   public async deleteReturnTrack(index: number) {
