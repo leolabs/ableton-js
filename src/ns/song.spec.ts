@@ -1,6 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { withAbleton } from "../util/tests";
-import { GettableProperties } from "./song";
+import {
+  GettableProperties,
+  Quantization,
+  RecordingQuantization,
+} from "./song";
 
 const gettableProps: (keyof GettableProperties)[] = [
   "arrangement_overdub",
@@ -69,6 +73,36 @@ describe("Song", () => {
 
       const isPlaying = await ab.song.get("is_playing");
       expect(isPlaying).toBeTypeOf("boolean");
+    });
+  });
+
+  it("should be able to change the playback quantization", async () => {
+    await withAbleton(async (ab) => {
+      const currentQuantization = await ab.song.get(
+        "clip_trigger_quantization",
+      );
+      for (const quantization of Object.keys(Quantization)) {
+        await ab.song.set(
+          "clip_trigger_quantization",
+          quantization as Quantization,
+        );
+      }
+      await ab.song.set("clip_trigger_quantization", currentQuantization);
+    });
+  });
+
+  it("should be able to change the recording quantization", async () => {
+    await withAbleton(async (ab) => {
+      const currentQuantization = await ab.song.get(
+        "midi_recording_quantization",
+      );
+      for (const quantization of Object.keys(RecordingQuantization)) {
+        await ab.song.set(
+          "midi_recording_quantization",
+          quantization as RecordingQuantization,
+        );
+      }
+      await ab.song.set("midi_recording_quantization", currentQuantization);
     });
   });
 

@@ -165,20 +165,20 @@ export enum TimeFormat {
 }
 
 export enum Quantization {
-  q_2_bars = "q_2_bars",
-  q_4_bars = "q_4_bars",
   q_8_bars = "q_8_bars",
+  q_4_bars = "q_4_bars",
+  q_2_bars = "q_2_bars",
   q_bar = "q_bar",
-  q_eight = "q_eight",
-  q_eight_triplet = "q_eight_triplet",
   q_half = "q_half",
   q_half_triplet = "q_half_triplet",
-  q_no_q = "q_no_q",
   q_quarter = "q_quarter",
   q_quarter_triplet = "q_quarter_triplet",
+  q_eight = "q_eight",
+  q_eight_triplet = "q_eight_triplet",
   q_sixtenth = "q_sixtenth",
   q_sixtenth_triplet = "q_sixtenth_triplet",
   q_thirtytwoth = "q_thirtytwoth",
+  q_no_q = "q_no_q",
 }
 
 export enum RecordingQuantization {
