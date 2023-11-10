@@ -17,6 +17,8 @@ class Track(Interface):
         return {
             "id": track_id,
             "name": track.name,
+            "solo": track.solo,
+            "mute": track.mute,
             "color": track.color,
             "color_index": track.color_index,
             "is_foldable": track.is_foldable,

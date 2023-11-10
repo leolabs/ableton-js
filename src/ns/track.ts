@@ -178,6 +178,8 @@ export interface RawTrack {
   color_index: number;
   is_foldable: boolean;
   is_grouped: boolean;
+  mute: boolean;
+  solo: boolean;
 }
 
 export class Track extends Namespace<
