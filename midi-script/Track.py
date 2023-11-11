@@ -14,11 +14,25 @@ class Track(Interface):
             return None
 
         track_id = Interface.save_obj(track)
+
+        solo = False
+        mute = False
+
+        try:
+            solo = track.solo
+        except:
+            pass
+
+        try:
+            mute = track.mute
+        except:
+            pass
+
         return {
             "id": track_id,
             "name": track.name,
-            "solo": track.solo,
-            "mute": track.mute,
+            "solo": solo,
+            "mute": mute,
             "color": track.color,
             "color_index": track.color_index,
             "is_foldable": track.is_foldable,
