@@ -11,10 +11,7 @@ describe("Track View", () => {
   it("should be able to read all properties without erroring", async () => {
     await withAbleton(async (ab) => {
       const tracks = await ab.song.get("tracks");
-      const res = await Promise.all(
-        gettableProps.map((p) => tracks[0].view.get(p)),
-      );
-      console.log(res);
+      await Promise.all(gettableProps.map((p) => tracks[0].view.get(p)));
     });
   });
 
