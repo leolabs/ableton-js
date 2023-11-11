@@ -103,6 +103,13 @@ class Song(Interface):
         quantization = REC_QUANTIZATIONS.get(str(name), REC_QUANTIZATIONS['rec_q_no_q'])
         ns.midi_recording_quantization = quantization
 
+    def safe_start_playing(self, ns):
+        if not self.song.is_playing:
+            self.song.start_playing()
+            return True
+
+        return False
+
     def safe_stop_playing(self, ns):
         if self.song.is_playing:
             self.song.stop_playing()

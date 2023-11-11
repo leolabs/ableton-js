@@ -332,7 +332,25 @@ export class Song extends Namespace<
     return this.sendCommand("stop_playing");
   }
 
-  public async safeStopPlaying() {
+  /**
+   * Only starts playing when Live is currently not playing
+   * to prevent Live from jumping back to the start when it's
+   * already playing.
+   *
+   * @returns a boolean indicating whether the command was executed
+   */
+  public async safeStartPlaying(): Promise<boolean> {
+    return this.sendCommand("safe_start_playing");
+  }
+
+  /**
+   * Only stops playback when Live is currently playing to prevent
+   * Live jumping back to the beginning of the arrangement when it's
+   * already stopped.
+   *
+   * @returns a boolean indicating whether the command was executed
+   */
+  public async safeStopPlaying(): Promise<boolean> {
     return this.sendCommand("safe_stop_playing");
   }
 
