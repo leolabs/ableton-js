@@ -19,7 +19,6 @@ export interface TransformedProperties {
 
 export interface SettableProperties {
   name: string;
-  is_active: boolean;
 }
 
 export interface ObservableProperties {
