@@ -113,9 +113,9 @@ class Socket(object):
             self._socket.bind(self._server_addr)
             port = self._socket.getsockname()[1]
 
-            # Get the chunk limit of the socket, minus 1 for the ordering byte
+            # Get the chunk limit of the socket, minus 100 for some headroom
             self._chunk_limit = self._socket.getsockopt(
-                socket.SOL_SOCKET, socket.SO_SNDBUF) - 1
+                socket.SOL_SOCKET, socket.SO_SNDBUF) - 100
 
             logger.info("Chunk limit: " + str(self._chunk_limit))
 
