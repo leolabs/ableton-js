@@ -165,8 +165,11 @@ class Socket(object):
 
     def send(self, name, obj=None, uuid=None):
         def jsonReplace(o):
-            if isinstance(o, (map, Live.Base.FloatVector, Live.Base.IntVector, Live.Base.ObjectVector, Live.Base.StringVector, Live.Base.Vector)):
+            try:
                 return list(o)
+            except:
+                pass
+
             return str(o)
 
         data = None
