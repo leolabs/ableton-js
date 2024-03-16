@@ -58,8 +58,8 @@ class Socket(object):
             logger.info("Stored server port: " + str(port))
             return port
         except Exception as e:
-            logger.info(
-                "Couldn't read stored server port: " + str(e.args))
+            logger.error("Couldn't read stored server port:")
+            logger.exception(e)
             return None
 
     def read_remote_port(self):
@@ -68,8 +68,7 @@ class Socket(object):
         try:
             os.stat(client_port_path)
         except Exception as e:
-            self.log_error_once(
-                "Couldn't stat remote port file: " + str(e.args))
+            self.log_error_once("Couldn't stat remote port file:")
             return
 
         try:
@@ -86,8 +85,7 @@ class Socket(object):
                     if self._socket:
                         self.send("connect", {"port": self._server_addr[1]})
         except Exception as e:
-            self.log_error_once(
-                "Couldn't read remote port file: " + str(e.args))
+            self.log_error_once("Couldn't read remote port file: " + str(e.args))
 
     def shutdown(self):
         logger.info("Shutting down...")
@@ -125,15 +123,14 @@ class Socket(object):
                     with open(server_port_path, "w") as file:
                         file.write(str(port))
             except Exception as e:
-                self.log_error_once(
-                    "Couldn't save port in file: " + str(e.args))
+                self.log_error_once("Couldn't save port in file: " + str(e.args))
                 raise e
 
             try:
                 self.send("connect", {"port": self._server_addr[1]})
             except Exception as e:
-                logger.info("Couldn't send connect to " +
-                            str(self._client_addr) + ": " + str(e.args))
+                logger.error("Couldn't send connect to " + str(self._client_addr) + ":")
+                logger.exception(e)
 
             self.show_message("Started server on port " + str(port))
 
@@ -144,8 +141,7 @@ class Socket(object):
                 str(self._server_addr) + ': ' + \
                 str(e.args) + ', trying again. ' + \
                 'If this keeps happening, try restarting your computer.'
-            self.log_error_once(msg + "(Client address: " +
-                                str(self._client_addr) + ")")
+            self.log_error_once(msg + " (Client address: " + str(self._client_addr) + ")")
             self.show_message(msg)
             t = Live.Base.Timer(
                 callback=self.init_socket, interval=5000, repeat=False)
@@ -180,12 +176,13 @@ class Socket(object):
                 {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace, ensure_ascii=False)
             self._sendto(data)
         except socket.error as e:
-            logger.info("Socket error: " + str(e.args) + ", server: " + str(self._server_addr) +
-                        ", client: " + str(self._client_addr) + ", socket: " + str(self._socket))
-            logger.info("Data:" + data)
+            logger.error("Socket error:")
+            logger.exception(e)
+            logger.error("Server: " + str(self._server_addr) + ", client: " + str(self._client_addr) + ", socket: " + str(self._socket))
+            logger.error("Data:" + data)
         except Exception as e:
-            error = str(type(e).__name__) + ': ' + str(e.args)
-            logger.info("Error " + name + "(" + str(uuid) + "): " + error)
+            logger.error("Error " + name + "(" + str(uuid) + "):")
+            logger.exception(e)
 
     def process(self):
         try:
@@ -204,9 +201,12 @@ class Socket(object):
                         self.input_handler(payload)
                         buffer = bytes()
                         num_messages = 0
+
         except socket.error as e:
             if (e.errno != 35 and e.errno != 10035 and e.errno != 10054):
-                logger.info("Socket error: " + str(e.args))
+                logger.error("Socket error:")
+                logger.exception(e)
             return
         except Exception as e:
-            logger.info("Error while processing: " + str(e.args))
+            logger.error("Error processing request:")
+            logger.exception(e)

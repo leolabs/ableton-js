@@ -78,7 +78,8 @@ class Interface(object):
                 self.socket.send("error", "Function call failed: " + payload["name"] +
                                  " doesn't exist or isn't callable", uuid)
         except Exception as e:
-            logger.error("Handler Error: " + str(e.args))
+            logger.error("Handler Error:")
+            logger.exception(e)
             self.socket.send("error", str(e.args[0]), uuid)
 
     def add_listener(self, ns, prop, eventId, nsid="Default"):
