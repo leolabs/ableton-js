@@ -50,6 +50,7 @@ const gettableProps: (keyof GettableProperties)[] = [
   "song_length",
   "swing_amount",
   "tempo",
+  "tempo_follower_enabled",
   "tracks",
   "visible_tracks",
 ];

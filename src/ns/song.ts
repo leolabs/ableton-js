@@ -51,6 +51,7 @@ export interface GettableProperties {
   song_length: number;
   swing_amount: number;
   tempo: number;
+  tempo_follower_enabled: boolean;
   tracks: RawTrack[];
   // view: never; - Not needed here
   visible_tracks: RawTrack[];
@@ -104,6 +105,7 @@ export interface SettableProperties {
   song_length: number;
   swing_amount: number;
   tempo: number;
+  tempo_follower_enabled: boolean;
   visible_tracks: number;
 }
 
@@ -145,6 +147,7 @@ export interface ObservableProperties {
   song_length: number;
   swing_amount: number;
   tempo: number;
+  tempo_follower_enabled: boolean;
   tracks: RawTrack[];
 }
 
