@@ -60,6 +60,12 @@ export class TimeoutError extends Error {
   }
 }
 
+export class DisconnectError extends Error {
+  constructor(public message: string, public payload: Command) {
+    super(message);
+  }
+}
+
 export interface AbletonOptions {
   /**
    * Name of the file containing the port of the Remote Script. This
@@ -177,8 +183,14 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     if (this._isConnected) {
       this._isConnected = false;
       this.eventListeners.clear();
-      this.msgMap.forEach((msg) => msg.clearTimeout());
-      this.msgMap.clear();
+
+      // If the disconnect is caused by missed heartbeats, keep
+      // pending requests. Live might just be temporarily hanging.
+      if (type === "realtime") {
+        this.msgMap.forEach((msg) => msg.clearTimeout());
+        this.msgMap.clear();
+      }
+
       this.logger?.info("Live disconnected", { type });
       this.emit("disconnect", type);
     }
@@ -462,19 +474,13 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       };
       const msg = JSON.stringify(payload);
       const timeout = this.options?.commandTimeoutMs ?? 2000;
+      const arg = truncate(JSON.stringify(command.args), { length: 100 });
+      const cls = command.nsid ? `${command.ns}(${command.nsid})` : command.ns;
 
       const timeoutId = setTimeout(() => {
-        const arg = truncate(JSON.stringify(command.args), { length: 100 });
-        const cls = command.nsid
-          ? `${command.ns}(${command.nsid})`
-          : command.ns;
         rej(
           new TimeoutError(
-            [
-              `The command ${cls}.${command.name}(${arg}) timed out after ${timeout} ms.`,
-              `Please make sure that Ableton is running and that you have the latest`,
-              `version of AbletonJS' MIDI script installed and renamed to "AbletonJS".`,
-            ].join(" "),
+            `The command ${cls}.${command.name}(${arg}) timed out after ${timeout} ms.`,
             payload,
           ),
         );
@@ -499,6 +505,12 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
         rej,
         clearTimeout: () => {
           clearTimeout(timeoutId);
+          rej(
+            new DisconnectError(
+              `Live disconnected before being able to respond to ${cls}.${command.name}(${arg})`,
+              payload,
+            ),
+          );
         },
       });
 
