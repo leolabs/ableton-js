@@ -1,13 +1,14 @@
-import { Ableton } from "..";
 import { Namespace } from ".";
-import { Device } from "./device";
-import { Track, RawTrack } from "./track";
-import { Scene, RawScene } from "./scene";
-import { RawDeviceParameter, DeviceParameter } from "./device-parameter";
+import { Ableton } from "..";
+import { Clip, RawClip } from "./clip";
 import { ClipSlot, RawClipSlot } from "./clip-slot";
+import { Device } from "./device";
+import { DeviceParameter, RawDeviceParameter } from "./device-parameter";
+import { RawScene, Scene } from "./scene";
+import { RawTrack, Track } from "./track";
 
 export interface GettableProperties {
-  detail_clip: any /* Todo: Implement Clip class */;
+  detail_clip: RawClip;
   draw_mode: boolean;
   follow_song: boolean;
   highlighted_clip_slot: RawClipSlot;
@@ -18,6 +19,7 @@ export interface GettableProperties {
 }
 
 export interface TransformedProperties {
+  detail_clip: Clip;
   selected_parameter: DeviceParameter;
   selected_scene: Scene;
   selected_track: Track;
@@ -25,16 +27,16 @@ export interface TransformedProperties {
 }
 
 export interface SettableProperties {
-  detail_clip: any;
+  detail_clip: RawClip["id"];
   draw_mode: boolean;
   follow_song: boolean;
   highlighted_clip_slot: number;
-  selected_scene: RawScene['id'];
-  selected_track: RawTrack['id'];
+  selected_scene: RawScene["id"];
+  selected_track: RawTrack["id"];
 }
 
 export interface ObservableProperties {
-  detail_clip: any;
+  detail_clip: RawClip | null;
   draw_mode: any;
   follow_song: any;
   highlighted_clip_slot: any;
@@ -58,9 +60,11 @@ export class SongView extends Namespace<
       selected_track: (track) => new Track(ableton, track),
       selected_scene: (scene) => new Scene(ableton, scene),
       highlighted_clip_slot: (slot) => new ClipSlot(ableton, slot),
+      detail_clip: (clip) => new Clip(ableton, clip),
     };
 
     this.cachedProps = {
+      detail_clip: true,
       selected_parameter: true,
       selected_track: true,
       selected_scene: true,
