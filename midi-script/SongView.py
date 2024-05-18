@@ -3,6 +3,7 @@ from .Interface import Interface
 from .DeviceParameter import DeviceParameter
 from .Scene import Scene
 from .Track import Track
+from .Clip import Clip
 from .ClipSlot import ClipSlot
 
 
@@ -12,6 +13,12 @@ class SongView(Interface):
 
     def get_ns(self, nsid):
         return self.ableton.song().view
+
+    def get_detail_clip(self, ns):
+        return Clip.serialize_clip(ns.detail_clip)
+
+    def set_detail_clip(self, ns, clip_id):
+        ns.detail_clip = Interface.get_obj(clip_id)
 
     def select_device(self, ns, device_id):
         return ns.select_device(Interface.get_obj(device_id))
