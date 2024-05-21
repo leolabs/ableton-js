@@ -1,7 +1,5 @@
 from __future__ import absolute_import
-import time
-
-
+import queue
 from .version import version
 from .Config import DEBUG, FAST_POLLING
 from .Logging import logger
@@ -33,12 +31,11 @@ class AbletonJS(ControlSurface):
     def __init__(self, c_instance):
         super(AbletonJS, self).__init__(c_instance)
         logger.info("Starting AbletonJS " + version + "...")
-
         self.tracked_midi = set()
-
-        Socket.set_message(self.show_message)
-        self.socket = Socket(self.command_handler)
-
+        self.socket = Socket(c_instance, self.socket_callback)
+        self.message_queue = queue.Queue()
+        self.check_queue = Live.Base.Timer(callback=self.process_queue, interval=20, repeat=True)
+        self.check_queue.start()
         self.handlers = {
             "application": Application(c_instance, self.socket, self.application()),
             "application-view": ApplicationView(c_instance, self.socket, self.application()),
@@ -59,32 +56,29 @@ class AbletonJS(ControlSurface):
             "clip": Clip(c_instance, self.socket),
         }
 
-        self._last_tick = time.time() * 1000
-        self.tick()
+        # self._last_tick = time.time() * 1000
+        # self.tick()
 
-        if FAST_POLLING:
-            self.recv_loop = Live.Base.Timer(
-                callback=self.socket.process, interval=10, repeat=True)
+       
+            
+    # I'm not sure what this code is for as I didn't need it when building the socket, but I have commented it out and left it here.
+    # def tick(self):
+    #     tick_time = time.time() * 1000
 
-            self.recv_loop.start()
+    #     if tick_time - self._last_tick > 200:
+    #         logger.warning("UDP tick is lagging, delta: " +
+    #                        str(round(tick_time - self._last_tick)) + "ms")
 
-    def tick(self):
-        tick_time = time.time() * 1000
+    #     self._last_tick = tick_time
+    #     self.socket.process()
 
-        if tick_time - self._last_tick > 200:
-            logger.warning("UDP tick is lagging, delta: " +
-                           str(round(tick_time - self._last_tick)) + "ms")
+    #     process_time = time.time() * 1000
 
-        self._last_tick = tick_time
-        self.socket.process()
+    #     if process_time - tick_time > 100:
+    #         logger.warning("UDP processing is taking long, delta: " +
+    #                        str(round(tick_time - process_time)) + "ms")
 
-        process_time = time.time() * 1000
-
-        if process_time - tick_time > 100:
-            logger.warning("UDP processing is taking long, delta: " +
-                           str(round(tick_time - process_time)) + "ms")
-
-        self.schedule_message(1, self.tick)
+    #     self.schedule_message(1, self.tick)
 
     def build_midi_map(self, midi_map_handle):
         script_handle = self._c_instance.handle()
@@ -100,13 +94,22 @@ class AbletonJS(ControlSurface):
         self.handlers["midi"].send_midi(midi_bytes)
 
     def disconnect(self):
-        logger.info("Disconnecting")
-        if FAST_POLLING:
-            self.recv_loop.stop()
-        self.socket.send("disconnect")
-        self.socket.shutdown()
+        self.check_queue.stop()
+        # self.socket.send("disconnect")
+        # self.socket.shutdown()
         Interface.listeners.clear()
         super(AbletonJS, self).disconnect()
+        
+    def socket_callback(self, payload):
+        self.message_queue.put(payload)
+        
+    def process_queue(self):
+        if not self.message_queue.empty():
+            try:
+                payload = self.message_queue.get()
+                self.command_handler(payload)
+            except Exception as e:
+                logger.error(f'Error processing queue: {e}')
 
     def command_handler(self, payload):
         namespace = payload["ns"]
@@ -119,5 +122,4 @@ class AbletonJS(ControlSurface):
             handler = self.handlers[namespace]
             handler.handle(payload)
         else:
-            self.socket.send("error", "No handler for namespace " +
-                             str(namespace), payload["uuid"])
+            self.socket.send(f"error - No handler for namespace: {namespace}, Payload UUID: {payload['uuid']}")

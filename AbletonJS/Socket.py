@@ -135,7 +135,7 @@ class Socket(Thread):
             logger.error(f'Error receiving message: {e}')
             return None
 
-    def send_message(self, message):
+    def send(self, message):
         try:
             if self.connection and isinstance(message, str):
                 # Compress the message using zlib
