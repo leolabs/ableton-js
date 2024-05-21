@@ -1,215 +1,175 @@
 import socket
-import json
-import struct
+import hashlib
+import base64
+from threading import Thread
 import zlib
-import os
-import tempfile
-
+import struct
+import ast
 from .Logging import logger
 
-import Live
+class Socket(Thread):
+    def __init__(self, c_instance, on_message_callback):
+        Thread.__init__(self)
+        self._c_instance = c_instance
+        self._on_message_callback = on_message_callback
+        self.connection = None
+        
 
-
-def split_by_n(seq, n):
-    '''A generator to divide a sequence into chunks of n units.'''
-    while seq:
-        yield seq[:n]
-        seq = seq[n:]
-
-
-server_port_file = "ableton-js-server.port"
-client_port_file = "ableton-js-client.port"
-
-server_port_path = os.path.join(tempfile.gettempdir(), server_port_file)
-client_port_path = os.path.join(tempfile.gettempdir(), client_port_file)
-
-
-class Socket(object):
-    @staticmethod
-    def set_message(func):
-        Socket.show_message = func
-
-    def __init__(self, handler):
-        self.input_handler = handler
-        self._server_addr = ("127.0.0.1", 0)
-        self._client_addr = ("127.0.0.1", 39031)
-        self._last_error = ""
-        self._socket = None
-        self._chunk_limit = None
-
-        self.read_remote_port()
-        self.init_socket(True)
-
-    def log_error_once(self, msg):
-        if self._last_error != msg:
-            self._last_error = msg
-            logger.error(msg)
-
-    def set_client_port(self, port):
-        logger.info("Setting client port: " + str(port))
-        self.show_message("Client connected on port " + str(port))
-        self._client_addr = ("127.0.0.1", int(port))
-
-    def read_last_server_port(self):
+    def run(self):
         try:
-            with open(server_port_path) as file:
-                port = int(file.read())
-
-            logger.info("Stored server port: " + str(port))
-            return port
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            sock.bind(('', 5558))
+            logger.info("Server started, waiting for connections...")
+            sock.listen(1)
+            while True:
+                connection, _ = sock.accept()
+                if connection:
+                    self.connection = connection
+                    logger.info("Client connected")
+                    Thread(target=self.handle_connection, args=[connection]).start()
         except Exception as e:
-            logger.error("Couldn't read stored server port:")
-            logger.exception(e)
+            logger.error(f'Run error: {e}')
+        finally:
+            if self.connection:
+                self.connection.close()
+                logger.info('Server socket closed')
+
+    def handle_connection(self, connection):
+        try:
+            if self.perform_handshake(connection):
+                while True:
+                    msg = self.receive_message(connection)
+                    if msg:
+                        logger.info(f'Received message: {msg}')
+                        self._on_message_callback(ast.literal_eval(msg))
+                        
+                    else:
+                        break
+        except Exception as e:
+            logger.error(f'Connection error: {e}')
+        finally:
+            connection.close()
+            logger.info('Connection closed')
+
+    def perform_handshake(self, connection):
+        try:
+            logger.info("Performing handshake...")
+            request = connection.recv(1024).decode('utf-8')
+            logger.info(f"Handshake request: {request}")
+
+            headers = self.parse_headers(request)
+            websocket_key = headers['Sec-WebSocket-Key']
+            websocket_accept = self.generate_accept_key(websocket_key)
+
+            response = (
+                'HTTP/1.1 101 Switching Protocols\r\n'
+                'Upgrade: websocket\r\n'
+                'Connection: Upgrade\r\n'
+                f'Sec-WebSocket-Accept: {websocket_accept}\r\n\r\n'
+            )
+
+            connection.send(response.encode('utf-8'))
+            logger.info("Handshake response sent")
+            return True
+        except Exception as e:
+            logger.error(f'Handshake error: {e}')
+            return False
+
+    def parse_headers(self, request):
+        headers = {}
+        lines = request.split('\r\n')
+        for line in lines[1:]:
+            if line:
+                key, value = line.split(': ', 1)
+                headers[key] = value
+        return headers
+
+    def generate_accept_key(self, websocket_key):
+        magic_string = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+        accept_key = base64.b64encode(hashlib.sha1((websocket_key + magic_string).encode()).digest()).decode('utf-8')
+        return accept_key
+
+    def receive_message(self, connection):
+        try:
+            data = connection.recv(1024)
+            if not data:
+                return None
+
+            byte1, byte2 = struct.unpack('BB', data[:2])
+            fin = byte1 & 0b10000000
+            opcode = byte1 & 0b00001111
+            masked = byte2 & 0b10000000
+            payload_length = byte2 & 0b01111111
+
+            if masked != 0b10000000:
+                return None
+
+            if payload_length == 126:
+                extended_payload_length = data[2:4]
+                payload_length = int.from_bytes(extended_payload_length, byteorder='big')
+                masking_key = data[4:8]
+                payload_data = data[8:]
+            elif payload_length == 127:
+                extended_payload_length = data[2:10]
+                payload_length = int.from_bytes(extended_payload_length, byteorder='big')
+                masking_key = data[10:14]
+                payload_data = data[14:]
+            else:
+                masking_key = data[2:6]
+                payload_data = data[6:]
+
+            decoded_bytes = bytearray()
+            for i in range(payload_length):
+                decoded_bytes.append(payload_data[i] ^ masking_key[i % 4])
+
+            if opcode == 0x1:  # Text frame
+                return decoded_bytes.decode('utf-8')
+            elif opcode == 0x8:  # Connection close frame
+                logger.info('Connection closed by client')
+                return None
+            else:
+                logger.warning(f'Unsupported frame type: {opcode}')
+                return None
+        except Exception as e:
+            logger.error(f'Error receiving message: {e}')
             return None
 
-    def read_remote_port(self):
-        '''Reads the port our client is listening on'''
-
+    def send_message(self, message):
         try:
-            os.stat(client_port_path)
-        except Exception as e:
-            self.log_error_once("Couldn't stat remote port file:")
-            return
+            if self.connection and isinstance(message, str):
+                # Compress the message using zlib
+                compressed_message = zlib.compress(message.encode('utf-8'))
 
-        try:
-            old_port = self._client_addr[1]
+                # Determine chunk size based on network conditions
+                max_chunk_size = 8096  # Adjust as needed
 
-            with open(client_port_path) as file:
-                port = int(file.read())
+                # Split the compressed message into smaller chunks
+                chunks = [compressed_message[i:i+max_chunk_size] for i in range(0, len(compressed_message), max_chunk_size)]
 
-                if port != old_port:
-                    logger.info("[" + str(id(self)) + "] Client port changed from " +
-                                str(old_port) + " to " + str(port))
-                    self._client_addr = ("127.0.0.1", port)
+                for chunk in chunks:
+                    frame = bytearray()
+                    frame.append(0b10000010)  # Binary frame opcode
 
-                    if self._socket:
-                        self.send("connect", {"port": self._server_addr[1]})
-        except Exception as e:
-            self.log_error_once("Couldn't read remote port file: " + str(e.args))
+                    length = len(chunk)
+                    if length <= 125:
+                        frame.append(length)
+                    elif length <= 65535:
+                        frame.append(126)
+                        frame.extend(struct.pack('!H', length))
+                    else:
+                        frame.append(127)
+                        frame.extend(struct.pack('!Q', length))
 
-    def shutdown(self):
-        logger.info("Shutting down...")
-        self._socket.close()
-        self._socket = None
+                    # Append the chunk to the frame
+                    frame.extend(chunk)
 
-    def init_socket(self, try_stored=False):
-        logger.info(
-            "Initializing socket, from stored: " + str(try_stored))
-
-        try:
-            stored_port = self.read_last_server_port()
-
-            # Try the port we used last time first
-            if try_stored and stored_port:
-                self._server_addr = ("127.0.0.1", stored_port)
+                    # Send the framed chunk
+                    self.connection.sendall(frame)
             else:
-                self._server_addr = ("127.0.0.1", 0)
-
-            self._socket = socket.socket(
-                socket.AF_INET, socket.SOCK_DGRAM)
-            self._socket.setblocking(0)
-            self._socket.bind(self._server_addr)
-            port = self._socket.getsockname()[1]
-
-            # Get the chunk limit of the socket, minus 100 for some headroom
-            self._chunk_limit = self._socket.getsockopt(
-                socket.SOL_SOCKET, socket.SO_SNDBUF) - 100
-
-            logger.info("Chunk limit: " + str(self._chunk_limit))
-
-            # Write the chosen port to a file
-            try:
-                if stored_port != port:
-                    with open(server_port_path, "w") as file:
-                        file.write(str(port))
-            except Exception as e:
-                self.log_error_once("Couldn't save port in file: " + str(e.args))
-                raise e
-
-            try:
-                self.send("connect", {"port": self._server_addr[1]})
-            except Exception as e:
-                logger.error("Couldn't send connect to " + str(self._client_addr) + ":")
-                logger.exception(e)
-
-            self.show_message("Started server on port " + str(port))
-
-            logger.info('Started server on: ' + str(self._socket.getsockname()) +
-                        ', client addr: ' + str(self._client_addr))
+                logger.warning("Connection closed or invalid message")
         except Exception as e:
-            msg = 'ERROR: Cannot bind to ' + \
-                str(self._server_addr) + ': ' + \
-                str(e.args) + ', trying again. ' + \
-                'If this keeps happening, try restarting your computer.'
-            self.log_error_once(msg + " (Client address: " + str(self._client_addr) + ")")
-            self.show_message(msg)
-            t = Live.Base.Timer(
-                callback=self.init_socket, interval=5000, repeat=False)
-            t.start()
+            logger.error(f'Error sending message: {e}')
+            
 
-    def _sendto(self, msg):
-        '''Send a raw message to the client, compressed and chunked, if necessary'''
-        compressed = zlib.compress(msg.encode("utf8")) + b'\n'
 
-        if self._socket == None or self._chunk_limit == None:
-            return
-
-        if len(compressed) < self._chunk_limit:
-            self._socket.sendto(b'\xFF' + compressed, self._client_addr)
-        else:
-            chunks = list(split_by_n(compressed, self._chunk_limit))
-            count = len(chunks)
-            for i, chunk in enumerate(chunks):
-                count_byte = struct.pack("B", i if i + 1 < count else 255)
-                self._socket.sendto(count_byte + chunk, self._client_addr)
-
-    def send(self, name, obj=None, uuid=None):
-        def jsonReplace(o):
-            try:
-                return list(o)
-            except:
-                pass
-
-            return str(o)
-
-        data = None
-
-        try:
-            data = json.dumps(
-                {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace, ensure_ascii=False)
-            self._sendto(data)
-        except socket.error as e:
-            logger.error("Socket error:")
-            logger.exception(e)
-            logger.error("Server: " + str(self._server_addr) + ", client: " + str(self._client_addr) + ", socket: " + str(self._socket))
-            logger.error("Data:" + data)
-        except Exception as e:
-            logger.error("Error " + name + "(" + str(uuid) + "):")
-            logger.exception(e)
-
-    def process(self):
-        try:
-            buffer = bytes()
-            num_messages = 0
-            while 1:
-                data = self._socket.recv(65536)
-                if len(data) and self.input_handler:
-                    buffer += data[1:]
-                    num_messages += 1
-
-                    # \xFF for Live 10 (Python2) and 255 for Live 11 (Python3)
-                    if (data[0] == b'\xFF' or data[0] == 255):
-                        unzipped = zlib.decompress(buffer)
-                        payload = json.loads(unzipped)
-                        self.input_handler(payload)
-                        buffer = bytes()
-                        num_messages = 0
-
-        except socket.error as e:
-            if (e.errno != 35 and e.errno != 10035 and e.errno != 10054):
-                logger.error("Socket error:")
-                logger.exception(e)
-            return
-        except Exception as e:
-            logger.error("Error processing request:")
-            logger.exception(e)
