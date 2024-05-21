@@ -32,8 +32,9 @@ class AbletonJS(ControlSurface):
         super(AbletonJS, self).__init__(c_instance)
         logger.info("Starting AbletonJS " + version + "...")
         self.tracked_midi = set()
-        self.socket = Socket(c_instance, self.socket_callback)
         self.message_queue = queue.Queue()
+        self.socket = Socket(c_instance, self.socket_callback)
+        self.socket.start()
         self.check_queue = Live.Base.Timer(callback=self.process_queue, interval=20, repeat=True)
         self.check_queue.start()
         self.handlers = {
@@ -108,6 +109,7 @@ class AbletonJS(ControlSurface):
         if not self.message_queue.empty():
             try:
                 payload = self.message_queue.get()
+                logger.debug(f"Payload: {payload}")
                 self.command_handler(payload)
             except Exception as e:
                 logger.error(f'Error processing queue: {e}')

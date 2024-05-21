@@ -1,11 +1,13 @@
 import socket
 import hashlib
 import base64
-from threading import Thread
+import contextlib
 import zlib
 import struct
-import ast
+import json
 from .Logging import logger
+from threading import Thread
+
 
 class Socket(Thread):
     def __init__(self, c_instance, on_message_callback):
@@ -42,8 +44,7 @@ class Socket(Thread):
                     msg = self.receive_message(connection)
                     if msg:
                         logger.info(f'Received message: {msg}')
-                        self._on_message_callback(ast.literal_eval(msg))
-                        
+                        self._on_message_callback(json.loads(msg))
                     else:
                         break
         except Exception as e:
@@ -135,11 +136,18 @@ class Socket(Thread):
             logger.error(f'Error receiving message: {e}')
             return None
 
-    def send(self, message):
+    def send(self, name, obj, uuid):
+        def jsonReplace(o):
+            with contextlib.suppress(Exception):
+                return list(o)
+            return str(o)
+        
+        data = json.dumps(
+                {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace, ensure_ascii=False)
         try:
-            if self.connection and isinstance(message, str):
+            if self.connection:
                 # Compress the message using zlib
-                compressed_message = zlib.compress(message.encode('utf-8'))
+                compressed_message = zlib.compress(data.encode('utf-8'))
 
                 # Determine chunk size based on network conditions
                 max_chunk_size = 8096  # Adjust as needed
