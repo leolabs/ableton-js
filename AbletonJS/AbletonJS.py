@@ -95,6 +95,7 @@ class AbletonJS(ControlSurface):
 
     def disconnect(self):
         self.check_queue.stop()
+        # TODO: Handle Socket disconnect and shutdown logic
         # self.socket.send("disconnect")
         # self.socket.shutdown()
         Interface.listeners.clear()
