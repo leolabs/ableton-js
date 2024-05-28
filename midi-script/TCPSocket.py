@@ -1,10 +1,11 @@
 import socket
 import hashlib
 import base64
+import contextlib
 from threading import Thread
 import zlib
 import struct
-import ast
+import json
 from .Logging import logger
 
 class Socket(Thread):
@@ -24,7 +25,7 @@ class Socket(Thread):
     def create_socket(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.socket.bind(('', 5558))
+        self.socket.bind(('', 5558)) # TODO Implement a dynamic port assignement and discovery mechanism
         logger.info("Server started, waiting for connections...")
         self.socket.listen(1)
         while True:
@@ -41,7 +42,7 @@ class Socket(Thread):
                     msg = self.receive_message(connection)
                     if msg:
                         logger.info(f'Received message: {msg}')
-                        self._on_message_callback(ast.literal_eval(msg))
+                        self._on_message_callback(json.loads(msg))
                     else:
                         break
         except Exception as e:
@@ -143,11 +144,18 @@ class Socket(Thread):
             return None
 
 
-    def send(self, message):
+    def send(self, name, obj, uuid):
+        def jsonReplace(o):
+            with contextlib.suppress(Exception):
+                return list(o)
+            return str(o)
+        
+        data = json.dumps(
+                {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace, ensure_ascii=False)
         try:
-            if self.connection and isinstance(message, str):
+            if self.connection:
                 # Compress the message using zlib
-                compressed_message = zlib.compress(message.encode('utf-8'))
+                compressed_message = zlib.compress(data.encode('utf-8'))
 
                 # Create a frame
                 frame = bytearray()
