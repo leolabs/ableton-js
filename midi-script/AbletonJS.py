@@ -95,11 +95,12 @@ class AbletonJS(ControlSurface):
         self.handlers["midi"].send_midi(midi_bytes)
 
     def disconnect(self):
+        logger.info("Disconnecting")
         self.check_queue.stop()
-        # TODO: Handle Socket disconnect and shutdown logic
-        # self.socket.send("disconnect")
-        # self.socket.shutdown()
-        Interface.listeners.clear()
+        self.socket.send_message("disconnect")
+        if self.socket.connection:
+            self.socket.connection.close()
+        self.socket.socket.close()
         super(AbletonJS, self).disconnect()
         
     def socket_callback(self, payload):
