@@ -6,9 +6,11 @@ from threading import Thread
 import zlib
 import struct
 import json
+
+from .SocketInterface import SocketInterface
 from .Logging import logger
 
-class Socket(Thread):
+class Socket(SocketInterface, Thread):
     def __init__(self, c_instance, on_message_callback):
         Thread.__init__(self)
         self._c_instance = c_instance
@@ -18,11 +20,11 @@ class Socket(Thread):
 
     def run(self):
         try:
-            self.create_socket()
+            self._create_socket()
         except Exception as e:
             logger.error(f'Error creating socket: {e}')
 
-    def create_socket(self):
+    def _create_socket(self):
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind(('', 5558)) # TODO Implement a dynamic port assignement and discovery mechanism
@@ -33,13 +35,13 @@ class Socket(Thread):
             if connection:
                 self.connection = connection
                 logger.info("Client connected")
-                Thread(target=self.handle_connection, args=[connection]).start()
+                Thread(target=self._handle_connection, args=[connection]).start()
 
-    def handle_connection(self, connection):
+    def _handle_connection(self, connection):
         try:
-            if self.perform_handshake(connection):
+            if self._perform_handshake(connection):
                 while True:
-                    msg = self.receive_message(connection)
+                    msg = self._receive_message(connection)
                     if msg:
                         logger.info(f'Received message: {msg}')
                         self._on_message_callback(json.loads(msg))
@@ -51,15 +53,15 @@ class Socket(Thread):
             connection.close()
             logger.info('Connection closed')
 
-    def perform_handshake(self, connection):
+    def _perform_handshake(self, connection):
         try:
             logger.info("Performing handshake...")
             request = connection.recv(1024).decode('utf-8')
             logger.info(f"Handshake request: {request}")
 
-            headers = self.parse_headers(request)
+            headers = self._parse_headers(request)
             websocket_key = headers['Sec-WebSocket-Key']
-            websocket_accept = self.generate_accept_key(websocket_key)
+            websocket_accept = self._generate_accept_key(websocket_key)
 
             response = (
                 'HTTP/1.1 101 Switching Protocols\r\n'
@@ -75,7 +77,7 @@ class Socket(Thread):
             logger.error(f'Handshake error: {e}')
             return False
 
-    def parse_headers(self, request):
+    def _parse_headers(self, request):
         headers = {}
         lines = request.split('\r\n')
         for line in lines[1:]:
@@ -84,13 +86,13 @@ class Socket(Thread):
                 headers[key] = value
         return headers
 
-    def generate_accept_key(self, websocket_key):
+    def _generate_accept_key(self, websocket_key):
         magic_string = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
         return base64.b64encode(
             hashlib.sha1((websocket_key + magic_string).encode()).digest()
         ).decode('utf-8')
 
-    def receive_message(self, connection):
+    def _receive_message(self, connection):
         try:
             complete_message = bytearray()
             while True:
@@ -181,4 +183,7 @@ class Socket(Thread):
                 logger.info("Connection closed or invalid message")
         except Exception as e:
             logger.error(f'Error sending message: {e}')
+            
+    def shutdown(self):
+        pass
 
