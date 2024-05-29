@@ -145,7 +145,7 @@ class Socket(SocketInterface, Thread):
             return None
 
 
-    def send(self, name, obj, uuid):
+    def send(self, name, obj=None, uuid=None):
         def jsonReplace(o):
             with contextlib.suppress(Exception):
                 return list(o)
