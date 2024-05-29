@@ -42,11 +42,7 @@ class AbletonJSUDP(AbletonJSBase):
     
 
     def disconnect(self):
-        logger.info("Disconnecting")
         if FAST_POLLING:
             self.recv_loop.stop()
-        self.socket.send("disconnect")
-        self.socket.shutdown()
-        Interface.listeners.clear()
         super(AbletonJSUDP, self).disconnect()
 

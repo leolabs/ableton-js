@@ -90,5 +90,9 @@ class AbletonJSBase(ControlSurface):
             self.socket.send(f"error - No handler for namespace: {namespace}, Payload UUID: {payload['uuid']}")
             
     def disconnect(self):
+        logger.info("Disconnecting")
+        self.socket.send("disconnect")
+        self.socket.shutdown()
+        Interface.listeners.clear()
         super(AbletonJSBase, self).disconnect()
         

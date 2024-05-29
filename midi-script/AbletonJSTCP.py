@@ -31,12 +31,9 @@ class AbletonJSTCP(AbletonJSBase):
                 
                 
     def disconnect(self):
-        logger.info("Disconnecting")
         self.check_queue.stop()
-        self.socket.send_message("disconnect")
-        if self.socket.connection:
-            self.socket.connection.close()
-        self.socket.socket.close()
+        self.message_queue.clear()
+        self.message_queue = None
         super(AbletonJSTCP, self).disconnect()
 
     
