@@ -11,7 +11,7 @@ class AbletonJSTCP(AbletonJSBase):
     def __init__(self, c_instance):
         super(AbletonJSTCP, self).__init__(c_instance)
         self.message_queue = queue.Queue()
-        self.socket = Socket(c_instance, self.socket_callback)
+        self.socket = Socket(self.socket_callback)
         self.socket.start()
         self.check_queue = Live.Base.Timer(callback=self.process_queue, interval=20, repeat=True)
         self.check_queue.start()

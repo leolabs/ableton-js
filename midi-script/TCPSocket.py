@@ -11,12 +11,11 @@ from .SocketInterface import SocketInterface
 from .Logging import logger
 
 class Socket(SocketInterface, Thread):
-    def __init__(self, c_instance, on_message_callback):
+    def __init__(self, on_message_callback):
         Thread.__init__(self)
-        self._c_instance = c_instance
         self._on_message_callback = on_message_callback
-        self.socket = None
-        self.connection = None
+        self._socket = None
+        self._connection = None
 
     def run(self):
         try:
@@ -25,15 +24,15 @@ class Socket(SocketInterface, Thread):
             logger.error(f'Error creating socket: {e}')
 
     def _create_socket(self):
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self.socket.bind(('', 5558)) # TODO Implement a dynamic port assignement and discovery mechanism
+        self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self._socket.bind(('', 5558)) # TODO Implement a dynamic port assignement and discovery mechanism
         logger.info("Server started, waiting for connections...")
-        self.socket.listen(1)
+        self._socket.listen(1)
         while True:
-            connection, _ = self.socket.accept()
+            connection, _ = self._socket.accept()
             if connection:
-                self.connection = connection
+                self._connection = connection
                 logger.info("Client connected")
                 Thread(target=self._handle_connection, args=[connection]).start()
 
@@ -155,7 +154,7 @@ class Socket(SocketInterface, Thread):
         data = json.dumps(
                 {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace, ensure_ascii=False)
         try:
-            if self.connection:
+            if self._connection:
                 # Compress the message using zlib
                 compressed_message = zlib.compress(data.encode('utf-8'))
 
@@ -178,7 +177,7 @@ class Socket(SocketInterface, Thread):
                 frame.extend(compressed_message)
 
                 # Send the framed message
-                self.connection.sendall(frame)
+                self._connection.sendall(frame)
             else:
                 logger.info("Connection closed or invalid message")
         except Exception as e:
@@ -186,6 +185,6 @@ class Socket(SocketInterface, Thread):
             
     def shutdown(self):
         logger.info("Shutting down...")
-        self.socket.close()
-        self.socket = None
+        self._socket.close()
+        self._socket = None
 
