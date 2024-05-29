@@ -4,7 +4,7 @@ import sys
 from .AbletonJSTCP import AbletonJSTCP
 from .AbletonJSUDP import AbletonJSUDP
 
-socket_type = "TCP" # Socket type flag - not sure where else to put this, here ok?
+socket_type = "UDP" # Socket type flag - not sure where else to put this, here ok?
 
 def create_instance(c_instance):
     if socket_type == "TCP":
