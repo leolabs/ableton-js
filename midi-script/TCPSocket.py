@@ -23,11 +23,21 @@ class Socket(SocketInterface, Thread):
         except Exception as e:
             logger.error(f'Error creating socket: {e}')
 
-    def _create_socket(self):
+    def _create_socket(self, start_port = 39031, end_port = 39038):
         self._socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self._socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-        self._socket.bind(('', 5558)) # TODO Implement a dynamic port assignement and discovery mechanism
-        logger.info("Server started, waiting for connections...")
+        
+        for port in range(start_port, end_port + 1):
+            try:
+                self._socket.bind(('', port))
+                logger.info(f"Server started on port {port}, waiting for connections...")
+                break
+            except socket.error as e:
+                logger.warning(f"Port {port} is unavailable: {e}")
+                if port == end_port:
+                    logger.error("No available ports in the specified range.")
+                    return
+
         self._socket.listen(1)
         while True:
             connection, _ = self._socket.accept()
