@@ -185,5 +185,7 @@ class Socket(SocketInterface, Thread):
             logger.error(f'Error sending message: {e}')
             
     def shutdown(self):
-        pass
+        logger.info("Shutting down...")
+        self.socket.close()
+        self.socket = None
 
