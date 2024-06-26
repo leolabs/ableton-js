@@ -1,11 +1,8 @@
 from __future__ import absolute_import
-import time
-
-
 from .version import version
-from .Config import DEBUG, FAST_POLLING
+from .Config import DEBUG
 from .Logging import logger
-from .Socket import Socket
+
 from .Interface import Interface
 from .Application import Application
 from .ApplicationView import ApplicationView
@@ -29,16 +26,12 @@ from _Framework.ControlSurface import ControlSurface
 import Live
 
 
-class AbletonJS(ControlSurface):
+class AbletonJSBase(ControlSurface):
     def __init__(self, c_instance):
-        super(AbletonJS, self).__init__(c_instance)
-        logger.info("Starting AbletonJS " + version + "...")
-
+        super(AbletonJSBase, self).__init__(c_instance)
+        logger.info(f"Starting AbletonJS {version}...")
+        self._socket = None
         self.tracked_midi = set()
-
-        Socket.set_message(self.show_message)
-        self.socket = Socket(self.command_handler)
-
         self.handlers = {
             "application": Application(c_instance, self.socket, self.application()),
             "application-view": ApplicationView(c_instance, self.socket, self.application()),
@@ -58,33 +51,16 @@ class AbletonJS(ControlSurface):
             "clip_slot": ClipSlot(c_instance, self.socket),
             "clip": Clip(c_instance, self.socket),
         }
+        
+    @property
+    def socket(self):
+        return self._socket
 
-        self._last_tick = time.time() * 1000
-        self.tick()
-
-        if FAST_POLLING:
-            self.recv_loop = Live.Base.Timer(
-                callback=self.socket.process, interval=10, repeat=True)
-
-            self.recv_loop.start()
-
-    def tick(self):
-        tick_time = time.time() * 1000
-
-        if tick_time - self._last_tick > 200:
-            logger.warning("UDP tick is lagging, delta: " +
-                           str(round(tick_time - self._last_tick)) + "ms")
-
-        self._last_tick = tick_time
-        self.socket.process()
-
-        process_time = time.time() * 1000
-
-        if process_time - tick_time > 100:
-            logger.warning("UDP processing is taking long, delta: " +
-                           str(round(tick_time - process_time)) + "ms")
-
-        self.schedule_message(1, self.tick)
+    @socket.setter
+    def socket(self, value):
+        self._socket = value
+        for handler in self.handlers.values():
+            handler.socket = value
 
     def build_midi_map(self, midi_map_handle):
         script_handle = self._c_instance.handle()
@@ -99,15 +75,7 @@ class AbletonJS(ControlSurface):
     def receive_midi(self, midi_bytes):
         self.handlers["midi"].send_midi(midi_bytes)
 
-    def disconnect(self):
-        logger.info("Disconnecting")
-        if FAST_POLLING:
-            self.recv_loop.stop()
-        self.socket.send("disconnect")
-        self.socket.shutdown()
-        Interface.listeners.clear()
-        super(AbletonJS, self).disconnect()
-
+   
     def command_handler(self, payload):
         namespace = payload["ns"]
 
@@ -119,5 +87,12 @@ class AbletonJS(ControlSurface):
             handler = self.handlers[namespace]
             handler.handle(payload)
         else:
-            self.socket.send("error", "No handler for namespace " +
-                             str(namespace), payload["uuid"])
+            self.socket.send(f"error - No handler for namespace: {namespace}, Payload UUID: {payload['uuid']}")
+            
+    def disconnect(self):
+        logger.info("Disconnecting")
+        self.socket.send("disconnect")
+        self.socket.shutdown()
+        Interface.listeners.clear()
+        super(AbletonJSBase, self).disconnect()
+        

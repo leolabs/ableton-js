@@ -7,6 +7,8 @@ import tempfile
 
 from .Logging import logger
 
+from .SocketInterface import SocketInterface
+
 import Live
 
 
@@ -24,7 +26,7 @@ server_port_path = os.path.join(tempfile.gettempdir(), server_port_file)
 client_port_path = os.path.join(tempfile.gettempdir(), client_port_file)
 
 
-class Socket(object):
+class Socket(SocketInterface):
     @staticmethod
     def set_message(func):
         Socket.show_message = func
