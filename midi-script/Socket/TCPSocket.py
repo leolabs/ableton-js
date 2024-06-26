@@ -7,7 +7,7 @@ import zlib
 import struct
 import json
 
-from Interfaces import SocketInterface, MessageHandlerInterface
+from Interfaces import SocketInterface, MessageHandlerInterface, HandshakeHandlerInterface
 from ..Logging import logger
 
 
@@ -99,6 +99,46 @@ class WebsocketMessageHandler(MessageHandlerInterface):
             connection.sendall(frame)
         except Exception as e:
             logger.error(f'Error sending message: {e}')
+            
+class WebsocketHandshakeHandler(HandshakeHandlerInterface):
+    def perform_handshake(self, connection):
+            try:
+                logger.info("Performing handshake...")
+                request = connection.recv(1024).decode('utf-8')
+                logger.info(f"Handshake request: {request}")
+
+                headers = self._parse_headers(request)
+                websocket_key = headers['Sec-WebSocket-Key']
+                websocket_accept = self._generate_accept_key(websocket_key)
+
+                response = (
+                    'HTTP/1.1 101 Switching Protocols\r\n'
+                    'Upgrade: websocket\r\n'
+                    'Connection: Upgrade\r\n'
+                    f'Sec-WebSocket-Accept: {websocket_accept}\r\n\r\n'
+                )
+
+                connection.send(response.encode('utf-8'))
+                logger.info("Handshake response sent")
+                return True
+            except Exception as e:
+                logger.error(f'Handshake error: {e}')
+                return False
+
+    def parse_headers(self, request):
+        headers = {}
+        lines = request.split('\r\n')
+        for line in lines[1:]:
+            if line:
+                key, value = line.split(': ', 1)
+                headers[key] = value
+        return headers
+
+    def generate_accept_key(self, websocket_key):
+        magic_string = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+        return base64.b64encode(
+            hashlib.sha1((websocket_key + magic_string).encode()).digest()
+        ).decode('utf-8')
 
 class Socket(SocketInterface, Thread):
     def __init__(self, on_message_callback):
@@ -152,44 +192,7 @@ class Socket(SocketInterface, Thread):
             connection.close()
             logger.info('Connection closed')
 
-    def _perform_handshake(self, connection):
-        try:
-            logger.info("Performing handshake...")
-            request = connection.recv(1024).decode('utf-8')
-            logger.info(f"Handshake request: {request}")
-
-            headers = self._parse_headers(request)
-            websocket_key = headers['Sec-WebSocket-Key']
-            websocket_accept = self._generate_accept_key(websocket_key)
-
-            response = (
-                'HTTP/1.1 101 Switching Protocols\r\n'
-                'Upgrade: websocket\r\n'
-                'Connection: Upgrade\r\n'
-                f'Sec-WebSocket-Accept: {websocket_accept}\r\n\r\n'
-            )
-
-            connection.send(response.encode('utf-8'))
-            logger.info("Handshake response sent")
-            return True
-        except Exception as e:
-            logger.error(f'Handshake error: {e}')
-            return False
-
-    def _parse_headers(self, request):
-        headers = {}
-        lines = request.split('\r\n')
-        for line in lines[1:]:
-            if line:
-                key, value = line.split(': ', 1)
-                headers[key] = value
-        return headers
-
-    def _generate_accept_key(self, websocket_key):
-        magic_string = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
-        return base64.b64encode(
-            hashlib.sha1((websocket_key + magic_string).encode()).digest()
-        ).decode('utf-8')
+    
 
     
 
