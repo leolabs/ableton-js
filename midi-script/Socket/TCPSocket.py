@@ -9,9 +9,6 @@ import json
 
 from Interfaces import SocketInterface, MessageHandlerInterface, HandshakeHandlerInterface
 from ..Logging import logger
-
-
-
 class WebsocketMessageHandler(MessageHandlerInterface):
     def receive_message(self, connection):
         try:
