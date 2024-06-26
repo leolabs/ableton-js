@@ -141,9 +141,11 @@ class WebsocketHandshakeHandler(HandshakeHandlerInterface):
         ).decode('utf-8')
 
 class Socket(SocketInterface, Thread):
-    def __init__(self, on_message_callback):
+    def __init__(self, on_message_callback, message_handler: MessageHandlerInterface, handshake_handler: HandshakeHandlerInterface):
         Thread.__init__(self)
         self._on_message_callback = on_message_callback
+        self._message_handler = message_handler
+        self._handshake_handler = handshake_handler
         self._socket = None
         self._connection = None
 
@@ -178,9 +180,9 @@ class Socket(SocketInterface, Thread):
 
     def _handle_connection(self, connection):
         try:
-            if self._perform_handshake(connection):
+            if self._handshake_handler.perform_handshake(connection):
                 while True:
-                    msg = self._receive_message(connection)
+                    msg = self._message_handler.receive_message(connection)
                     if msg:
                         logger.info(f'Received message: {msg}')
                         self._on_message_callback(json.loads(msg))
@@ -192,48 +194,15 @@ class Socket(SocketInterface, Thread):
             connection.close()
             logger.info('Connection closed')
 
-    
-
-    
-
-
     def send(self, name, obj=None, uuid=None):
-        def jsonReplace(o):
-            with contextlib.suppress(Exception):
-                return list(o)
-            return str(o)
-        
-        data = json.dumps(
-                {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace, ensure_ascii=False)
-        try:
-            if self._connection:
-                # Compress the message using zlib
-                compressed_message = zlib.compress(data.encode('utf-8'))
-
-                # Create a frame
-                frame = bytearray()
-                fin = 0b10000000  # Final frame
-                frame.append(fin | 0b00000010)  # Binary frame opcode
-
-                length = len(compressed_message)
-                if length <= 125:
-                    frame.append(length)
-                elif length <= 65535:
-                    frame.append(126)
-                    frame.extend(struct.pack('!H', length))
+            message = {"event": name, "data": obj, "uuid": uuid}
+            try:
+                if self._connection:
+                    self._message_handler.send_message(self._connection, message)
                 else:
-                    frame.append(127)
-                    frame.extend(struct.pack('!Q', length))
-
-                # Append the compressed message to the frame
-                frame.extend(compressed_message)
-
-                # Send the framed message
-                self._connection.sendall(frame)
-            else:
-                logger.info("Connection closed or invalid message")
-        except Exception as e:
-            logger.error(f'Error sending message: {e}')
+                    logger.info("Connection closed or invalid message")
+            except Exception as e:
+                logger.error(f'Error sending message: {e}')
             
     def shutdown(self):
         logger.info("Shutting down...")
