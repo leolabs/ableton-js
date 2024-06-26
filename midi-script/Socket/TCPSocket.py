@@ -7,8 +7,98 @@ import zlib
 import struct
 import json
 
-from .SocketInterface import SocketInterface
-from .Logging import logger
+from Interfaces import SocketInterface, MessageHandlerInterface
+from ..Logging import logger
+
+
+
+class WebsocketMessageHandler(MessageHandlerInterface):
+    def receive_message(self, connection):
+        try:
+            complete_message = bytearray()
+            while True:
+                data = connection.recv(1024)
+                if not data:
+                    return None
+
+                byte1, byte2 = struct.unpack('BB', data[:2])
+                fin = byte1 & 0b10000000
+                opcode = byte1 & 0b00001111
+                masked = byte2 & 0b10000000
+                payload_length = byte2 & 0b01111111
+
+                if masked != 0b10000000:
+                    logger.info('Client data must be masked')
+                    return None
+
+                if payload_length == 126:
+                    extended_payload_length = data[2:4]
+                    payload_length = int.from_bytes(extended_payload_length, byteorder='big')
+                    masking_key = data[4:8]
+                    payload_data = data[8:]
+                elif payload_length == 127:
+                    extended_payload_length = data[2:10]
+                    payload_length = int.from_bytes(extended_payload_length, byteorder='big')
+                    masking_key = data[10:14]
+                    payload_data = data[14:]
+                else:
+                    masking_key = data[2:6]
+                    payload_data = data[6:]
+
+                decoded_bytes = bytearray()
+                for i in range(payload_length):
+                    decoded_bytes.append(payload_data[i] ^ masking_key[i % 4])
+
+                complete_message.extend(decoded_bytes)
+
+                if fin:
+                    break
+
+            if opcode == 0x1:  # Text frame
+                return complete_message.decode('utf-8')
+            elif opcode == 0x8:  # Connection close frame
+                logger.info('Connection closed by client')
+                return None
+            else:
+                logger.info(f'Unsupported frame type: {opcode}')
+                return None
+        except Exception as e:
+            logger.error(f'Error receiving message: {e}')
+            return None
+        
+    def send_message(self, connection, message):
+        def json_replace(o):
+            with contextlib.suppress(Exception):
+                return list(o)
+            return str(o)
+        
+        try:
+            data = json.dumps(message, default=json_replace, ensure_ascii=False)
+            # Compress the message using zlib
+            compressed_message = zlib.compress(data.encode('utf-8'))
+
+            # Create a frame
+            frame = bytearray()
+            fin = 0b10000000  # Final frame
+            frame.append(fin | 0b00000010)  # Binary frame opcode
+
+            length = len(compressed_message)
+            if length <= 125:
+                frame.append(length)
+            elif length <= 65535:
+                frame.append(126)
+                frame.extend(struct.pack('!H', length))
+            else:
+                frame.append(127)
+                frame.extend(struct.pack('!Q', length))
+
+            # Append the compressed message to the frame
+            frame.extend(compressed_message)
+
+            # Send the framed message
+            connection.sendall(frame)
+        except Exception as e:
+            logger.error(f'Error sending message: {e}')
 
 class Socket(SocketInterface, Thread):
     def __init__(self, on_message_callback):
@@ -101,58 +191,7 @@ class Socket(SocketInterface, Thread):
             hashlib.sha1((websocket_key + magic_string).encode()).digest()
         ).decode('utf-8')
 
-    def _receive_message(self, connection):
-        try:
-            complete_message = bytearray()
-            while True:
-                data = connection.recv(1024)
-                if not data:
-                    return None
-
-                byte1, byte2 = struct.unpack('BB', data[:2])
-                fin = byte1 & 0b10000000
-                opcode = byte1 & 0b00001111
-                masked = byte2 & 0b10000000
-                payload_length = byte2 & 0b01111111
-
-                if masked != 0b10000000:
-                    logger.info('Client data must be masked')
-                    return None
-
-                if payload_length == 126:
-                    extended_payload_length = data[2:4]
-                    payload_length = int.from_bytes(extended_payload_length, byteorder='big')
-                    masking_key = data[4:8]
-                    payload_data = data[8:]
-                elif payload_length == 127:
-                    extended_payload_length = data[2:10]
-                    payload_length = int.from_bytes(extended_payload_length, byteorder='big')
-                    masking_key = data[10:14]
-                    payload_data = data[14:]
-                else:
-                    masking_key = data[2:6]
-                    payload_data = data[6:]
-
-                decoded_bytes = bytearray()
-                for i in range(payload_length):
-                    decoded_bytes.append(payload_data[i] ^ masking_key[i % 4])
-
-                complete_message.extend(decoded_bytes)
-
-                if fin:
-                    break
-
-            if opcode == 0x1:  # Text frame
-                return complete_message.decode('utf-8')
-            elif opcode == 0x8:  # Connection close frame
-                logger.info('Connection closed by client')
-                return None
-            else:
-                logger.info(f'Unsupported frame type: {opcode}')
-                return None
-        except Exception as e:
-            logger.error(f'Error receiving message: {e}')
-            return None
+    
 
 
     def send(self, name, obj=None, uuid=None):
