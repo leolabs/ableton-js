@@ -2,7 +2,7 @@ from __future__ import absolute_import
 import time
 from .Config import FAST_POLLING
 from .Logging import logger
-from .UDPSocket import Socket
+from .Socket.UDPSocket import Socket
 from .Interface import Interface
 
 from .AbletonJSBase import AbletonJSBase

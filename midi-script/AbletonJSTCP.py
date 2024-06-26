@@ -2,7 +2,7 @@ from __future__ import absolute_import
 import queue
 from .version import version
 from .Logging import logger
-from .TCPSocket import Socket
+from .Socket.TCPSocket import Socket, WebsocketMessageHandler, WebsocketHandshakeHandler
 from .AbletonJSBase import AbletonJSBase
 import Live
 
@@ -11,7 +11,9 @@ class AbletonJSTCP(AbletonJSBase):
     def __init__(self, c_instance):
         super(AbletonJSTCP, self).__init__(c_instance)
         self.message_queue = queue.Queue()
-        self.socket = Socket(self.socket_callback)
+        self.socket_handshake_handler = WebsocketHandshakeHandler()
+        self.socket_message_handler = WebsocketHandshakeHandler()
+        self.socket = Socket(self.socket_callback, self.socket_handshake_handler, self.socket_websocket_handler)
         self.socket.start()
         self.check_queue = Live.Base.Timer(callback=self.process_queue, interval=20, repeat=True)
         self.check_queue.start()
