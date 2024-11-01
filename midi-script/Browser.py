@@ -6,7 +6,6 @@ from .BrowserItem import BrowserItem
 class Browser(Interface):
     def __init__(self, c_instance, socket, application):
         super(Browser, self).__init__(c_instance, socket)
-
         self.application = application
 
     def get_ns(self, nsid=None):
