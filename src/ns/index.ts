@@ -13,7 +13,7 @@ export class Namespace<GP, TP, SP, OP> {
     protected ableton: Ableton,
     protected ns: string,
     protected nsid?: string,
-  ) {}
+  ) { }
 
   async get<T extends keyof GP>(
     prop: T,
@@ -58,6 +58,28 @@ export class Namespace<GP, TP, SP, OP> {
         }
       },
     );
+  }
+
+  async setSessionOffsets(trackOffset: number, sceneOffset: number): Promise<void> {
+    await this.ableton.sendCommand({
+      ns: "custom",
+      name: "set_session_offsets",
+      args: {
+        track_offset: trackOffset,
+        scene_offset: sceneOffset,
+      },
+    })
+  }
+
+  async setSessionBox(numTracks: number, numScenes: number): Promise<void> {
+    await this.ableton.sendCommand({
+      ns: "custom",
+      name: "set_session_box",
+      args: {
+        num_tracks: numTracks,
+        num_scenes: numScenes,
+      },
+    })
   }
 
   /**

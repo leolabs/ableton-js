@@ -34,6 +34,10 @@ class Interface(object):
     def get_ns(self, nsid):
         return Interface.obj_ids[nsid]
 
+    def grid_send_hello_message(self, ns):
+        logger.warning("grid_message helloooo")
+        return 1+1
+
     def send_result(self, result, uuid, etag, cache):
         """Sends an empty response if the etag matches the result, or the result together with an etag."""
         if not cache:

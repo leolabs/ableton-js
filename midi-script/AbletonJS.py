@@ -1,7 +1,6 @@
 from __future__ import absolute_import
 import time
 
-
 from .version import version
 from .Config import DEBUG, FAST_POLLING
 from .Logging import logger
@@ -26,18 +25,23 @@ from .Clip import Clip
 from .Midi import Midi
 
 from _Framework.ControlSurface import ControlSurface
+from _Framework.SessionComponent import SessionComponent
 import Live
 
 
 class AbletonJS(ControlSurface):
     def __init__(self, c_instance):
         super(AbletonJS, self).__init__(c_instance)
+
         logger.info("Starting AbletonJS " + version + "...")
 
         self.tracked_midi = set()
 
         Socket.set_message(self.show_message)
         self.socket = Socket(self.command_handler)
+
+        logger.warning("Session Ring created")
+        self.show_message("session ring created")
 
         self.handlers = {
             "application": Application(c_instance, self.socket, self.application()),
@@ -67,6 +71,24 @@ class AbletonJS(ControlSurface):
                 callback=self.socket.process, interval=10, repeat=True)
 
             self.recv_loop.start()
+
+        # This is Ableton's built in thread protection
+        with self.component_guard():
+            self.setup_session_box(2, 2)
+
+    def setup_session_box(self, num_tracks=2, num_scenes=2):
+        logger.info(
+            f"Setting up session box with {num_tracks} tracks and {num_scenes} scenes")
+        self.session = SessionComponent(num_tracks, num_scenes)
+        self.session.set_offsets(0, 0)
+        self.set_highlighting_session_component(self.session)
+
+    def set_session_offset(self, ns, track_offset, scene_offset):
+        """
+        Sets the offset of the SessionComponent instance.
+        """
+        self.session.set_offsets(track_offset, scene_offset)
+        return True
 
     def tick(self):
         tick_time = time.time() * 1000
@@ -109,6 +131,9 @@ class AbletonJS(ControlSurface):
         super(AbletonJS, self).disconnect()
 
     def command_handler(self, payload):
+
+        # logger.info("Received command: " + str(payload))
+
         namespace = payload["ns"]
 
         # Don't clutter the logs
@@ -118,6 +143,17 @@ class AbletonJS(ControlSurface):
         if namespace in self.handlers:
             handler = self.handlers[namespace]
             handler.handle(payload)
+        elif payload["name"] == "set_session_box":
+            num_tracks = payload["args"].get("num_tracks", 2)
+            num_scenes = payload["args"].get("num_scenes", 2)
+            with self.component_guard():
+                result = self.setup_session_box(num_tracks, num_scenes)
+                self.socket.send("result", result, payload["uuid"])
+        elif payload["name"] == "set_session_offsets":
+            track_offset = payload["args"].get("track_offset", 0)
+            scene_offset = payload["args"].get("scene_offset", 0)
+            result = self.set_session_offset(None, track_offset, scene_offset)
+            self.socket.send("result", result, payload["uuid"])
         else:
             self.socket.send("error", "No handler for namespace " +
                              str(namespace), payload["uuid"])

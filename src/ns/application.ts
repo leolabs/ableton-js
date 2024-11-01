@@ -8,6 +8,7 @@ export interface GettableProperties {
   major_version: number;
   minor_version: number;
   version: string;
+  control_surfaces: string[];
   current_dialog_button_count: number;
   current_dialog_message: string;
   open_dialog_count: number;
@@ -19,7 +20,7 @@ export interface TransformedProperties {
   browser: Browser;
 }
 
-export interface SettableProperties {}
+export interface SettableProperties { }
 
 export interface ObservableProperties {
   open_dialog_count: number;
@@ -40,5 +41,9 @@ export class Application extends Namespace<
 
   public async pressCurrentDialogButton(index: number) {
     return this.sendCommand("press_current_dialog_button", [index]);
+  }
+
+  public async gridSendHelloMessage() {
+    return this.sendCommand("grid_send_hello_message");
   }
 }
