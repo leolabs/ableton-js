@@ -17,6 +17,7 @@ import { Midi } from "./ns/midi";
 import { getPackageVersion } from "./util/package-version";
 import { Cache, isCached, CacheResponse } from "./util/cache";
 import { Logger } from "./util/logger";
+import { Session } from "./ns/session";
 
 const SERVER_PORT_FILE = "ableton-js-server.port";
 const CLIENT_PORT_FILE = "ableton-js-client.port";
@@ -139,6 +140,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
   public cache: Cache;
   public song = new Song(this);
+  public session = new Session(this); // added for red session ring control
   public application = new Application(this);
   public internal = new Internal(this);
   public midi = new Midi(this);
@@ -206,7 +208,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     } else {
       return Promise.race([
         new Promise((res) => this.once("connect", res)),
-        this.internal.get("ping").catch(() => new Promise(() => {})),
+        this.internal.get("ping").catch(() => new Promise(() => { })),
       ]);
     }
   }
@@ -352,7 +354,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
           );
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }
 
   /** Closes the client */

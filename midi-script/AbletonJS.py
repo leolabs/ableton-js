@@ -7,6 +7,7 @@ from .Logging import logger
 from .Socket import Socket
 from .Interface import Interface
 from .Application import Application
+from .Session import Session
 from .ApplicationView import ApplicationView
 from .Browser import Browser
 from .BrowserItem import BrowserItem
@@ -40,12 +41,11 @@ class AbletonJS(ControlSurface):
         Socket.set_message(self.show_message)
         self.socket = Socket(self.command_handler)
 
-        logger.warning("Session Ring created")
-        self.show_message("session ring created")
-
         self.handlers = {
             "application": Application(c_instance, self.socket, self.application()),
             "application-view": ApplicationView(c_instance, self.socket, self.application()),
+            # added for red box control
+            "session": Session(c_instance, self.socket),
             "browser": Browser(c_instance, self.socket, self.application()),
             "browser-item": BrowserItem(c_instance, self.socket),
             "cue-point": CuePoint(c_instance, self.socket),
@@ -72,13 +72,9 @@ class AbletonJS(ControlSurface):
 
             self.recv_loop.start()
 
-        # This is Ableton's built in thread protection
-        with self.component_guard():
-            self.setup_session_box(2, 2)
-
     def setup_session_box(self, num_tracks=2, num_scenes=2):
         logger.info(
-            f"Setting up session box with {num_tracks} tracks and {num_scenes} scenes")
+            f"Setting up session box with {num_tracks} tracks and {num_scenes} scenes.")
         self.session = SessionComponent(num_tracks, num_scenes)
         self.session.set_offsets(0, 0)
         self.set_highlighting_session_component(self.session)
@@ -87,6 +83,8 @@ class AbletonJS(ControlSurface):
         """
         Sets the offset of the SessionComponent instance.
         """
+        logger.info(
+            f"Moving session box offset to {track_offset} and {scene_offset}.")
         self.session.set_offsets(track_offset, scene_offset)
         return True
 
@@ -132,8 +130,6 @@ class AbletonJS(ControlSurface):
 
     def command_handler(self, payload):
 
-        # logger.info("Received command: " + str(payload))
-
         namespace = payload["ns"]
 
         # Don't clutter the logs
@@ -146,6 +142,7 @@ class AbletonJS(ControlSurface):
         elif payload["name"] == "set_session_box":
             num_tracks = payload["args"].get("num_tracks", 2)
             num_scenes = payload["args"].get("num_scenes", 2)
+            # the session box setup must happen out of the main thread
             with self.component_guard():
                 result = self.setup_session_box(num_tracks, num_scenes)
                 self.socket.send("result", result, payload["uuid"])
