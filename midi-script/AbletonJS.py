@@ -26,7 +26,6 @@ from .Clip import Clip
 from .Midi import Midi
 
 from _Framework.ControlSurface import ControlSurface
-from _Framework.SessionComponent import SessionComponent
 import Live
 
 
@@ -45,7 +44,7 @@ class AbletonJS(ControlSurface):
             "application": Application(c_instance, self.socket, self.application()),
             "application-view": ApplicationView(c_instance, self.socket, self.application()),
             # added for red box control
-            "session": Session(c_instance, self.socket, self, SessionComponent),
+            "session": Session(c_instance, self.socket, self),
             "browser": Browser(c_instance, self.socket, self.application()),
             "browser-item": BrowserItem(c_instance, self.socket),
             "cue-point": CuePoint(c_instance, self.socket),

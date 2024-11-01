@@ -2,13 +2,15 @@ from __future__ import absolute_import
 from .Interface import Interface
 from .Logging import logger
 
+from _Framework.SessionComponent import SessionComponent
+
 
 class Session(Interface):
-    def __init__(self, c_instance, socket, controlSurface, sessionComponent):
+    def __init__(self, c_instance, socket, controlSurface):
         super(Session, self).__init__(c_instance, socket)
 
         self.controlSurface = controlSurface
-        self.sessionComponent = sessionComponent
+        self.sessionComponent = SessionComponent
 
     def get_ns(self, nsid=None):
         return self
