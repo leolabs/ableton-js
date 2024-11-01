@@ -21,7 +21,11 @@ export class Session extends Namespace<
         super(ableton, "session", undefined);
     }
 
-    public async testFromTs(index: number) {
-        return this.sendCommand("test", { stuff: index.toString() });
+    public async setupSessionBox(num_tracks: number, num_scenes: number) {
+        return this.sendCommand("setup_session_box", { num_tracks, num_scenes });
+    }
+
+    public async setSessionOffset(track_offset: number, scene_offset: number) {
+        return this.sendCommand("set_session_offset", { track_offset, scene_offset });
     }
 }

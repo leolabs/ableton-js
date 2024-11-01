@@ -45,7 +45,7 @@ class AbletonJS(ControlSurface):
             "application": Application(c_instance, self.socket, self.application()),
             "application-view": ApplicationView(c_instance, self.socket, self.application()),
             # added for red box control
-            "session": Session(c_instance, self.socket),
+            "session": Session(c_instance, self.socket, self, SessionComponent),
             "browser": Browser(c_instance, self.socket, self.application()),
             "browser-item": BrowserItem(c_instance, self.socket),
             "cue-point": CuePoint(c_instance, self.socket),
@@ -71,22 +71,6 @@ class AbletonJS(ControlSurface):
                 callback=self.socket.process, interval=10, repeat=True)
 
             self.recv_loop.start()
-
-    def setup_session_box(self, num_tracks=2, num_scenes=2):
-        logger.info(
-            f"Setting up session box with {num_tracks} tracks and {num_scenes} scenes.")
-        self.session = SessionComponent(num_tracks, num_scenes)
-        self.session.set_offsets(0, 0)
-        self.set_highlighting_session_component(self.session)
-
-    def set_session_offset(self, ns, track_offset, scene_offset):
-        """
-        Sets the offset of the SessionComponent instance.
-        """
-        logger.info(
-            f"Moving session box offset to {track_offset} and {scene_offset}.")
-        self.session.set_offsets(track_offset, scene_offset)
-        return True
 
     def tick(self):
         tick_time = time.time() * 1000
@@ -139,18 +123,6 @@ class AbletonJS(ControlSurface):
         if namespace in self.handlers:
             handler = self.handlers[namespace]
             handler.handle(payload)
-        elif payload["name"] == "set_session_box":
-            num_tracks = payload["args"].get("num_tracks", 2)
-            num_scenes = payload["args"].get("num_scenes", 2)
-            # the session box setup must happen out of the main thread
-            with self.component_guard():
-                result = self.setup_session_box(num_tracks, num_scenes)
-                self.socket.send("result", result, payload["uuid"])
-        elif payload["name"] == "set_session_offsets":
-            track_offset = payload["args"].get("track_offset", 0)
-            scene_offset = payload["args"].get("scene_offset", 0)
-            result = self.set_session_offset(None, track_offset, scene_offset)
-            self.socket.send("result", result, payload["uuid"])
         else:
             self.socket.send("error", "No handler for namespace " +
                              str(namespace), payload["uuid"])

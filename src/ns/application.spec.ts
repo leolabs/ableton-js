@@ -19,13 +19,3 @@ describe("Application", () => {
     });
   });
 });
-
-describe("Should move the session box", () => {
-  it("should be able to read all properties without erroring", async () => {
-    await withAbleton(async (ableton) => {
-      await ableton.application.setSessionBox(3, 3)
-      await ableton.application.setSessionOffsets(1, 1)
-    });
-  });
-});
-
