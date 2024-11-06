@@ -5,9 +5,7 @@ export interface GettableProperties {}
 
 export interface TransformedProperties {}
 
-export interface SettableProperties {
-  test: string;
-}
+export interface SettableProperties {}
 
 export interface ObservableProperties {}
 
