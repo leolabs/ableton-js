@@ -165,7 +165,10 @@ export class Clip extends Namespace<
   SettableProperties,
   ObservableProperties
 > {
-  constructor(ableton: Ableton, public raw: RawClip) {
+  constructor(
+    ableton: Ableton,
+    public raw: RawClip,
+  ) {
     super(ableton, "clip", raw.id);
 
     this.transformers = {

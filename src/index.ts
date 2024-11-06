@@ -56,13 +56,19 @@ export interface EventListener {
 }
 
 export class TimeoutError extends Error {
-  constructor(public message: string, public payload: Command) {
+  constructor(
+    public message: string,
+    public payload: Command,
+  ) {
     super(message);
   }
 }
 
 export class DisconnectError extends Error {
-  constructor(public message: string, public payload: Command) {
+  constructor(
+    public message: string,
+    public payload: Command,
+  ) {
     super(message);
   }
 }
@@ -208,7 +214,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     } else {
       return Promise.race([
         new Promise((res) => this.once("connect", res)),
-        this.internal.get("ping").catch(() => new Promise(() => { })),
+        this.internal.get("ping").catch(() => new Promise(() => {})),
       ]);
     }
   }
@@ -354,7 +360,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
           );
         }
       })
-      .catch(() => { });
+      .catch(() => {});
   }
 
   /** Closes the client */

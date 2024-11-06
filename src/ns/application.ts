@@ -19,7 +19,7 @@ export interface TransformedProperties {
   browser: Browser;
 }
 
-export interface SettableProperties { }
+export interface SettableProperties {}
 
 export interface ObservableProperties {
   open_dialog_count: number;
@@ -41,5 +41,4 @@ export class Application extends Namespace<
   public async pressCurrentDialogButton(index: number) {
     return this.sendCommand("press_current_dialog_button", [index]);
   }
-
 }
