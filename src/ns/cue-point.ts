@@ -27,10 +27,7 @@ export class CuePoint extends Namespace<
   SettableProperties,
   ObservableProperties
 > {
-  constructor(
-    ableton: Ableton,
-    public raw: RawCuePoint,
-  ) {
+  constructor(ableton: Ableton, public raw: RawCuePoint) {
     super(ableton, "cue-point", raw.id);
   }
 

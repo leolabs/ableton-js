@@ -38,10 +38,7 @@ export class BrowserItem extends Namespace<
   SettableProperties,
   ObservableProperties
 > {
-  constructor(
-    ableton: Ableton,
-    public raw: RawBrowserItem,
-  ) {
+  constructor(ableton: Ableton, public raw: RawBrowserItem) {
     super(ableton, "browser-item", raw.id);
     this.transformers = {
       children: (children) => children.map((c) => new BrowserItem(ableton, c)),

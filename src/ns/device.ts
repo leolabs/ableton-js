@@ -47,10 +47,7 @@ export class Device extends Namespace<
   SettableProperties,
   ObservableProperties
 > {
-  constructor(
-    ableton: Ableton,
-    public raw: RawDevice,
-  ) {
+  constructor(ableton: Ableton, public raw: RawDevice) {
     super(ableton, "device", raw.id);
 
     this.transformers = {
