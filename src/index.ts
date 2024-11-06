@@ -17,6 +17,7 @@ import { Midi } from "./ns/midi";
 import { getPackageVersion } from "./util/package-version";
 import { Cache, isCached, CacheResponse } from "./util/cache";
 import { Logger } from "./util/logger";
+import { Session } from "./ns/session";
 
 const SERVER_PORT_FILE = "ableton-js-server.port";
 const CLIENT_PORT_FILE = "ableton-js-client.port";
@@ -55,13 +56,19 @@ export interface EventListener {
 }
 
 export class TimeoutError extends Error {
-  constructor(public message: string, public payload: Command) {
+  constructor(
+    public message: string,
+    public payload: Command,
+  ) {
     super(message);
   }
 }
 
 export class DisconnectError extends Error {
-  constructor(public message: string, public payload: Command) {
+  constructor(
+    public message: string,
+    public payload: Command,
+  ) {
     super(message);
   }
 }
@@ -139,6 +146,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
   public cache: Cache;
   public song = new Song(this);
+  public session = new Session(this); // added for red session ring control
   public application = new Application(this);
   public internal = new Internal(this);
   public midi = new Midi(this);

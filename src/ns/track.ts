@@ -190,7 +190,10 @@ export class Track extends Namespace<
 > {
   view: TrackView;
 
-  constructor(ableton: Ableton, public raw: RawTrack) {
+  constructor(
+    ableton: Ableton,
+    public raw: RawTrack,
+  ) {
     super(ableton, "track", raw.id);
     this.view = new TrackView(this.ableton, raw.id);
 

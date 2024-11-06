@@ -61,7 +61,10 @@ export class MixerDevice extends Namespace<
   SettableProperties,
   ObservableProperties
 > {
-  constructor(ableton: Ableton, public raw: RawMixerDevice) {
+  constructor(
+    ableton: Ableton,
+    public raw: RawMixerDevice,
+  ) {
     super(ableton, "mixer-device", raw.id);
 
     this.transformers = {

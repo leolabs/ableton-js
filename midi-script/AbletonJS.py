@@ -1,13 +1,13 @@
 from __future__ import absolute_import
 import time
 
-
 from .version import version
 from .Config import DEBUG, FAST_POLLING
 from .Logging import logger
 from .Socket import Socket
 from .Interface import Interface
 from .Application import Application
+from .Session import Session
 from .ApplicationView import ApplicationView
 from .Browser import Browser
 from .BrowserItem import BrowserItem
@@ -32,6 +32,7 @@ import Live
 class AbletonJS(ControlSurface):
     def __init__(self, c_instance):
         super(AbletonJS, self).__init__(c_instance)
+
         logger.info("Starting AbletonJS " + version + "...")
 
         self.tracked_midi = set()
@@ -42,6 +43,8 @@ class AbletonJS(ControlSurface):
         self.handlers = {
             "application": Application(c_instance, self.socket, self.application()),
             "application-view": ApplicationView(c_instance, self.socket, self.application()),
+            # added for red box control
+            "session": Session(c_instance, self.socket, self),
             "browser": Browser(c_instance, self.socket, self.application()),
             "browser-item": BrowserItem(c_instance, self.socket),
             "cue-point": CuePoint(c_instance, self.socket),
@@ -109,6 +112,7 @@ class AbletonJS(ControlSurface):
         super(AbletonJS, self).disconnect()
 
     def command_handler(self, payload):
+
         namespace = payload["ns"]
 
         # Don't clutter the logs

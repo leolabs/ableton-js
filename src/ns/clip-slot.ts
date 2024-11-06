@@ -62,7 +62,10 @@ export class ClipSlot extends Namespace<
   SettableProperties,
   ObservableProperties
 > {
-  constructor(ableton: Ableton, public raw: RawClipSlot) {
+  constructor(
+    ableton: Ableton,
+    public raw: RawClipSlot,
+  ) {
     super(ableton, "clip_slot", raw.id);
 
     this.transformers = {
