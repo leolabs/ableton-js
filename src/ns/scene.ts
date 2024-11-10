@@ -46,7 +46,10 @@ export class Scene extends Namespace<
   SettableProperties,
   ObservableProperties
 > {
-  constructor(ableton: Ableton, public raw: RawScene) {
+  constructor(
+    ableton: Ableton,
+    public raw: RawScene,
+  ) {
     super(ableton, "scene", raw.id);
 
     this.transformers = {

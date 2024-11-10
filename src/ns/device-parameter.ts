@@ -53,7 +53,10 @@ export class DeviceParameter extends Namespace<
   SettableProperties,
   ObservableProperties
 > {
-  constructor(ableton: Ableton, public raw: RawDeviceParameter) {
+  constructor(
+    ableton: Ableton,
+    public raw: RawDeviceParameter,
+  ) {
     super(ableton, "device-parameter", raw.id);
   }
 }
