@@ -241,3 +241,9 @@ library.
   [Issue #4](https://github.com/leolabs/ableton-js/issues/4)
 - The `playing_status` listener of clip slots never fires in Ableton. See
   [Issue #25](https://github.com/leolabs/ableton-js/issues/25)
+
+## Contributing
+
+If you'd like to add features to this project or submit a bugfix, please feel
+free to open a pull request. Before committing changes to any of the TypeScript
+files, please run `yarn format` to format the code using Prettier.

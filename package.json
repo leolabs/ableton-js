@@ -27,7 +27,8 @@
     "build:doc": "jsdoc2md --files src/**/*.ts --configure ./jsdoc2md.json > ./API.md",
     "version": "node hooks/prepublish.js && git add midi-script/version.py && auto-changelog -p -l 100 && git add CHANGELOG.md",
     "build": "tsc",
-    "test": "vitest --run --no-threads"
+    "test": "vitest --run --no-threads",
+    "format": "prettier -w src/"
   },
   "devDependencies": {
     "@types/lodash": "^4.14.194",
@@ -37,6 +38,7 @@
     "@types/uuid": "^8.3.0",
     "auto-changelog": "^2.3.0",
     "p-all": "^3",
+    "prettier": "^3.3.3",
     "tsx": "^3.12.7",
     "typescript": "^5.1.3",
     "vitest": "^0.32.4"
