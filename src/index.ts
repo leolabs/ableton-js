@@ -1,6 +1,7 @@
 import os from "os";
 import path from "path";
 import dgram from "dgram";
+import fs from "fs";
 import { truncate } from "lodash";
 import { EventEmitter } from "events";
 import { v4 } from "uuid";
@@ -139,7 +140,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   private eventListeners = new Map<string, Array<(data: any) => any>>();
   private heartbeatInterval: NodeJS.Timeout | undefined;
   private _isConnected = false;
-  private buffer: Buffer[] = [];
+  private buffer: Buffer[][] = [];
   private latency: number = 0;
 
   private serverPort: number | undefined;
@@ -236,7 +237,9 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
     this.clientState = "starting";
 
-    this.client = dgram.createSocket({ type: "udp4" });
+    // The recvBufferSize is set to macOS' default value, so the
+    // socket behaves the same on Windows and doesn't drop any packets
+    this.client = dgram.createSocket({ type: "udp4", recvBufferSize: 786896 });
     this.client.addListener("message", this.handleIncoming.bind(this));
 
     this.client.addListener("listening", async () => {
@@ -400,21 +403,33 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
   private handleIncoming(msg: Buffer, info: dgram.RemoteInfo) {
     try {
-      const index = msg[0];
-      const message = msg.slice(1);
+      const messageId = msg[0];
+      const messageIndex = msg[1];
+      const totalMessages = msg[2];
+      const message = msg.subarray(3);
 
-      this.buffer[index] = message;
+      if (messageIndex === 0 && totalMessages === 1) {
+        this.handleUncompressedMessage(unzipSync(message).toString());
+        return;
+      }
 
-      // 0xFF signals that the end of the buffer has been reached
-      if (index === 255) {
+      if (!this.buffer[messageId]) {
+        this.buffer[messageId] = [];
+      }
+
+      this.buffer[messageId][messageIndex] = message;
+
+      if (
+        !this.buffer[messageId].includes(undefined as any) &&
+        this.buffer[messageId].length === totalMessages
+      ) {
         this.handleUncompressedMessage(
-          unzipSync(Buffer.concat(this.buffer.filter((b) => b))).toString(),
+          unzipSync(Buffer.concat(this.buffer[messageId])).toString(),
         );
-        this.buffer = [];
+        delete this.buffer[messageId];
       }
     } catch (e) {
       this.buffer = [];
-      this.logger?.warn("Couldn't handle message:", { error: e });
       this.emit("error", e);
     }
   }

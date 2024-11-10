@@ -36,6 +36,7 @@ class Socket(object):
         self._last_error = ""
         self._socket = None
         self._chunk_limit = None
+        self._message_id = 0
 
         self.read_remote_port()
         self.init_socket(True)
@@ -154,14 +155,19 @@ class Socket(object):
         if self._socket == None or self._chunk_limit == None:
             return
 
+        self._message_id = (self._message_id + 1) % 256
+        message_id_byte = struct.pack("B", self._message_id)
+
         if len(compressed) < self._chunk_limit:
-            self._socket.sendto(b'\xFF' + compressed, self._client_addr)
+            self._socket.sendto(message_id_byte + b'\x00\x01' + compressed, self._client_addr)
         else:
             chunks = list(split_by_n(compressed, self._chunk_limit))
             count = len(chunks)
+            count_byte = struct.pack("B", count)
             for i, chunk in enumerate(chunks):
-                count_byte = struct.pack("B", i if i + 1 < count else 255)
-                self._socket.sendto(count_byte + chunk, self._client_addr)
+                logger.info("Sending packet " + str(self._message_id) + " - " + str(i) + "/" + str(count))
+                packet_byte = struct.pack("B", i)
+                self._socket.sendto(message_id_byte + packet_byte + count_byte + chunk, self._client_addr)
 
     def send(self, name, obj=None, uuid=None):
         def jsonReplace(o):
