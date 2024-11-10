@@ -663,7 +663,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
     this.eventListeners.clear();
   }
 
-  sendRaw(msg: string) {
+  async sendRaw(msg: string) {
     if (!this.client || !this.serverPort) {
       throw new Error(
         "The client hasn't been started yet. Please call start() first.",
@@ -672,7 +672,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
     const buffer = deflateSync(Buffer.from(msg));
 
-    const byteLimit = this.client.getSendBufferSize() - 1;
+    const byteLimit = this.client.getSendBufferSize() - 100;
     const chunks = Math.ceil(buffer.byteLength / byteLimit);
 
     // Split the message into chunks if it becomes too large
@@ -680,9 +680,15 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       const chunk = Buffer.concat([
         // Add a counter to the message, the last message is always 255
         Buffer.alloc(1, i + 1 === chunks ? 255 : i),
-        buffer.slice(i * byteLimit, i * byteLimit + byteLimit),
+        buffer.subarray(
+          i * byteLimit,
+          i * byteLimit + byteLimit,
+        ),
       ]);
       this.client.send(chunk, 0, chunk.length, this.serverPort, "127.0.0.1");
+      // Add a bit of a delay between sent chunks to reduce the chance of the
+      // receiving buffer filling up which would cause chunks to be discarded.
+      await new Promise((res) => setTimeout(res, 20));
     }
   }
 

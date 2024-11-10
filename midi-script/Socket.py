@@ -37,6 +37,7 @@ class Socket(object):
         self._socket = None
         self._chunk_limit = None
         self._message_id = 0
+        self._receive_buffer = bytearray()
 
         self.read_remote_port()
         self.init_socket(True)
@@ -195,21 +196,18 @@ class Socket(object):
 
     def process(self):
         try:
-            buffer = bytes()
-            num_messages = 0
             while 1:
                 data = self._socket.recv(65536)
                 if len(data) and self.input_handler:
-                    buffer += data[1:]
-                    num_messages += 1
+                    self._receive_buffer.extend(data[1:])
 
                     # \xFF for Live 10 (Python2) and 255 for Live 11 (Python3)
                     if (data[0] == b'\xFF' or data[0] == 255):
-                        unzipped = zlib.decompress(buffer)
+                        packet = self._receive_buffer
+                        self._receive_buffer = bytearray()
+                        unzipped = zlib.decompress(packet)
                         payload = json.loads(unzipped)
                         self.input_handler(payload)
-                        buffer = bytes()
-                        num_messages = 0
 
         except socket.error as e:
             if (e.errno != 35 and e.errno != 10035 and e.errno != 10054):
