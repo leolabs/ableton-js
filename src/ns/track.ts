@@ -157,7 +157,7 @@ export interface ObservableProperties {
   // input_sub_routings: string;
   is_frozen: number;
   is_showing_chains: number;
-  mute: number;
+  mute: boolean;
   muted_via_solo: number;
   name: string;
   output_meter_left: number;
