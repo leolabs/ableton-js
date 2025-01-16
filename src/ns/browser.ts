@@ -47,7 +47,7 @@ export interface ObservableProperties {
 }
 
 export interface RawBrowser {
-  id: string;
+  readonly id: string;
 }
 
 export class Browser extends Namespace<

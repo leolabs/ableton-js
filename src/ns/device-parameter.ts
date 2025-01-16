@@ -29,10 +29,10 @@ export interface ObservableProperties {
 }
 
 export interface RawDeviceParameter {
-  id: string;
-  name: string;
-  value: number;
-  is_quantized: boolean;
+  readonly id: string;
+  readonly name: string;
+  readonly value: number;
+  readonly is_quantized: boolean;
 }
 
 export enum AutomationState {

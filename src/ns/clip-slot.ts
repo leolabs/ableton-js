@@ -45,12 +45,12 @@ export interface ObservableProperties {
 }
 
 export interface RawClipSlot {
-  id: string;
-  color: number;
-  has_clip: boolean;
-  is_playing: boolean;
-  is_recording: boolean;
-  is_triggered: boolean;
+  readonly id: string;
+  readonly color: number;
+  readonly has_clip: boolean;
+  readonly is_playing: boolean;
+  readonly is_recording: boolean;
+  readonly is_triggered: boolean;
 }
 
 /**

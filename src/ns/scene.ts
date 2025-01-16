@@ -35,9 +35,9 @@ export interface ObservableProperties {
 }
 
 export interface RawScene {
-  color: number;
-  id: string;
-  name: string;
+  readonly color: number;
+  readonly id: string;
+  readonly name: string;
 }
 
 export class Scene extends Namespace<

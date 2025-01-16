@@ -172,14 +172,14 @@ export interface ObservableProperties {
 }
 
 export interface RawTrack {
-  id: string;
-  name: string;
-  color: number;
-  color_index: number;
-  is_foldable: boolean;
-  is_grouped: boolean;
-  mute: boolean;
-  solo: boolean;
+  readonly id: string;
+  readonly name: string;
+  readonly color: number;
+  readonly color_index: number;
+  readonly is_foldable: boolean;
+  readonly is_grouped: boolean;
+  readonly mute: boolean;
+  readonly solo: boolean;
 }
 
 export class Track extends Namespace<

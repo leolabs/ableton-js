@@ -28,10 +28,10 @@ export interface ObservableProperties {
 }
 
 export interface RawDevice {
-  id: string;
-  name: string;
-  type: DeviceType;
-  class_name: string;
+  readonly id: string;
+  readonly name: string;
+  readonly type: DeviceType;
+  readonly class_name: string;
 }
 
 export enum DeviceType {

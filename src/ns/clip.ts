@@ -145,15 +145,15 @@ export interface ObservableProperties {
 }
 
 export interface RawClip {
-  id: string;
-  name: string;
-  color: number;
-  color_index: number;
-  is_audio_clip: boolean;
-  is_midi_clip: boolean;
-  start_time: number;
-  end_time: number;
-  muted: boolean;
+  readonly id: string;
+  readonly name: string;
+  readonly color: number;
+  readonly color_index: number;
+  readonly is_audio_clip: boolean;
+  readonly is_midi_clip: boolean;
+  readonly start_time: number;
+  readonly end_time: number;
+  readonly muted: boolean;
 }
 
 /**

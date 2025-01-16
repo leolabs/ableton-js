@@ -16,9 +16,9 @@ export interface ObservableProperties {
 }
 
 export interface RawCuePoint {
-  id: string;
-  name: string;
-  time: number;
+  readonly id: string;
+  readonly name: string;
+  readonly time: number;
 }
 
 export class CuePoint extends Namespace<
