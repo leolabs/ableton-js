@@ -17,8 +17,9 @@ export class Namespace<GP, TP, SP, OP> {
 
   async get<T extends keyof GP>(
     prop: T,
+    useCache?: boolean,
   ): Promise<T extends keyof TP ? TP[T] : GP[T]> {
-    const cache = !!this.cachedProps[prop];
+    const cache = useCache ?? !!this.cachedProps[prop];
     const res = await this.ableton.getProp(
       this.ns,
       this.nsid,

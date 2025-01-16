@@ -1,7 +1,6 @@
 import os from "os";
 import path from "path";
 import dgram from "dgram";
-import fs from "fs";
 import { truncate } from "lodash";
 import { EventEmitter } from "events";
 import { v4 } from "uuid";
@@ -121,6 +120,11 @@ export interface AbletonOptions {
   cacheOptions?: LruCache.Options<string, any>;
 
   /**
+   * Completely disables the cache.
+   */
+  disableCache?: boolean;
+
+  /**
    * Set this to allow ableton-js to log messages. If you set this to
    * `console`, log messages are printed to the standard output.
    */
@@ -145,7 +149,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
   private serverPort: number | undefined;
 
-  public cache: Cache;
+  public cache?: Cache;
   public song = new Song(this);
   public session = new Session(this); // added for red session ring control
   public application = new Application(this);
@@ -163,11 +167,13 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
 
     this.logger = options?.logger;
 
-    this.cache = new LruCache<string, any>({
-      max: 500,
-      ttl: 1000 * 60 * 10,
-      ...options?.cacheOptions,
-    });
+    if (!options?.disableCache) {
+      this.cache = new LruCache<string, any>({
+        max: 500,
+        ttl: 1000 * 60 * 10,
+        ...options?.cacheOptions,
+      });
+    }
 
     this.clientPortFile = path.join(
       os.tmpdir(),
@@ -544,7 +550,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   async sendCachedCommand(command: Omit<Command, "uuid" | "cache">) {
     const args = command.args?.prop ?? JSON.stringify(command.args);
     const cacheKey = [command.ns, command.nsid, args].filter(Boolean).join("/");
-    const cached = this.cache.get(cacheKey);
+    const cached = this.cache?.get(cacheKey);
 
     const result: CacheResponse = await this.sendCommand({
       ...command,
@@ -560,7 +566,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       }
     } else {
       if (result.etag) {
-        this.cache.set(cacheKey, result);
+        this.cache?.set(cacheKey, result);
       }
 
       return result.data;
@@ -575,7 +581,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
   ) {
     const params = { ns, nsid, name: "get_prop", args: { prop } };
 
-    if (cache) {
+    if (cache && this.cache) {
       return this.sendCachedCommand(params);
     } else {
       return this.sendCommand(params);
@@ -680,10 +686,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       const chunk = Buffer.concat([
         // Add a counter to the message, the last message is always 255
         Buffer.alloc(1, i + 1 === chunks ? 255 : i),
-        buffer.subarray(
-          i * byteLimit,
-          i * byteLimit + byteLimit,
-        ),
+        buffer.subarray(i * byteLimit, i * byteLimit + byteLimit),
       ]);
       this.client.send(chunk, 0, chunk.length, this.serverPort, "127.0.0.1");
       // Add a bit of a delay between sent chunks to reduce the chance of the
