@@ -4,6 +4,7 @@ import struct
 import zlib
 import os
 import tempfile
+import sys
 
 from .Logging import logger
 
@@ -87,7 +88,8 @@ class Socket(object):
                     if self._socket:
                         self.send("connect", {"port": self._server_addr[1]})
         except Exception as e:
-            self.log_error_once("Couldn't read remote port file: " + str(e.args))
+            self.log_error_once(
+                "Couldn't read remote port file: " + str(e.args))
 
     def shutdown(self):
         logger.info("Shutting down...")
@@ -125,13 +127,15 @@ class Socket(object):
                     with open(server_port_path, "w") as file:
                         file.write(str(port))
             except Exception as e:
-                self.log_error_once("Couldn't save port in file: " + str(e.args))
+                self.log_error_once(
+                    "Couldn't save port in file: " + str(e.args))
                 raise e
 
             try:
                 self.send("connect", {"port": self._server_addr[1]})
             except Exception as e:
-                logger.error("Couldn't send connect to " + str(self._client_addr) + ":")
+                logger.error("Couldn't send connect to " +
+                             str(self._client_addr) + ":")
                 logger.exception(e)
 
             self.show_message("Started server on port " + str(port))
@@ -143,7 +147,8 @@ class Socket(object):
                 str(self._server_addr) + ': ' + \
                 str(e.args) + ', trying again. ' + \
                 'If this keeps happening, try restarting your computer.'
-            self.log_error_once(msg + " (Client address: " + str(self._client_addr) + ")")
+            self.log_error_once(
+                msg + " (Client address: " + str(self._client_addr) + ")")
             self.show_message(msg)
             t = Live.Base.Timer(
                 callback=self.init_socket, interval=5000, repeat=False)
@@ -160,15 +165,18 @@ class Socket(object):
         message_id_byte = struct.pack("B", self._message_id)
 
         if len(compressed) < self._chunk_limit:
-            self._socket.sendto(message_id_byte + b'\x00\x01' + compressed, self._client_addr)
+            self._socket.sendto(
+                message_id_byte + b'\x00\x01' + compressed, self._client_addr)
         else:
             chunks = list(split_by_n(compressed, self._chunk_limit))
             count = len(chunks)
             count_byte = struct.pack("B", count)
             for i, chunk in enumerate(chunks):
-                logger.info("Sending packet " + str(self._message_id) + " - " + str(i) + "/" + str(count))
+                logger.info("Sending packet " + str(self._message_id) +
+                            " - " + str(i) + "/" + str(count))
                 packet_byte = struct.pack("B", i)
-                self._socket.sendto(message_id_byte + packet_byte + count_byte + chunk, self._client_addr)
+                self._socket.sendto(
+                    message_id_byte + packet_byte + count_byte + chunk, self._client_addr)
 
     def send(self, name, obj=None, uuid=None):
         def jsonReplace(o):
@@ -188,7 +196,8 @@ class Socket(object):
         except socket.error as e:
             logger.error("Socket error:")
             logger.exception(e)
-            logger.error("Server: " + str(self._server_addr) + ", client: " + str(self._client_addr) + ", socket: " + str(self._socket))
+            logger.error("Server: " + str(self._server_addr) + ", client: " +
+                         str(self._client_addr) + ", socket: " + str(self._socket))
             logger.error("Data:" + data)
         except Exception as e:
             logger.error("Error " + name + "(" + str(uuid) + "):")
@@ -205,7 +214,17 @@ class Socket(object):
                     if (data[0] == b'\xFF' or data[0] == 255):
                         packet = self._receive_buffer
                         self._receive_buffer = bytearray()
+
+                        # Handle Python 2/3 compatibility for zlib.decompress
+                        if sys.version_info[0] < 3:
+                            packet = str(packet)
+
                         unzipped = zlib.decompress(packet)
+
+                        # Handle bytes to string conversion for Python 3
+                        if sys.version_info[0] >= 3 and isinstance(unzipped, bytes):
+                            unzipped = unzipped.decode('utf-8')
+
                         payload = json.loads(unzipped)
                         self.input_handler(payload)
 
