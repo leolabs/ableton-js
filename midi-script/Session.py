@@ -21,7 +21,7 @@ class Session(Interface):
         """
         with self.controlSurface.component_guard():
             logger.info(
-                f"Setting up session box with {num_tracks} tracks and {num_scenes} scenes.")
+                "Setting up session box with " + str(num_tracks) + " tracks and " + str(num_scenes) + " scenes.")
             self.session = self.sessionComponent(num_tracks, num_scenes)
             self.session.set_offsets(0, 0)
             self.controlSurface.set_highlighting_session_component(
@@ -33,7 +33,7 @@ class Session(Interface):
         Sets the offset of the SessionComponent instance.
         """
         logger.info(
-            f"Moving session box offset to {track_offset} and {scene_offset}.")
+            "Moving session box offset to " + str(track_offset) + " and " + scene_offset + ".")
 
         if hasattr(self, 'session'):
             self.session.set_offsets(track_offset, scene_offset)
