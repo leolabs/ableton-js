@@ -224,4 +224,29 @@ export class Track extends Namespace<
       time: time,
     });
   }
+
+  /**
+   * Deletes the given clip from the arrangement of this track.
+   * Raises a runtime error when the clip belongs to another track
+   */
+  deleteClip(clipOrId: Clip | string) {
+    return this.sendCommand("delete_clip", {
+      clip_id: typeof clipOrId === "string" ? clipOrId : clipOrId.raw.id,
+    });
+  }
+
+  /**
+   * Delete a device identified by the index in the 'devices' list of current track
+   */
+  deleteDevice(index: number) {
+    return this.sendCommand("delete_device", [index]);
+  }
+
+  /**
+   * Given an absolute path to a valid audio file in a supported format, creates an audio clip that references the file in the clip slot.
+   * Throws an error if the clip slot doesn't belong to an audio track or if the track is frozen.
+   */
+  createAudioClip(filePath: string, position: number) {
+    return this.sendCommand("create_audio_clip", [filePath, position]);
+  }
 }

@@ -78,4 +78,8 @@ class Track(Interface):
         return MixerDevice.serialize_mixer_device(ns.mixer_device)
 
     def duplicate_clip_to_arrangement(self, ns, clip_id, time):
-        return ns.duplicate_clip_to_arrangement(self.get_obj(clip_id), time)
+        clip = ns.duplicate_clip_to_arrangement(self.get_obj(clip_id), time)
+        return Clip.serialize_clip(clip)
+
+    def delete_clip(self, ns, clip_id):
+        return ns.delete_clip(self.get_obj(clip_id))

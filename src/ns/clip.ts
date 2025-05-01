@@ -327,16 +327,16 @@ export class Clip extends Namespace<
    * Deletes all notes that start in the given area.
    */
   removeNotesExtended(
-    fromTime: number,
     fromPitch: number,
-    timeSpan: number,
     pitchSpan: number,
+    fromTime: number,
+    timeSpan: number,
   ) {
     return this.sendCommand("remove_notes_extended", [
-      fromTime,
       fromPitch,
-      timeSpan,
       pitchSpan,
+      fromTime,
+      timeSpan,
     ]);
   }
 
