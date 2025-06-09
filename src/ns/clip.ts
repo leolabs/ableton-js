@@ -333,10 +333,10 @@ export class Clip extends Namespace<
     pitchSpan: number,
   ) {
     return this.sendCommand("remove_notes_extended", [
-      fromTime,
       fromPitch,
-      timeSpan,
       pitchSpan,
+      fromTime,
+      timeSpan,
     ]);
   }
 
