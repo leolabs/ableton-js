@@ -2,7 +2,7 @@ import { Ableton } from "..";
 import { Namespace } from ".";
 import { Color } from "../util/color";
 import { DeviceParameter } from "./device-parameter";
-import { Note, noteToTuple, NoteTuple, tupleToNote } from "../util/note";
+import { Note, NoteExtended, noteToTuple, NoteTuple, tupleToNote } from "../util/note";
 
 export enum WarpMode {
   Beats = 0,
@@ -265,6 +265,7 @@ export class Clip extends Namespace<
 
   /**
    * Returns all notes that match the given range.
+   * @deprecated starting with Live 11, use `getNotesExtended` instead
    */
   async getNotes(
     fromTime: number,
@@ -280,6 +281,31 @@ export class Clip extends Namespace<
     });
 
     return notes.map(tupleToNote);
+  }
+
+  /**
+   * Returns all notes matching the given range with extended properties.
+   * Compared to getNotes, this method returns additional note information.
+   */
+  async getNotesExtended(
+    fromTime: number,
+    fromPitch: number,
+    timeSpan: number,
+    pitchSpan: number,
+  ): Promise<NoteExtended[]> {
+    return this.sendCommand("get_notes_extended", {
+      from_pitch: fromPitch,
+      pitch_span: pitchSpan,
+      from_time: fromTime,
+      time_span: timeSpan,
+    });
+  }
+
+  /**
+   *  Available since Live 11.0. Replaces modifying notes with remove_notes followed by set_notes.
+   */
+  applyNoteModifications(notes: NoteExtended[]) {
+    return this.sendCommand("apply_note_modifications", { notes });
   }
 
   /**
@@ -338,6 +364,14 @@ export class Clip extends Namespace<
       fromTime,
       timeSpan,
     ]);
+  }
+
+  /**
+   * Remove notes by given note ids.
+   * Available since Live 11.0.
+   */
+  removeNotesById(ids: number[]) {
+    return this.sendCommand("remove_notes_by_id", [ids]);
   }
 
   /**

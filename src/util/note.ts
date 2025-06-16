@@ -14,6 +14,18 @@ export interface Note {
   muted: boolean;
 }
 
+export interface NoteExtended {
+  note_id: number;
+  duration: number;
+  mute: boolean;
+  pitch: number;
+  probability: number;
+  release_velocity: number;
+  start_time: number;
+  velocity: number;
+  velocity_deviation: number;
+}
+
 export const tupleToNote = (tuple: NoteTuple): Note => ({
   pitch: tuple[0],
   time: tuple[1],
