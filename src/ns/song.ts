@@ -36,7 +36,7 @@ export interface GettableProperties {
   overdub: boolean;
   punch_in: boolean;
   punch_out: boolean;
-  re_enable_automation_enabled: number;
+  re_enable_automation_enabled: boolean;
   record_mode: number;
   return_tracks: RawTrack[];
   root_note: number;
@@ -305,6 +305,10 @@ export class Song extends Namespace<
 
   public async playSelection() {
     return this.sendCommand("play_selection");
+  }
+
+  public async reEnableAutomation() {
+    return this.sendCommand("re_enable_automation");
   }
 
   public async redo() {
