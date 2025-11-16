@@ -53,18 +53,6 @@ class Socket(object):
         self.show_message("Client connected on port " + str(port))
         self._client_addr = ("127.0.0.1", int(port))
 
-    def read_last_server_port(self):
-        try:
-            with open(server_port_path) as file:
-                port = int(file.read())
-
-            logger.info("Stored server port: " + str(port))
-            return port
-        except Exception as e:
-            logger.error("Couldn't read stored server port:")
-            logger.exception(e)
-            return None
-
     def read_remote_port(self):
         '''Reads the port our client is listening on'''
 
@@ -96,18 +84,11 @@ class Socket(object):
         self._socket.close()
         self._socket = None
 
-    def init_socket(self, try_stored=False):
-        logger.info(
-            "Initializing socket, from stored: " + str(try_stored))
+    def init_socket(self):
+        logger.info("Initializing socket")
 
         try:
-            stored_port = self.read_last_server_port()
-
-            # Try the port we used last time first
-            if try_stored and stored_port:
-                self._server_addr = ("127.0.0.1", stored_port)
-            else:
-                self._server_addr = ("127.0.0.1", 0)
+            self._server_addr = ("127.0.0.1", 0)
 
             self._socket = socket.socket(
                 socket.AF_INET, socket.SOCK_DGRAM)
@@ -123,16 +104,15 @@ class Socket(object):
 
             # Write the chosen port to a file
             try:
-                if stored_port != port:
-                    with open(server_port_path, "w") as file:
-                        file.write(str(port))
+                with open(server_port_path, "w") as file:
+                    file.write(str(port))
             except Exception as e:
                 self.log_error_once(
                     "Couldn't save port in file: " + str(e.args))
                 raise e
 
             try:
-                self.send("connect", {"port": self._server_addr[1]})
+                self.send("connect", {"port": port})
             except Exception as e:
                 logger.error("Couldn't send connect to " +
                              str(self._client_addr) + ":")
