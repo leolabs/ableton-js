@@ -172,8 +172,6 @@ class Socket(object):
             count = len(chunks)
             count_byte = struct.pack("B", count)
             for i, chunk in enumerate(chunks):
-                logger.info("Sending packet " + str(self._message_id) +
-                            " - " + str(i) + "/" + str(count))
                 packet_byte = struct.pack("B", i)
                 self._socket.sendto(
                     message_id_byte + packet_byte + count_byte + chunk, self._client_addr)
@@ -229,7 +227,7 @@ class Socket(object):
                         self.input_handler(payload)
 
         except socket.error as e:
-            if (e.errno != 35 and e.errno != 10035 and e.errno != 10054):
+            if (e.errno != 35 and e.errno != 10035 and e.errno != 10054 and e.errno != 10022):
                 logger.error("Socket error:")
                 logger.exception(e)
             return
