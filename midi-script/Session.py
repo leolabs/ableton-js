@@ -33,7 +33,7 @@ class Session(Interface):
         Sets the offset of the SessionComponent instance.
         """
         logger.info(
-            "Moving session box offset to " + str(track_offset) + " and " + scene_offset + ".")
+            "Moving session box offset to " + str(track_offset) + " and " + str(scene_offset) + ".")
 
         if hasattr(self, 'session'):
             self.session.set_offsets(track_offset, scene_offset)
