@@ -91,7 +91,7 @@ export interface SettableProperties {
   overdub: boolean;
   punch_in: boolean;
   punch_out: boolean;
-  re_enable_automation_enabled: number;
+  re_enable_automation_enabled: boolean;
   record_mode: number;
   return_tracks: number;
   root_note: number;
@@ -135,7 +135,7 @@ export interface ObservableProperties {
   overdub: boolean;
   punch_in: boolean;
   punch_out: boolean;
-  re_enable_automation_enabled: number;
+  re_enable_automation_enabled: boolean;
   record_mode: number;
   return_tracks: RawTrack[];
   scenes: RawScene[];
