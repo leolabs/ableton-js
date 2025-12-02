@@ -37,11 +37,14 @@ class Socket(object):
         self._last_error = ""
         self._socket = None
         self._chunk_limit = None
+        self._send_buffer = []
         self._message_id = 0
         self._receive_buffer = bytearray()
+        # Dictionary to store chunks per message: {message_id: {chunk_index: chunk_data}}
+        self._chunks = {}
 
         self.read_remote_port()
-        self.init_socket(True)
+        self.init_socket()
 
     def log_error_once(self, msg):
         if self._last_error != msg:
@@ -145,16 +148,16 @@ class Socket(object):
         message_id_byte = struct.pack("B", self._message_id)
 
         if len(compressed) < self._chunk_limit:
-            self._socket.sendto(
-                message_id_byte + b'\x00\x01' + compressed, self._client_addr)
+            self._send_buffer.append(
+                message_id_byte + b'\x00\x01' + compressed)
         else:
             chunks = list(split_by_n(compressed, self._chunk_limit))
             count = len(chunks)
             count_byte = struct.pack("B", count)
             for i, chunk in enumerate(chunks):
                 packet_byte = struct.pack("B", i)
-                self._socket.sendto(
-                    message_id_byte + packet_byte + count_byte + chunk, self._client_addr)
+                self._send_buffer.append(
+                    message_id_byte + packet_byte + count_byte + chunk)
 
     def send(self, name, obj=None, uuid=None):
         def jsonReplace(o):
@@ -184,27 +187,75 @@ class Socket(object):
     def process(self):
         try:
             while 1:
+                try:
+                    # Send 5 UDP packets at a time, to avoid
+                    for i in range(5):
+                        self._socket.sendto(
+                            self._send_buffer.pop(0), self._client_addr)
+                except:
+                    pass
+
                 data = self._socket.recv(65536)
                 if len(data) and self.input_handler:
-                    self._receive_buffer.extend(data[1:])
+                    # Parse packet format: [messageId][chunkIndex][totalChunks][chunkData]
+                    if len(data) < 3:
+                        # Packet too short, skip it
+                        continue
 
-                    # \xFF for Live 10 (Python2) and 255 for Live 11 (Python3)
-                    if (data[0] == b'\xFF' or data[0] == 255):
-                        packet = self._receive_buffer
-                        self._receive_buffer = bytearray()
+                    # Get message ID, chunk index, and total chunks from first 3 bytes
+                    message_id = data[0]
+                    chunk_index = data[1]
+                    total_chunks = data[2]
 
-                        # Handle Python 2/3 compatibility for zlib.decompress
-                        if sys.version_info[0] < 3:
-                            packet = str(packet)
+                    # Handle Python 2/3 compatibility
+                    if isinstance(message_id, bytes):
+                        message_id = ord(message_id)
+                    if isinstance(chunk_index, bytes):
+                        chunk_index = ord(chunk_index)
+                    if isinstance(total_chunks, bytes):
+                        total_chunks = ord(total_chunks)
 
-                        unzipped = zlib.decompress(packet)
+                    chunk_data = data[3:]
 
-                        # Handle bytes to string conversion for Python 3
-                        if sys.version_info[0] >= 3 and isinstance(unzipped, bytes):
-                            unzipped = unzipped.decode('utf-8')
+                    # Initialize message tracking if this is the first chunk for this message
+                    if message_id not in self._chunks:
+                        self._chunks[message_id] = {}
 
-                        payload = json.loads(unzipped)
-                        self.input_handler(payload)
+                    # Store the chunk
+                    self._chunks[message_id][chunk_index] = chunk_data
+
+                    # Check if we have all chunks for this message
+                    if len(self._chunks[message_id]) == total_chunks:
+                        # We have all chunks! Reassemble in order
+                        packet_parts = []
+                        for i in range(total_chunks):
+                            if i in self._chunks[message_id]:
+                                packet_parts.append(
+                                    self._chunks[message_id][i])
+                            else:
+                                # Missing chunk - this shouldn't happen if total_chunks is correct
+                                logger.error(
+                                    "Missing chunk %d for message %d" % (i, message_id))
+                                break
+                        else:
+                            # All chunks present, reassemble
+                            packet = b''.join(packet_parts)
+
+                            # Remove this message from tracking
+                            del self._chunks[message_id]
+
+                            # Handle Python 2/3 compatibility for zlib.decompress
+                            if sys.version_info[0] < 3:
+                                packet = str(packet)
+
+                            unzipped = zlib.decompress(packet)
+
+                            # Handle bytes to string conversion for Python 3
+                            if sys.version_info[0] >= 3 and isinstance(unzipped, bytes):
+                                unzipped = unzipped.decode('utf-8')
+
+                            payload = json.loads(unzipped)
+                            self.input_handler(payload)
 
         except socket.error as e:
             if (e.errno != 35 and e.errno != 10035 and e.errno != 10054 and e.errno != 10022):
@@ -214,3 +265,6 @@ class Socket(object):
         except Exception as e:
             logger.error("Error processing request:")
             logger.exception(e)
+            # Clear chunks on error to prevent stuck state
+            # Optionally, we could clear only the problematic message_id, but for safety, clear all
+            self._chunks = {}

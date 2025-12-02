@@ -111,7 +111,7 @@ describe("Song", () => {
     await withAbleton(async (ab) => {
       const largeArray: number[] = [];
 
-      for (let i = 0; i < 100000; i++) {
+      for (let i = 0; i < 1000000; i++) {
         largeArray.push(i);
       }
 
