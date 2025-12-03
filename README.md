@@ -1,249 +1,801 @@
 # Ableton.js
 
-[![Current Version](https://img.shields.io/npm/v/ableton-js.svg)](https://www.npmjs.com/package/ableton-js/)
+[![npm version](https://img.shields.io/npm/v/ableton-js.svg)](https://www.npmjs.com/package/ableton-js)
+[![npm downloads](https://img.shields.io/npm/dm/ableton-js.svg)](https://www.npmjs.com/package/ableton-js)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.1-blue.svg)](https://www.typescriptlang.org/)
+[![Ableton Live](https://img.shields.io/badge/Ableton%20Live-10%20|%2011%20|%2012-orange.svg)](https://www.ableton.com/)
 
-Ableton.js lets you control your instance or instances of Ableton using Node.js.
-It tries to cover as many functions as possible.
+**Control Ableton Live from Node.js** - A comprehensive TypeScript library that exposes Ableton Live's MIDI Remote Script API to JavaScript/TypeScript developers.
 
-This package is still a work-in-progress. My goal is to expose all of
-[Ableton's MIDI Remote Script](https://nsuspray.github.io/Live_API_Doc/11.0.0.xml)
-functions to TypeScript. If you'd like to contribute, please feel free to do so.
+---
 
-## Sponsored Message
+## Table of Contents
 
-I've used Ableton.js to build a setlist manager called
-[AbleSet](https://ableset.app). AbleSet allows you to easily manage and control
-your Ableton setlists from any device, re-order songs and add notes to them, and
-get an overview of the current state of your set.
+- [Features](#features)
+- [Quick Start](#quick-start)
+- [Installation](#installation)
+- [Configuration](#configuration)
+- [API Reference](#api-reference)
+- [Examples](#examples)
+- [Architecture](#architecture)
+- [Protocol Details](#protocol-details)
+- [Troubleshooting](#troubleshooting)
+- [Known Issues](#known-issues)
+- [Contributing](#contributing)
+- [Sponsored Project](#sponsored-project)
+- [License](#license)
 
-[![AbleSet Header](https://public-files.gumroad.com/variants/oplxt68bsgq1hu61t8bydfkgppr5/baaca0eb0e33dc4f9d45910b8c86623f0144cea0fe0c2093c546d17d535752eb)](https://ableset.app/?utm_campaign=ableton-js)
+---
 
-## Prerequisites
+## Features
 
-To use this library, you'll need to install and activate the MIDI Remote Script
-in Ableton.js. To do that, copy the `midi-script` folder of this repo to
-Ableton's Remote Scripts folder and rename it to `AbletonJS`. The MIDI Remote
-Scripts folder is usually located at
-`~/Music/Ableton/User Library/Remote Scripts`
+- **Full TypeScript Support** - Type-safe API with complete IntelliSense
+- **Comprehensive Coverage** - Control songs, tracks, clips, devices, parameters, and more
+- **Real-time Events** - Subscribe to property changes with automatic cleanup
+- **Smart Caching** - LRU cache with ETag validation reduces UDP bandwidth
+- **Message Compression** - Gzip compression for large payloads
+- **Automatic Chunking** - Handles messages larger than UDP packet size
+- **Multiple Instances** - Control multiple Ableton instances simultaneously
+- **Connection Management** - Automatic heartbeat monitoring and reconnection handling
+- **Detailed Logging** - Pluggable logger interface for debugging
 
-After starting Ableton Live, add the script to your list of control surfaces:
+---
 
-![Ableton Live Settings](https://i.imgur.com/a34zJca.png)
-
-If you've forked this project on macOS, you can also use yarn to do that for
-you. Running `yarn ableton10:start` or `yarn ableton11:start` (depending on your
-app version) will copy the `midi-script` folder, open Ableton and show a stream
-of log messages until you kill it.
-
-## Using Ableton.js
-
-This library exposes an `Ableton` class which lets you control the entire
-application. You can instantiate it once and use TS to explore available
-features.
-
-Example:
+## Quick Start
 
 ```typescript
 import { Ableton } from "ableton-js";
 
-// Log all messages to the console
 const ableton = new Ableton({ logger: console });
 
-const test = async () => {
-  // Establishes a connection with Live
+async function main() {
+  // Connect to Ableton Live
   await ableton.start();
 
-  // Observe the current playback state and tempo
-  ableton.song.addListener("is_playing", (p) => console.log("Playing:", p));
-  ableton.song.addListener("tempo", (t) => console.log("Tempo:", t));
-
-  // Get the current tempo
+  // Get current tempo
   const tempo = await ableton.song.get("tempo");
-  console.log("Current tempo:", tempo);
+  console.log(`Current tempo: ${tempo} BPM`);
 
-  // Set the tempo
-  await ableton.song.set("tempo", 85);
-};
+  // Set new tempo
+  await ableton.song.set("tempo", 128);
 
-test();
+  // Listen for playback changes
+  const removeListener = await ableton.song.addListener("is_playing", (isPlaying) => {
+    console.log(isPlaying ? "Playback started" : "Playback stopped");
+  });
+
+  // Start playback
+  await ableton.song.startPlaying();
+
+  // Get all tracks
+  const tracks = await ableton.song.get("tracks");
+  for (const track of tracks) {
+    console.log(`Track: ${track.raw.name}`);
+  }
+
+  // Clean up listener when done
+  removeListener();
+}
+
+main().catch(console.error);
 ```
 
-## Events
+---
 
-There are a few events you can use to get more under-the-hood insights:
+## Installation
 
-```ts
-// A connection to Ableton is established
-ab.on("connect", (e) => console.log("Connect", e));
+### 1. Install the npm package
 
-// Connection to Ableton was lost,
-// also happens when you load a new project
-ab.on("disconnect", (e) => console.log("Disconnect", e));
-
-// A raw message was received from Ableton
-ab.on("message", (m) => console.log("Message:", m));
-
-// A received message could not be parsed
-ab.on("error", (e) => console.error("Error:", e));
-
-// Fires on every response with the current ping
-ab.on("ping", (ping) => console.log("Ping:", ping, "ms"));
+```bash
+npm install ableton-js
+# or
+yarn add ableton-js
+# or
+pnpm add ableton-js
 ```
 
-## Protocol
+### 2. Install the MIDI Remote Script
 
-Ableton.js uses UDP to communicate with the MIDI Script. Each message is a JSON
-object containing required data and a UUID so request and response can be
-associated with each other.
+Copy the `midi-script` folder from the package to Ableton's Remote Scripts folder:
 
-### Used Ports
+**macOS:**
+```bash
+cp -r node_modules/ableton-js/midi-script ~/Music/Ableton/User\ Library/Remote\ Scripts/AbletonJS
+```
 
-Both the client and the server bind to a random available port and store that
-port in a local file so the other side knows which port to send messages to.
+**Windows:**
+```bash
+xcopy /E /I node_modules\ableton-js\midi-script "%USERPROFILE%\Documents\Ableton\User Library\Remote Scripts\AbletonJS"
+```
 
-### Compression and Chunking
+**Linux:**
+```bash
+cp -r node_modules/ableton-js/midi-script ~/Ableton/User\ Library/Remote\ Scripts/AbletonJS
+```
 
-To allow sending large JSON payloads, requests to and responses from the MIDI
-Script are compressed using gzip and chunked to fit into the maximum allowed
-package size. The first byte of every message chunk contains the chunk index
-(0x00-0xFF) followed by the gzipped chunk. The last chunk always has the index
-0xFF. This indicates to the JS library that the previous received messages
-should be stiched together, unzipped, and processed.
+### 3. Configure Ableton Live
 
-### Caching
+1. Open Ableton Live
+2. Go to **Preferences** → **Link, Tempo & MIDI**
+3. Under **Control Surface**, select **AbletonJS**
+4. Leave Input and Output as "None"
 
-Certain props are cached on the client to reduce the bandwidth over UDP. To do
-this, the Ableton plugin generates an MD5 hash of the prop, called ETag, and
-sends it to the client along with the data.
+![Ableton Live Settings](https://i.imgur.com/a34zJca.png)
 
-The client stores both the ETag and the data in an LRU cache and sends the
-latest stored ETag to the plugin the next time the same prop is requested. If
-the data still matches the ETag, the plugin responds with a placeholder object
-and the client returns the cached data.
+### Development Setup (macOS)
 
-### Commands
+If you've cloned the repository, use the provided scripts:
 
-A command payload consists of the following properties:
+```bash
+# For Ableton Live 10
+yarn ableton10:start
 
-```js
-{
-  "uuid": "a20f25a0-83e2-11e9-bbe1-bd3a580ef903", // A unique command id
-  "ns": "song", // The command namespace
-  "nsid": null, // The namespace id, for example to address a specific track or device
-  "name": "get_prop", // Command name
-  "args": { "prop": "current_song_time" }, // Command arguments
-  "etag": "4e0794e44c7eb58bdbbbf7268e8237b4", // MD5 hash of the data if it might be cached locally
-  "cache": true // If this is true, the plugin will calculate an etag and return a placeholder if it matches the provided one
+# For Ableton Live 11
+yarn ableton11:start
+
+# For Ableton Live 12
+yarn ableton12:start
+```
+
+This will copy the MIDI script, launch Ableton, and tail the logs.
+
+---
+
+## Configuration
+
+### Ableton Options
+
+```typescript
+import { Ableton } from "ableton-js";
+
+const ableton = new Ableton({
+  // Custom port file names (for multiple instances)
+  serverPortFile: "ableton-js-server.port",
+  clientPortFile: "ableton-js-client.port",
+
+  // Connection monitoring (milliseconds)
+  heartbeatInterval: 2000,
+  commandTimeoutMs: 2000,
+  commandWarnMs: 1000,
+
+  // Cache configuration
+  cacheOptions: {
+    max: 500,
+    ttl: 1000 * 60 * 10, // 10 minutes
+  },
+  disableCache: false,
+
+  // Logging
+  logger: console, // or custom logger
+});
+```
+
+### Multiple Instances
+
+Control multiple Ableton instances by using different port files:
+
+```typescript
+const instance1 = new Ableton({
+  serverPortFile: "ableton-1-server.port",
+  clientPortFile: "ableton-1-client.port",
+});
+
+const instance2 = new Ableton({
+  serverPortFile: "ableton-2-server.port",
+  clientPortFile: "ableton-2-client.port",
+});
+```
+
+---
+
+## API Reference
+
+### Core Namespaces
+
+The `Ableton` instance provides access to these namespaces:
+
+| Namespace | Description | Example |
+|-----------|-------------|---------|
+| `song` | Playback, tempo, timeline, tracks, scenes | `ableton.song` |
+| `application` | App-level control, dialogs, version info | `ableton.application` |
+| `session` | Session ring/controller setup | `ableton.session` |
+| `internal` | Plugin version and status | `ableton.internal` |
+| `midi` | MIDI I/O control | `ableton.midi` |
+
+### Song Properties
+
+```typescript
+// Gettable properties (read)
+await ableton.song.get("tempo"); // number
+await ableton.song.get("is_playing"); // boolean
+await ableton.song.get("current_song_time"); // number (beats)
+await ableton.song.get("tracks"); // Track[]
+await ableton.song.get("scenes"); // Scene[]
+await ableton.song.get("master_track"); // Track
+await ableton.song.get("return_tracks"); // Track[]
+await ableton.song.get("cue_points"); // CuePoint[]
+await ableton.song.get("signature_numerator"); // number
+await ableton.song.get("signature_denominator"); // number
+await ableton.song.get("loop"); // boolean
+await ableton.song.get("loop_start"); // number
+await ableton.song.get("loop_length"); // number
+await ableton.song.get("metronome"); // number
+await ableton.song.get("overdub"); // boolean
+await ableton.song.get("punch_in"); // boolean
+await ableton.song.get("punch_out"); // boolean
+
+// Settable properties (write)
+await ableton.song.set("tempo", 120);
+await ableton.song.set("current_song_time", 0);
+await ableton.song.set("loop", true);
+await ableton.song.set("loop_start", 4);
+await ableton.song.set("loop_length", 8);
+await ableton.song.set("metronome", 1);
+await ableton.song.set("overdub", false);
+```
+
+### Song Methods
+
+```typescript
+// Playback control
+await ableton.song.startPlaying();
+await ableton.song.stopPlaying();
+await ableton.song.continuePlaying();
+await ableton.song.stopAllClips();
+
+// Navigation
+await ableton.song.jumpToNextCue();
+await ableton.song.jumpToPrevCue();
+await ableton.song.jumpBy(4); // Jump by beats
+
+// Track management
+await ableton.song.createAudioTrack(0); // Insert at index
+await ableton.song.createMidiTrack(1);
+await ableton.song.createReturnTrack();
+await ableton.song.deleteTrack(2);
+await ableton.song.duplicateTrack(0);
+
+// Scene management
+await ableton.song.createScene(0);
+await ableton.song.deleteScene(1);
+await ableton.song.duplicateScene(0);
+
+// Recording
+await ableton.song.triggerSessionRecord();
+await ableton.song.reEnableAutomation();
+
+// Undo/Redo
+await ableton.song.undo();
+await ableton.song.redo();
+
+// Tap tempo
+await ableton.song.tapTempo();
+```
+
+### Track Operations
+
+```typescript
+const tracks = await ableton.song.get("tracks");
+const track = tracks[0];
+
+// Properties
+const name = await track.get("name");
+const isArmed = await track.get("arm");
+const isMuted = await track.get("mute");
+const isSoloed = await track.get("solo");
+const volume = await track.get("mixer_device");
+const color = await track.get("color"); // Color object
+
+// Modify track
+await track.set("name", "Lead Synth");
+await track.set("arm", true);
+await track.set("mute", false);
+await track.set("solo", true);
+
+// Get devices on track
+const devices = await track.get("devices");
+for (const device of devices) {
+  console.log(await device.get("name"));
+}
+
+// Get clip slots
+const clipSlots = await track.get("clip_slots");
+
+// Device management
+await track.deleteDevice(0);
+await track.duplicateDevice(device);
+
+// Create clips (Live 11+)
+await track.createAudioClip("/path/to/audio.wav", 0); // position in beats
+await track.createMidiClip(4); // length in beats
+```
+
+### Clip Operations
+
+```typescript
+const clipSlots = await track.get("clip_slots");
+const clipSlot = clipSlots[0];
+
+// Check if slot has clip
+const hasClip = await clipSlot.get("has_clip");
+
+if (hasClip) {
+  const clip = await clipSlot.get("clip");
+
+  // Clip properties
+  const clipName = await clip.get("name");
+  const isPlaying = await clip.get("is_playing");
+  const length = await clip.get("length");
+  const loopStart = await clip.get("loop_start");
+  const loopEnd = await clip.get("loop_end");
+
+  // Modify clip
+  await clip.set("name", "Intro");
+  await clip.set("loop_start", 0);
+  await clip.set("loop_end", 8);
+
+  // Playback
+  await clip.fire(); // Start clip
+  await clip.stop(); // Stop clip
+
+  // MIDI notes (for MIDI clips)
+  const notes = await clip.getNotes();
+  await clip.setNotes([
+    { pitch: 60, time: 0, duration: 0.5, velocity: 100 },
+    { pitch: 64, time: 0.5, duration: 0.5, velocity: 100 },
+    { pitch: 67, time: 1, duration: 0.5, velocity: 100 },
+  ]);
+
+  // Quantize
+  await clip.quantize(0.25, 100); // 16th notes, 100% strength
 }
 ```
 
-The MIDI Script answers with a JSON object looking like this:
+### Device Control
 
-```js
-{
-  "data": 0.0, // The command's return value, can be of any JSON-compatible type
-  "event": "result", // This can be 'result' or 'error'
-  "uuid": "a20f25a0-83e2-11e9-bbe1-bd3a580ef903" // The same UUID that was used to send the command
+```typescript
+const devices = await track.get("devices");
+const synth = devices[0];
+
+// Device info
+const deviceName = await synth.get("name");
+const className = await synth.get("class_name");
+const isEnabled = await synth.get("is_active");
+
+// Enable/disable
+await synth.set("is_active", false);
+
+// Parameters
+const parameters = await synth.get("parameters");
+for (const param of parameters) {
+  const paramName = await param.get("name");
+  const value = await param.get("value");
+  const min = await param.get("min");
+  const max = await param.get("max");
+
+  console.log(`${paramName}: ${value} (${min}-${max})`);
+
+  // Modify parameter
+  await param.set("value", (min + max) / 2);
 }
 ```
 
-If you're getting a cached prop, the JSON object could look like this:
+### Event Listeners
 
-```js
-{
-  "data": { "data": 0.0, "etag": "4e0794e44c7eb58bdbbbf7268e8237b4" },
-  "event": "result", // This can be 'result' or 'error'
-  "uuid": "a20f25a0-83e2-11e9-bbe1-bd3a580ef903" // The same UUID that was used to send the command
-}
+```typescript
+// Add listener (returns cleanup function)
+const removeTempoListener = await ableton.song.addListener("tempo", (tempo) => {
+  console.log(`Tempo changed: ${tempo}`);
+});
+
+const removePlayingListener = await ableton.song.addListener("is_playing", (playing) => {
+  console.log(`Playing: ${playing}`);
+});
+
+// Track-level listeners
+const track = (await ableton.song.get("tracks"))[0];
+const removeArmListener = await track.addListener("arm", (armed) => {
+  console.log(`Track armed: ${armed}`);
+});
+
+// Clean up listeners when done
+removeTempoListener();
+removePlayingListener();
+removeArmListener();
 ```
 
-Or, if the data hasn't changed, it looks like this:
+### Connection Events
 
-```js
-{
-  "data": { "__cached": true },
-  "event": "result", // This can be 'result' or 'error'
-  "uuid": "a20f25a0-83e2-11e9-bbe1-bd3a580ef903" // The same UUID that was used to send the command
-}
+```typescript
+// Connection established
+ableton.on("connect", (type) => {
+  console.log("Connected:", type); // "start" | "realtime" | "heartbeat"
+});
+
+// Connection lost
+ableton.on("disconnect", (type) => {
+  console.log("Disconnected:", type); // "realtime" | "heartbeat"
+});
+
+// Raw message received
+ableton.on("message", (message) => {
+  console.log("Message:", message);
+});
+
+// Parse error
+ableton.on("error", (error) => {
+  console.error("Error:", error);
+});
+
+// Latency measurement
+ableton.on("ping", (ms) => {
+  console.log(`Ping: ${ms}ms`);
+});
 ```
 
-### Events
+### Utility Classes
 
-To attach an event listener to a specific property, the client sends a command
-object:
+```typescript
+import { Color } from "ableton-js/util/color";
 
-```js
-{
-  "uuid": "922d54d0-83e3-11e9-ba7c-917478f8b91b", // A unique command id
-  "ns": "song", // The command namespace
-  "name": "add_listener", // The command to add an event listener
-  "args": {
-    "prop": "current_song_time", // The property that should be watched
-    "eventId": "922d2dc0-83e3-11e9-ba7c-917478f8b91b" // A unique event id
+// Color manipulation
+const trackColor = await track.get("color");
+console.log(trackColor.hex); // "#FF5500"
+console.log(trackColor.r, trackColor.g, trackColor.b); // RGB values
+
+// Set color by number
+await track.set("color", 0xFF5500);
+```
+
+---
+
+## Examples
+
+### Sync Tempo with External Source
+
+```typescript
+import { Ableton } from "ableton-js";
+
+const ableton = new Ableton({ logger: console });
+
+async function syncTempo(externalBpm: number) {
+  await ableton.start();
+
+  const currentTempo = await ableton.song.get("tempo");
+  if (Math.abs(currentTempo - externalBpm) > 0.1) {
+    await ableton.song.set("tempo", externalBpm);
+    console.log(`Synced tempo to ${externalBpm} BPM`);
   }
 }
 ```
 
-The MIDI Script answers with a JSON object looking like this to confirm that the
-listener has been attached:
+### Record Automation
 
-```js
-{
-  "data": "922d2dc0-83e3-11e9-ba7c-917478f8b91b", // The unique event id
-  "event": "result", // Should be result, is error when something goes wrong
-  "uuid": "922d54d0-83e3-11e9-ba7c-917478f8b91b" // The unique command id
+```typescript
+import { Ableton } from "ableton-js";
+
+const ableton = new Ableton();
+
+async function recordParameterAutomation() {
+  await ableton.start();
+
+  const tracks = await ableton.song.get("tracks");
+  const track = tracks[0];
+  const devices = await track.get("devices");
+  const device = devices[0];
+  const parameters = await device.get("parameters");
+  const cutoff = parameters.find(async (p) => (await p.get("name")) === "Cutoff");
+
+  if (!cutoff) return;
+
+  // Start recording
+  await ableton.song.set("overdub", true);
+  await ableton.song.startPlaying();
+
+  // Sweep parameter over time
+  const min = await cutoff.get("min");
+  const max = await cutoff.get("max");
+
+  for (let i = 0; i <= 100; i++) {
+    const value = min + ((max - min) * i) / 100;
+    await cutoff.set("value", value);
+    await new Promise((r) => setTimeout(r, 50));
+  }
+
+  await ableton.song.stopPlaying();
 }
 ```
 
-From now on, when the observed property changes, the MIDI Script sends an event
-object:
+### Scene Launcher
 
-```js
+```typescript
+import { Ableton } from "ableton-js";
+
+const ableton = new Ableton();
+
+async function launchSceneByName(sceneName: string) {
+  await ableton.start();
+
+  const scenes = await ableton.song.get("scenes");
+  const targetScene = scenes.find(async (scene) => {
+    return (await scene.get("name")) === sceneName;
+  });
+
+  if (targetScene) {
+    await targetScene.fire();
+    console.log(`Launched scene: ${sceneName}`);
+  } else {
+    console.log(`Scene not found: ${sceneName}`);
+  }
+}
+
+launchSceneByName("Chorus");
+```
+
+### Monitor All Track Meters
+
+```typescript
+import { Ableton } from "ableton-js";
+
+const ableton = new Ableton();
+
+async function monitorMeters() {
+  await ableton.start();
+
+  const tracks = await ableton.song.get("tracks");
+
+  for (const track of tracks) {
+    const trackName = await track.get("name");
+
+    await track.addListener("output_meter_left", (level) => {
+      console.log(`${trackName} L: ${level.toFixed(2)}`);
+    });
+
+    await track.addListener("output_meter_right", (level) => {
+      console.log(`${trackName} R: ${level.toFixed(2)}`);
+    });
+  }
+}
+
+monitorMeters();
+```
+
+---
+
+## Architecture
+
+### System Overview
+
+```
+┌─────────────────┐         UDP          ┌─────────────────────┐
+│                 │    ───────────────►  │                     │
+│   Node.js App   │                      │   Ableton Live      │
+│   (ableton-js)  │    ◄───────────────  │   (MIDI Script)     │
+│                 │                      │                     │
+└─────────────────┘                      └─────────────────────┘
+       │                                          │
+       ├─ Ableton class (connection)              ├─ AbletonJS.py (entry)
+       ├─ Song namespace                          ├─ Socket.py (UDP)
+       ├─ Track namespace                         ├─ Interface.py (routing)
+       ├─ Device namespace                        ├─ Song.py (domain)
+       ├─ Clip namespace                          ├─ Track.py (domain)
+       └─ ... other namespaces                    └─ ... other modules
+```
+
+### Key Components
+
+1. **Ableton Class** (`src/index.ts`)
+   - UDP socket management
+   - Message queuing and routing
+   - Heartbeat monitoring
+   - Cache management
+   - Event emission
+
+2. **Namespace Base** (`src/ns/index.ts`)
+   - Generic type-safe property access
+   - Property transformation (raw → typed)
+   - Selective caching per property
+   - Event listener management
+
+3. **Domain Namespaces** (`src/ns/*.ts`)
+   - Song, Track, Clip, Device, etc.
+   - Each exposes relevant Ableton API methods
+   - Type definitions for all properties
+
+4. **Utilities** (`src/util/`)
+   - Color conversion
+   - Note formatting
+   - Logger interface
+   - Cache types
+
+---
+
+## Protocol Details
+
+Ableton.js communicates with the MIDI Remote Script over UDP using JSON messages.
+
+### Port Discovery
+
+Both client and server write their ports to files in the OS temp directory:
+- Server (Ableton): `ableton-js-server.port`
+- Client (Node.js): `ableton-js-client.port`
+
+### Command Structure
+
+```json
 {
-  "data": 68.0, // The new value, can be any JSON-compatible type
-  "event": "922d2dc0-83e3-11e9-ba7c-917478f8b91b", // The event id
-  "uuid": null // Is always null and may be removed in future versions
+  "uuid": "a20f25a0-83e2-11e9-bbe1-bd3a580ef903",
+  "ns": "song",
+  "nsid": null,
+  "name": "get_prop",
+  "args": { "prop": "tempo" },
+  "etag": "4e0794e44c7eb58bdbbbf7268e8237b4",
+  "cache": true
 }
 ```
 
-Note that for some values, this event is emitted multiple times per second.
-20-30 updates per second are not unusual.
+### Response Structure
 
-### Connection Events
-
-The MIDI Script sends events when it starts and when it shuts down. These look
-like this:
-
-```js
+```json
 {
-  "data": null, // Is always null
-  "event": "connect", // Can be connect or disconnect
-  "uuid": null // Is always null and may be removed in future versions
+  "uuid": "a20f25a0-83e2-11e9-bbe1-bd3a580ef903",
+  "event": "result",
+  "data": 120.0
 }
 ```
 
-When you open a new Project in Ableton, the script will shut down and start
-again.
+### Compression and Chunking
 
-When Ableton.js receives a disconnect event, it clears all current event
-listeners and pending commands. It is usually a good idea to attach all event
-listeners and get properties each time the `connect` event is emitted.
+Large messages are:
+1. Compressed with gzip
+2. Chunked into UDP-safe sizes
+3. Each chunk prefixed with index byte (0x00-0xFE)
+4. Final chunk has index 0xFF
+5. Recipient reassembles and decompresses
 
-### Findings
+### Cache Protocol
 
-In this section, I'll note interesting pieces of information related to
-Ableton's Python framework that I stumble upon during the development of this
-library.
+- Client sends ETag with request
+- Server computes MD5 hash of response
+- If ETags match: returns `{ "__cached": true }`
+- Client uses locally cached data
+- Reduces bandwidth for large responses (track lists, etc.)
 
-- It seems like Ableton's listener to `output_meter_level` doesn't quite work as
-  well as expected, hanging every few 100ms. Listening to `output_meter_left` or
-  `output_meter_right` works better. See
-  [Issue #4](https://github.com/leolabs/ableton-js/issues/4)
-- The `playing_status` listener of clip slots never fires in Ableton. See
-  [Issue #25](https://github.com/leolabs/ableton-js/issues/25)
+---
+
+## Troubleshooting
+
+### Connection Issues
+
+**Ableton.js can't find the server port**
+- Ensure AbletonJS MIDI Remote Script is installed correctly
+- Check Ableton preferences → Control Surfaces
+- Verify the script appears in the list
+- Check Ableton's Log.txt for Python errors:
+  ```bash
+  # macOS
+  tail -f ~/Library/Preferences/Ableton/*/Log.txt | grep AbletonJS
+
+  # Windows
+  Get-Content -Wait "$env:USERPROFILE\AppData\Roaming\Ableton\*\Preferences\Log.txt"
+  ```
+
+**Timeout errors**
+- Increase `commandTimeoutMs` in options
+- Check if Ableton is frozen or loading a project
+- Verify UDP ports aren't blocked by firewall
+
+**Frequent disconnects**
+- Adjust `heartbeatInterval` (increase for less sensitive monitoring)
+- Loading a new project in Ableton triggers disconnect/reconnect
+
+### Performance Issues
+
+**Slow responses**
+- Enable caching (it's on by default)
+- Reduce listener frequency for high-update properties
+- Use `output_meter_left`/`output_meter_right` instead of `output_meter_level`
+
+**High memory usage**
+- Adjust cache size in `cacheOptions.max`
+- Remove unused event listeners
+- Cache TTL defaults to 10 minutes
+
+### Python Script Errors
+
+Check Ableton's log file for Python stack traces. Common issues:
+
+- **ImportError**: Missing Python module
+- **AttributeError**: Ableton API version mismatch
+- **TypeError**: Incorrect argument types
+
+---
+
+## Known Issues
+
+- `output_meter_level` listener hangs every few 100ms - use `output_meter_left`/`output_meter_right` instead ([Issue #4](https://github.com/leolabs/ableton-js/issues/4))
+- `playing_status` listener on clip slots never fires ([Issue #25](https://github.com/leolabs/ableton-js/issues/25))
+- Some properties behave differently between Ableton Live versions
+- Loading a new project disconnects and reconnects (expected behavior)
+
+---
 
 ## Contributing
 
-If you'd like to add features to this project or submit a bugfix, please feel
-free to open a pull request. Before committing changes to any of the TypeScript
-files, please run `yarn format` to format the code using Prettier.
+Contributions are welcome! Here's how to get started:
+
+### Development Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/leolabs/ableton-js.git
+cd ableton-js
+
+# Install dependencies
+yarn install
+
+# Build TypeScript
+yarn build
+
+# Run tests (requires Ableton Live running)
+yarn test
+
+# Format code
+yarn format
+```
+
+### Adding New Features
+
+1. Add property/method to relevant namespace (`src/ns/*.ts`)
+2. Add corresponding Python handler in MIDI script (`midi-script/*.py`)
+3. Update TypeScript interfaces
+4. Add tests
+5. Update documentation
+
+### Code Style
+
+- Use Prettier for formatting (`yarn format`)
+- Follow existing TypeScript patterns
+- Add JSDoc comments for public methods
+- Keep backwards compatibility
+
+### Pull Request Process
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run `yarn format` and `yarn build`
+5. Submit a pull request
+
+---
+
+## Sponsored Project
+
+This library powers [AbleSet](https://ableset.app), a professional setlist manager for Ableton Live.
+
+[![AbleSet](https://public-files.gumroad.com/variants/oplxt68bsgq1hu61t8bydfkgppr5/baaca0eb0e33dc4f9d45910b8c86623f0144cea0fe0c2093c546d17d535752eb)](https://ableset.app/?utm_campaign=ableton-js)
+
+AbleSet allows you to:
+- Manage and control setlists from any device
+- Re-order songs and add notes
+- Monitor the current state of your set
+- Sync playback across multiple instances
+
+---
+
+## License
+
+MIT License - see [LICENSE](LICENSE) for details.
+
+---
+
+## Acknowledgments
+
+- [Ableton Live API Documentation](https://nsuspray.github.io/Live_API_Doc/11.0.0.xml)
+- [Leo Bernard](https://github.com/leolabs) - Original author
+- All contributors who have submitted issues and pull requests
+
+---
+
+**Made with love for the Ableton community**
