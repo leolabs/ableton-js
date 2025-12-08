@@ -77,13 +77,22 @@ class Socket(object):
                     self._client_addr = ("127.0.0.1", port)
 
                     if self._socket:
-                        self.send("connect", {"port": self._server_addr[1]})
+                        self.send(
+                            "connect", {"port": self._server_addr[1]}, immediate=True)
         except Exception as e:
             self.log_error_once(
                 "Couldn't read remote port file: " + str(e.args))
 
     def shutdown(self):
         logger.info("Shutting down...")
+        send_buffer_length = len(self._send_buffer)
+
+        for i, packet in enumerate(self._send_buffer):
+            logger.info("Sending remaining packet " + str(i) +
+                        " of " + str(send_buffer_length))
+            self._socket.sendto(packet, self._client_addr)
+
+        self._send_buffer.clear()
         self._socket.close()
         self._socket = None
 
@@ -115,7 +124,7 @@ class Socket(object):
                 raise e
 
             try:
-                self.send("connect", {"port": port})
+                self.send("connect", {"port": port}, immediate=True)
             except Exception as e:
                 logger.error("Couldn't send connect to " +
                              str(self._client_addr) + ":")
@@ -137,7 +146,7 @@ class Socket(object):
                 callback=self.init_socket, interval=5000, repeat=False)
             t.start()
 
-    def _sendto(self, msg):
+    def _sendto(self, msg, immediate):
         '''Send a raw message to the client, compressed and chunked, if necessary'''
         compressed = zlib.compress(msg.encode("utf8")) + b'\n'
 
@@ -148,8 +157,12 @@ class Socket(object):
         message_id_byte = struct.pack("B", self._message_id)
 
         if len(compressed) < self._chunk_limit:
-            self._send_buffer.append(
-                message_id_byte + b'\x00\x01' + compressed)
+            packet = message_id_byte + b'\x00\x01' + compressed
+
+            if immediate:
+                self._socket.sendto(packet, self._client_addr)
+            else:
+                self._send_buffer.append(packet)
         else:
             chunks = list(split_by_n(compressed, self._chunk_limit))
             count = len(chunks)
@@ -159,7 +172,7 @@ class Socket(object):
                 self._send_buffer.append(
                     message_id_byte + packet_byte + count_byte + chunk)
 
-    def send(self, name, obj=None, uuid=None):
+    def send(self, name, obj=None, uuid=None, immediate=False):
         def jsonReplace(o):
             try:
                 return list(o)
@@ -173,7 +186,7 @@ class Socket(object):
         try:
             data = json.dumps(
                 {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace, ensure_ascii=False)
-            self._sendto(data)
+            self._sendto(data, immediate)
         except socket.error as e:
             logger.error("Socket error:")
             logger.exception(e)

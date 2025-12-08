@@ -106,7 +106,7 @@ class AbletonJS(ControlSurface):
         logger.info("Disconnecting")
         if FAST_POLLING:
             self.recv_loop.stop()
-        self.socket.send("disconnect")
+        self.socket.send("disconnect", immediate=True)
         self.socket.shutdown()
         Interface.listeners.clear()
         super(AbletonJS, self).disconnect()
