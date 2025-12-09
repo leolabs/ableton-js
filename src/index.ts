@@ -9,6 +9,7 @@ import { unzipSync, deflateSync } from "zlib";
 import LruCache from "lru-cache";
 import { unwatchFile, watchFile } from "fs";
 import { readFile, writeFile } from "fs/promises";
+import pLimit from "p-limit";
 
 import { Song } from "./ns/song";
 import { Internal } from "./ns/internal";
@@ -21,6 +22,8 @@ import { Session } from "./ns/session";
 
 const SERVER_PORT_FILE = "ableton-js-server.port";
 const CLIENT_PORT_FILE = "ableton-js-client.port";
+
+const limit = pLimit(200);
 
 interface Command {
   uuid: string;
@@ -498,72 +501,77 @@ export class Ableton extends EventEmitter<EventMap> {
    * A good starting point in general is the `song` prop.
    */
   async sendCommand(command: Omit<Command, "uuid">): Promise<any> {
-    return new Promise((res, rej) => {
-      const msgId = v4();
-      const payload: Command = {
-        uuid: msgId,
-        ...command,
-      };
-      const msg = JSON.stringify(payload);
-      const timeout = this.options?.commandTimeoutMs ?? 2000;
-      const arg = truncate(JSON.stringify(command.args), { length: 100 });
-      const cls = command.nsid ? `${command.ns}(${command.nsid})` : command.ns;
+    return limit(
+      () =>
+        new Promise((res, rej) => {
+          const msgId = v4();
+          const payload: Command = {
+            uuid: msgId,
+            ...command,
+          };
+          const msg = JSON.stringify(payload);
+          const timeout = this.options?.commandTimeoutMs ?? 2000;
+          const arg = truncate(JSON.stringify(command.args), { length: 100 });
+          const cls = command.nsid
+            ? `${command.ns}(${command.nsid})`
+            : command.ns;
 
-      this.messageId = (this.messageId + 1) % 256;
+          this.messageId = (this.messageId + 1) % 256;
 
-      let timeoutId: NodeJS.Timeout | null = null;
+          let timeoutId: NodeJS.Timeout | null = null;
 
-      const clearCurrentTimeout = () => {
-        if (timeoutId) {
-          clearTimeout(timeoutId);
-        }
-      };
+          const clearCurrentTimeout = () => {
+            if (timeoutId) {
+              clearTimeout(timeoutId);
+            }
+          };
 
-      const startTimeout = () => {
-        clearCurrentTimeout();
+          const startTimeout = () => {
+            clearCurrentTimeout();
 
-        timeoutId = setTimeout(() => {
-          rej(
-            new TimeoutError(
-              `The command ${cls}.${command.name}(${arg}) timed out after ${timeout} ms.`,
-              payload,
-            ),
-          );
-        }, timeout);
-      };
+            timeoutId = setTimeout(() => {
+              rej(
+                new TimeoutError(
+                  `The command ${cls}.${command.name}(${arg}) timed out after ${timeout} ms.`,
+                  payload,
+                ),
+              );
+            }, timeout);
+          };
 
-      this.timeoutMap.set(this.messageId, startTimeout);
+          this.timeoutMap.set(this.messageId, startTimeout);
 
-      const currentTimestamp = Date.now();
-      this.msgMap.set(msgId, {
-        res: (result: any) => {
-          const duration = Date.now() - currentTimestamp;
+          const currentTimestamp = Date.now();
+          this.msgMap.set(msgId, {
+            res: (result: any) => {
+              const duration = Date.now() - currentTimestamp;
 
-          if (duration > (this.options?.commandWarnMs ?? 1000)) {
-            this.logger?.warn(`Command took longer than expected`, {
-              command,
-              duration,
-            });
-          }
+              if (duration > (this.options?.commandWarnMs ?? 1000)) {
+                this.logger?.warn(`Command took longer than expected`, {
+                  command,
+                  duration,
+                });
+              }
 
-          this.setPing(duration);
-          clearCurrentTimeout();
-          res(result);
-        },
-        rej,
-        clearTimeout: () => {
-          clearCurrentTimeout();
-          rej(
-            new DisconnectError(
-              `Live disconnected before being able to respond to ${cls}.${command.name}(${arg})`,
-              payload,
-            ),
-          );
-        },
-      });
+              this.setPing(duration);
+              clearCurrentTimeout();
+              res(result);
+            },
+            rej,
+            clearTimeout: () => {
+              clearCurrentTimeout();
+              rej(
+                new DisconnectError(
+                  `Live disconnected before being able to respond to ${cls}.${command.name}(${arg})`,
+                  payload,
+                ),
+              );
+            },
+          });
 
-      this.sendRaw(msg, this.messageId).finally(startTimeout);
-    });
+          this.sendRaw(msg, this.messageId).finally(startTimeout);
+        }),
+    );
   }
 
   async sendCachedCommand(command: Omit<Command, "uuid" | "cache">) {
