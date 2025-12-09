@@ -41,12 +41,13 @@ interface Response {
 type DisconnectEventType = "realtime" | "heartbeat";
 type ConnectEventType = DisconnectEventType | "start";
 
-interface ConnectionEventEmitter {
-  on(e: "connect", l: (t: ConnectEventType) => void): this;
-  on(e: "disconnect", l: (t: DisconnectEventType) => void): this;
-  on(e: "message", l: (t: any) => void): this;
-  on(e: "error", l: (t: Error) => void): this;
-  on(e: "ping", l: (t: number) => void): this;
+interface EventMap {
+  connect: [ConnectEventType];
+  disconnect: [DisconnectEventType];
+  raw_message: [string];
+  message: [any];
+  error: [Error];
+  ping: [number];
 }
 
 export interface EventListener {
@@ -131,7 +132,7 @@ export interface AbletonOptions {
   logger?: Logger;
 }
 
-export class Ableton extends EventEmitter implements ConnectionEventEmitter {
+export class Ableton extends EventEmitter<EventMap> {
   private client: dgram.Socket | undefined;
   private msgMap = new Map<
     string,
@@ -438,7 +439,7 @@ export class Ableton extends EventEmitter implements ConnectionEventEmitter {
       }
     } catch (e) {
       this.buffer = [];
-      this.emit("error", e);
+      this.emit("error", e as Error);
     }
   }
 
