@@ -1,6 +1,6 @@
 {
   "name": "ableton-js",
-  "version": "3.7.3",
+  "version": "4.0.0",
   "description": "Control Ableton Live from Node",
   "type": "module",
   "exports": {
