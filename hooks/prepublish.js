@@ -15,6 +15,6 @@ const replaced = file
 
 fs.writeFileSync(internalPath, replaced);
 fs.writeFileSync(
-  path.join(rootPath, "util", "package-version.js"),
+  path.join(rootPath, "src", "util", "package-version.ts"),
   `export const packageVersion = "${packageJson.version}";`,
 );
