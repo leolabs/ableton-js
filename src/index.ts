@@ -15,7 +15,7 @@ import { Song } from "./ns/song.js";
 import { Internal } from "./ns/internal.js";
 import { Application } from "./ns/application.js";
 import { Midi } from "./ns/midi.js";
-import { getPackageVersion } from "./util/package-version.js";
+import { packageVersion } from "./util/package-version.js";
 import { Cache, isCached, CacheResponse } from "./util/cache.js";
 import { Logger } from "./util/logger.js";
 import { Session } from "./ns/session.js";
@@ -367,7 +367,7 @@ export class Ableton extends EventEmitter<EventMap> {
     this.internal
       .get("version")
       .then((v) => {
-        const jsVersion = getPackageVersion();
+        const jsVersion = packageVersion;
         if (semver.lt(v, jsVersion)) {
           this.logger?.warn(
             `The installed version of your AbletonJS plugin (${v}) is lower than the JS library (${jsVersion}).`,
@@ -732,4 +732,4 @@ export class Ableton extends EventEmitter<EventMap> {
   }
 }
 
-export { getPackageVersion } from "./util/package-version.js";
+export { packageVersion } from "./util/package-version.js";

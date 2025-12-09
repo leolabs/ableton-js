@@ -1,5 +1,1 @@
-import packageJson from "../../package.json" with { type: "json" };
-
-export const getPackageVersion = () => {
-  return packageJson.version;
-};
+export const packageVersion = "0.0.0";
