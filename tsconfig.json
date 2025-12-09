@@ -2,12 +2,13 @@
   "include": ["./src/**/*", "./scripts/**/*"],
   "exclude": ["**/*.spec.ts"],
   "compilerOptions": {
-    "module": "commonjs",
+    "module": "nodenext",
     "target": "ES2022",
     "strict": true,
     "declaration": true,
     "esModuleInterop": true,
     "downlevelIteration": true,
+    "moduleResolution": "nodenext",
     "allowJs": false,
     "outDir": "./",
     "rootDir": "./src/"

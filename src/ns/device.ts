@@ -1,6 +1,6 @@
-import { Ableton } from "..";
-import { Namespace } from ".";
-import { RawDeviceParameter, DeviceParameter } from "./device-parameter";
+import { Ableton } from "../index.js";
+import { Namespace } from "./index.js";
+import { RawDeviceParameter, DeviceParameter } from "./device-parameter.js";
 
 export interface GettableProperties {
   can_have_chains: boolean;

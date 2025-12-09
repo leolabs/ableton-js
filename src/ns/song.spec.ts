@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
-import { withAbleton } from "../util/tests";
+import { withAbleton } from "../util/tests.js";
 import {
   GettableProperties,
   Quantization,
   RecordingQuantization,
-} from "./song";
+} from "./song.js";
 
 const gettableProps: (keyof GettableProperties)[] = [
   "arrangement_overdub",

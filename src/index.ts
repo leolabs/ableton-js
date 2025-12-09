@@ -1,24 +1,24 @@
-import os from "os";
-import path from "path";
-import dgram from "dgram";
+import os from "node:os";
+import path from "node:path";
+import dgram from "node:dgram";
 import { truncate } from "lodash";
 import { EventEmitter } from "events";
 import { v4 } from "uuid";
 import semver from "semver";
 import { unzipSync, deflateSync } from "zlib";
 import LruCache from "lru-cache";
-import { unwatchFile, watchFile } from "fs";
-import { readFile, writeFile } from "fs/promises";
+import { unwatchFile, watchFile } from "node:fs";
+import { readFile, writeFile } from "node:fs/promises";
 import pLimit from "p-limit";
 
-import { Song } from "./ns/song";
-import { Internal } from "./ns/internal";
-import { Application } from "./ns/application";
-import { Midi } from "./ns/midi";
-import { getPackageVersion } from "./util/package-version";
-import { Cache, isCached, CacheResponse } from "./util/cache";
-import { Logger } from "./util/logger";
-import { Session } from "./ns/session";
+import { Song } from "./ns/song.js";
+import { Internal } from "./ns/internal.js";
+import { Application } from "./ns/application.js";
+import { Midi } from "./ns/midi.js";
+import { getPackageVersion } from "./util/package-version.js";
+import { Cache, isCached, CacheResponse } from "./util/cache.js";
+import { Logger } from "./util/logger.js";
+import { Session } from "./ns/session.js";
 
 const SERVER_PORT_FILE = "ableton-js-server.port";
 const CLIENT_PORT_FILE = "ableton-js-client.port";
@@ -732,4 +732,4 @@ export class Ableton extends EventEmitter<EventMap> {
   }
 }
 
-export { getPackageVersion } from "./util/package-version";
+export { getPackageVersion } from "./util/package-version.js";

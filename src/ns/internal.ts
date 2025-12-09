@@ -1,6 +1,6 @@
-import { Ableton } from "..";
-import { Namespace } from ".";
-import { getPackageVersion } from "../util/package-version";
+import { Ableton } from "../index.js";
+import { Namespace } from "./index.js";
+import { getPackageVersion } from "../util/package-version.js";
 import semver from "semver";
 
 export interface GettableProperties {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { getPackageVersion } from "./package-version";
+import { getPackageVersion } from "./package-version.js";
 import { valid } from "semver";
 
 describe("Package Version", () => {

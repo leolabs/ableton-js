@@ -1,4 +1,4 @@
-import { Ableton } from "..";
+import { Ableton } from "../index.js";
 
 export const withAbleton = async (callback: (ab: Ableton) => Promise<void>) => {
   const ab = new Ableton();

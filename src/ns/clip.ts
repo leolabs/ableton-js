@@ -1,8 +1,14 @@
-import { Ableton } from "..";
-import { Namespace } from ".";
-import { Color } from "../util/color";
-import { DeviceParameter } from "./device-parameter";
-import { Note, NoteExtended, noteToTuple, NoteTuple, tupleToNote } from "../util/note";
+import { Ableton } from "../index.js";
+import { Namespace } from "./index.js";
+import { Color } from "../util/color.js";
+import { DeviceParameter } from "./device-parameter.js";
+import {
+  Note,
+  NoteExtended,
+  noteToTuple,
+  NoteTuple,
+  tupleToNote,
+} from "../util/note.js";
 
 export enum WarpMode {
   Beats = 0,

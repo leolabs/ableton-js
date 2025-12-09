@@ -1,10 +1,10 @@
-import { Ableton } from "..";
-import { Namespace } from ".";
-import { Device, RawDevice } from "./device";
-import { Track, RawTrack } from "./track";
-import { Scene, RawScene } from "./scene";
-import { RawDeviceParameter, DeviceParameter } from "./device-parameter";
-import { ClipSlot, RawClipSlot } from "./clip-slot";
+import { Ableton } from "../index.js";
+import { Namespace } from "./index.js";
+import { Device, RawDevice } from "./device.js";
+import { Track, RawTrack } from "./track.js";
+import { Scene, RawScene } from "./scene.js";
+import { RawDeviceParameter, DeviceParameter } from "./device-parameter.js";
+import { ClipSlot, RawClipSlot } from "./clip-slot.js";
 
 export enum DeviceInsertMode {
   Default = "default",

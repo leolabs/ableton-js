@@ -1,4 +1,4 @@
-import { Ableton } from "..";
+import { Ableton } from "../index.js";
 
 export class Namespace<GP, TP, SP, OP> {
   protected transformers: {

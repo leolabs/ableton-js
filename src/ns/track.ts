@@ -1,11 +1,11 @@
-import { Ableton } from "..";
-import { Namespace } from ".";
-import { Device, RawDevice } from "./device";
-import { ClipSlot, RawClipSlot } from "./clip-slot";
-import { MixerDevice, RawMixerDevice } from "./mixer-device";
-import { Clip, RawClip } from "./clip";
-import { Color } from "../util/color";
-import { TrackView } from "./track-view";
+import { Ableton } from "../index.js";
+import { Namespace } from "./index.js";
+import { Device, RawDevice } from "./device.js";
+import { ClipSlot, RawClipSlot } from "./clip-slot.js";
+import { MixerDevice, RawMixerDevice } from "./mixer-device.js";
+import { Clip, RawClip } from "./clip.js";
+import { Color } from "../util/color.js";
+import { TrackView } from "./track-view.js";
 
 export enum RoutingLayout {
   Mono = 1,

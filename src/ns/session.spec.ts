@@ -1,5 +1,5 @@
 import { describe, it } from "vitest";
-import { withAbleton } from "../util/tests";
+import { withAbleton } from "../util/tests.js";
 
 describe("Session", () => {
   it("should work and silently fail when no session is created.", async () => {

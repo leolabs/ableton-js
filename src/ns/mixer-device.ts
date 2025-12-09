@@ -1,6 +1,6 @@
-import { Ableton } from "..";
-import { Namespace } from ".";
-import { DeviceParameter, RawDeviceParameter } from "./device-parameter";
+import { Ableton } from "../index.js";
+import { Namespace } from "./index.js";
+import { DeviceParameter, RawDeviceParameter } from "./device-parameter.js";
 
 export enum PanningMode {
   Stereo,

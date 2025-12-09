@@ -1,12 +1,13 @@
-const fs = require("fs");
-const path = require("path");
-const package = require("../package.json");
+import fs from "node:fs";
+import path from "node:path";
 
-const internalPath = path.join(__dirname, "..", "midi-script", "version.py");
+import packageJson from "../package.json" with { type: "json" };
+
+const internalPath = path.join(import.meta.dirname, "..", "midi-script", "version.py");
 const file = fs.readFileSync(internalPath);
 
 const replaced = file
   .toString()
-  .replace(/version = "(.+\..+\..+?)"$/m, `version = "${package.version}"`);
+  .replace(/version = "(.+\..+\..+?)"$/m, `version = "${packageJson.version}"`);
 
 fs.writeFileSync(internalPath, replaced);

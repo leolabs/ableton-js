@@ -2,12 +2,19 @@
   "name": "ableton-js",
   "version": "3.7.3",
   "description": "Control Ableton Live from Node",
-  "main": "index.js",
+  "type": "module",
+  "exports": {
+    "types": "./index.d.ts",
+    "default": "./index.js"
+  },
   "author": "Leo Bernard <admin@leolabs.org>",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "https://github.com/leolabs/ableton-js.git"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "files": [
     "**/*.js",

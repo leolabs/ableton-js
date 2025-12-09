@@ -1,6 +1,6 @@
 import { describe, it } from "vitest";
-import { withAbleton } from "../util/tests";
-import { GettableProperties } from "./song-view";
+import { withAbleton } from "../util/tests.js";
+import { GettableProperties } from "./song-view.js";
 
 const gettableProps: (keyof GettableProperties)[] = [
   "detail_clip",

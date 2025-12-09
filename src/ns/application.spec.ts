@@ -1,6 +1,6 @@
 import { describe, it } from "vitest";
-import { withAbleton } from "../util/tests";
-import { GettableProperties } from "./application";
+import { withAbleton } from "../util/tests.js";
+import { GettableProperties } from "./application.js";
 
 const gettableProps: (keyof GettableProperties)[] = [
   "major_version",

@@ -1,10 +1,10 @@
-import { Ableton } from "..";
-import { Namespace } from ".";
-import { Track, RawTrack } from "./track";
-import { CuePoint, RawCuePoint } from "./cue-point";
-import { SongView } from "./song-view";
-import { Scene, RawScene } from "./scene";
-import { RawDevice } from "./device";
+import { Ableton } from "../index.js";
+import { Namespace } from "./index.js";
+import { Track, RawTrack } from "./track.js";
+import { CuePoint, RawCuePoint } from "./cue-point.js";
+import { SongView } from "./song-view.js";
+import { Scene, RawScene } from "./scene.js";
+import { RawDevice } from "./device.js";
 
 export interface GettableProperties {
   appointed_device: RawDevice;

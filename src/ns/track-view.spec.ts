@@ -1,6 +1,6 @@
 import { describe, it } from "vitest";
-import { withAbleton } from "../util/tests";
-import { DeviceInsertMode, GettableProperties } from "./track-view";
+import { withAbleton } from "../util/tests.js";
+import { DeviceInsertMode, GettableProperties } from "./track-view.js";
 
 const gettableProps: (keyof GettableProperties)[] = [
   "is_collapsed",

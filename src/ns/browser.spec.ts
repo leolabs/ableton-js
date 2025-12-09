@@ -1,6 +1,6 @@
 import { describe, it } from "vitest";
-import { withAbleton } from "../util/tests";
-import { GettableProperties } from "./browser";
+import { withAbleton } from "../util/tests.js";
+import { GettableProperties } from "./browser.js";
 
 const gettableProps: (keyof GettableProperties)[] = [
   "audio_effects",

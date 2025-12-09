@@ -1,5 +1,5 @@
-import { Ableton } from "..";
-import { Namespace } from ".";
+import { Ableton } from "../index.js";
+import { Namespace } from "./index.js";
 
 export interface GettableProperties {}
 

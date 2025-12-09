@@ -1,7 +1,7 @@
-import { Ableton } from "..";
-import { Namespace } from ".";
-import { ApplicationView } from "./application-view";
-import { Browser, RawBrowser } from "./browser";
+import { Ableton } from "../index.js";
+import { Namespace } from "./index.js";
+import { ApplicationView } from "./application-view.js";
+import { Browser, RawBrowser } from "./browser.js";
 
 export interface GettableProperties {
   bugfix_version: number;

@@ -1,7 +1,7 @@
-import { Ableton } from "..";
-import { Namespace } from ".";
-import { Color } from "../util/color";
-import { Clip, RawClip } from "./clip";
+import { Ableton } from "../index.js";
+import { Namespace } from "./index.js";
+import { Color } from "../util/color.js";
+import { Clip, RawClip } from "./clip.js";
 
 export enum PlayingStatus {
   Stopped = "stopped",

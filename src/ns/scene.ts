@@ -1,7 +1,7 @@
-import { Ableton } from "..";
-import { Namespace } from ".";
-import { ClipSlot, RawClipSlot } from "./clip-slot";
-import { Color } from "../util/color";
+import { Ableton } from "../index.js";
+import { Namespace } from "./index.js";
+import { ClipSlot, RawClipSlot } from "./clip-slot.js";
+import { Color } from "../util/color.js";
 
 export interface GettableProperties {
   clip_slots: RawClipSlot[];

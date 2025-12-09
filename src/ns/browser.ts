@@ -1,6 +1,6 @@
-import { Ableton } from "..";
-import { Namespace } from ".";
-import { BrowserItem, RawBrowserItem } from "./browser-item";
+import { Ableton } from "../index.js";
+import { Namespace } from "./index.js";
+import { BrowserItem, RawBrowserItem } from "./browser-item.js";
 
 export interface GettableProperties {
   audio_effects: RawBrowserItem[];
