@@ -732,4 +732,4 @@ export class Ableton extends EventEmitter<EventMap> {
   }
 }
 
-export { packageVersion } from "./util/package-version.js";
+export * from "./util/package-version.js";

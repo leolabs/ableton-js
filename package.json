@@ -4,8 +4,22 @@
   "description": "Control Ableton Live from Node",
   "type": "module",
   "exports": {
-    "types": "./index.d.ts",
-    "default": "./index.js"
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./ns/*": "./ns/*.js",
+    "./util/*": "./util/*.js"
+  },
+  "typesVersions": {
+    "*": {
+      "ns/*": [
+        "ns/*.d.ts"
+      ],
+      "util/*": [
+        "util/*.d.ts"
+      ]
+    }
   },
   "author": "Leo Bernard <admin@leolabs.org>",
   "license": "MIT",
