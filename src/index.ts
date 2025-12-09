@@ -1,7 +1,7 @@
 import os from "node:os";
 import path from "node:path";
 import dgram from "node:dgram";
-import { truncate } from "lodash";
+import truncate from "lodash/truncate.js";
 import { EventEmitter } from "events";
 import { v4 } from "uuid";
 import semver from "semver";
