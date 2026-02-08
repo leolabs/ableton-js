@@ -251,7 +251,12 @@ export class Ableton extends EventEmitter<EventMap> {
 
     // The recvBufferSize is set to macOS' default value, so the
     // socket behaves the same on Windows and doesn't drop any packets
-    this.client = dgram.createSocket({ type: "udp4", recvBufferSize: 786896 });
+    this.client = dgram.createSocket({
+      type: "udp4",
+      // 4 MB receive buffer to avoid losing packets
+      recvBufferSize: 4 * 1024 * 1024,
+    });
+
     this.client.addListener("message", this.handleIncoming.bind(this));
 
     this.client.addListener("listening", async () => {
@@ -304,6 +309,8 @@ export class Ableton extends EventEmitter<EventMap> {
         }
       });
     });
+
+    this.logger?.debug("Receive Buffer Size:", this.client.getRecvBufferSize());
 
     // Send used port to Live in case the plugin is already started
     if (!sentPort) {

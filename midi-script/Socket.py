@@ -201,8 +201,9 @@ class Socket(object):
         try:
             while 1:
                 try:
-                    # Send 5 UDP packets at a time, to avoid
-                    for i in range(5):
+                    # Send 30 UDP packets at a time, to avoid
+                    # Node's receive buffer from overflowing
+                    for i in range(30):
                         self._socket.sendto(
                             self._send_buffer.pop(0), self._client_addr)
                 except:
