@@ -250,4 +250,20 @@ export class Track extends Namespace<
   createAudioClip(filePath: string, position: number) {
     return this.sendCommand("create_audio_clip", [filePath, position]);
   }
+
+  /**
+   * Creates an empty MIDI clip in the arrangement at the specified time.
+   * Only works on MIDI tracks. Throws an error if the track is frozen
+   * or if the track is currently recording.
+   * The time must be within the range [0, 1576800].
+   *
+   * Available since Live 12.2
+   */
+  async createMidiClip(startTime: number, length: number) {
+    const rawClip = await this.sendCommand("create_midi_clip", {
+      start_time: startTime,
+      length: length,
+    });
+    return new Clip(this.ableton, rawClip);
+  }
 }
