@@ -83,3 +83,7 @@ class Track(Interface):
 
     def delete_clip(self, ns, clip_id):
         return ns.delete_clip(self.get_obj(clip_id))
+
+    def create_midi_clip(self, ns, start_time, length):
+        clip = ns.create_midi_clip(start_time, length)
+        return Clip.serialize_clip(clip)
