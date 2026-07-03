@@ -25,3 +25,24 @@ class Device(Interface):
 
     def get_type(self, ns):
         return str(ns.type)
+
+    def get_chains(self, ns):
+        from .Chain import Chain
+        try:
+            return map(Chain.serialize_chain, ns.chains)
+        except AttributeError:
+            return []
+
+    def get_return_chain(self, ns):
+        from .Chain import Chain
+        try:
+            return Chain.serialize_chain(ns.return_chain)
+        except AttributeError:
+            return None
+
+    def get_drum_pads(self, ns):
+        from .DrumPad import DrumPad
+        try:
+            return map(DrumPad.serialize_drum_pad, ns.drum_pads)
+        except AttributeError:
+            return []
