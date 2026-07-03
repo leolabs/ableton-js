@@ -28,7 +28,16 @@ class Clip(Interface):
         return ns.get_notes(from_time, from_pitch, time_span, pitch_span)
 
     def get_notes_extended(self, ns, from_time=0, from_pitch=0, time_span=99999999999999, pitch_span=128):
-        midi_note_vector = ns.get_notes_extended(from_pitch, pitch_span, from_time, time_span)
+        # from_time/time_span must be doubles - Live's C++ binding for
+        # get_notes_extended is strict about int vs. double and rejects int
+        # arguments here (unlike get_notes above, which accepts either).
+        # Whole-number values are especially common for arrangement-view
+        # clips (which tend to start on whole-beat boundaries), and both the
+        # defaults above and any caller-supplied value arriving as a JSON
+        # integer would otherwise be passed through as a Python int.
+        midi_note_vector = ns.get_notes_extended(
+            from_pitch, pitch_span, float(from_time), float(time_span)
+        )
         return [
             {
                 "duration": note.duration,
@@ -45,7 +54,8 @@ class Clip(Interface):
         ]
         
     def apply_note_modifications(self, ns, notes):
-        existing_notes = ns.get_notes_extended(0, 128, 0, 99999999999999)
+        # Same int-vs-double issue as get_notes_extended above.
+        existing_notes = ns.get_notes_extended(0, 128, 0.0, 99999999999999.0)
         existing_notes_map = {note.note_id: note for note in existing_notes}
         
         for modified_note_data in notes:
