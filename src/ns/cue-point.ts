@@ -8,7 +8,9 @@ export interface GettableProperties {
 
 export interface TransformedProperties {}
 
-export interface SettableProperties {}
+export interface SettableProperties {
+  name: string;
+}
 
 export interface ObservableProperties {
   name: string;
