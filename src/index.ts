@@ -243,10 +243,15 @@ export class Ableton extends EventEmitter<EventMap> {
     const connection = this.waitForConnection();
 
     if (timeoutMs) {
-      const timeout = new Promise((_, rej) =>
-        setTimeout(() => rej(new Error("Connection timed out.")), timeoutMs),
-      );
-      await Promise.race([connection, timeout]);
+      try {
+        const timeout = new Promise((_, rej) =>
+          setTimeout(() => rej(new Error("Connection timed out.")), timeoutMs),
+        );
+        await Promise.race([connection, timeout]);
+      } catch (e) {
+        await this.close();
+        throw e;
+      }
     } else {
       await connection;
     }
