@@ -2,8 +2,8 @@
 
 [![Current Version](https://img.shields.io/npm/v/ableton-js.svg)](https://www.npmjs.com/package/ableton-js/)
 
-Ableton.js lets you control your instance or instances of Ableton using Node.js.
-It tries to cover as many functions as possible.
+Ableton.js lets you control your instance or instances of Ableton using Node.js,
+Deno, or a browser. It tries to cover as many functions as possible.
 
 This package is still a work-in-progress. My goal is to expose all of
 [Ableton's MIDI Remote Script](https://nsuspray.github.io/Live_API_Doc/11.0.0.xml)
@@ -30,6 +30,14 @@ After starting Ableton Live, add the script to your list of control surfaces:
 
 ![Ableton Live Settings](https://i.imgur.com/a34zJca.png)
 
+The Remote Script opens a WebSocket server on `127.0.0.1:39031` by default. You
+can change the bind address and port in `midi-script/Config.py`
+(`WEBSOCKET_HOST` / `WEBSOCKET_PORT`). The JS client must use the same host and
+port (`new Ableton({ host, port })`).
+
+Binding anything other than loopback has no authentication — any client that can
+reach the port can control Live.
+
 If you've forked this project on macOS, you can also use yarn to do that for
 you. Running `yarn ableton10:start` or `yarn ableton11:start` (depending on your
 app version) will copy the `midi-script` folder, open Ableton and show a stream
@@ -40,6 +48,10 @@ of log messages until you kill it.
 This library exposes an `Ableton` class which lets you control the entire
 application. You can instantiate it once and use TS to explore available
 features.
+
+It uses the standard `WebSocket` API (Node 21+, Deno, and browsers). Load it
+with a bundler in the browser. Pages served over **HTTPS cannot** connect to
+`ws://127.0.0.1` (mixed content); use `http://localhost` for local UIs.
 
 Example:
 
@@ -92,29 +104,20 @@ ab.on("ping", (ping) => console.log("Ping:", ping, "ms"));
 
 ## Protocol
 
-Ableton.js uses UDP to communicate with the MIDI Script. Each message is a JSON
-object containing required data and a UUID so request and response can be
-associated with each other.
+Ableton.js uses a WebSocket (`ws://127.0.0.1:39031` by default) to talk to the
+MIDI Remote Script. Each message is a JSON text frame containing required data
+and a UUID so request and response can be associated with each other.
 
-### Used Ports
-
-Both the client and the server bind to a random available port and store that
-port in a local file so the other side knows which port to send messages to.
-
-### Compression and Chunking
-
-To allow sending large JSON payloads, requests to and responses from the MIDI
-Script are compressed using gzip and chunked to fit into the maximum allowed
-package size. The first byte of every message chunk contains the chunk index
-(0x00-0xFF) followed by the gzipped chunk. The last chunk always has the index
-0xFF. This indicates to the JS library that the previous received messages
-should be stiched together, unzipped, and processed.
+The Remote Script is the server. Multiple clients may connect; commands from any
+client are executed, and events are broadcast to every client. Property
+listeners are global in Live: removing a listener from one client removes it for
+everyone. This is something I'll try to improve in the future.
 
 ### Caching
 
-Certain props are cached on the client to reduce the bandwidth over UDP. To do
-this, the Ableton plugin generates an MD5 hash of the prop, called ETag, and
-sends it to the client along with the data.
+Certain props are cached on the client to reduce repeated payloads. To do this,
+the Ableton plugin generates an MD5 hash of the prop, called ETag, and sends it
+to the client along with the data.
 
 The client stores both the ETag and the data in an LRU cache and sends the
 latest stored ETag to the plugin the next time the same prop is requested. If
@@ -216,11 +219,13 @@ like this:
 
 ```js
 {
-  "data": null, // Is always null
+  "data": { "port": 39031 },
   "event": "connect", // Can be connect or disconnect
-  "uuid": null // Is always null and may be removed in future versions
+  "uuid": null
 }
 ```
+
+`disconnect` still sends `"data": null`.
 
 When you open a new Project in Ableton, the script will shut down and start
 again.

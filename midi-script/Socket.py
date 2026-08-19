@@ -1,28 +1,90 @@
+from __future__ import absolute_import
 import socket
 import json
 import struct
-import zlib
-import os
-import tempfile
 import sys
+import hashlib
+import base64
+import threading
 
+from .Config import PLUGIN_NAME, WEBSOCKET_HOST, WEBSOCKET_PORT
 from .Logging import logger
 
-import Live
+try:
+    import Queue as queue
+except ImportError:
+    import queue
+
+import time
+
+WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
 
-def split_by_n(seq, n):
-    '''A generator to divide a sequence into chunks of n units.'''
-    while seq:
-        yield seq[:n]
-        seq = seq[n:]
+def _byte_at(data, index):
+    value = data[index]
+    if isinstance(value, int):
+        return value
+    return ord(value)
 
 
-server_port_file = "ableton-js-server.port"
-client_port_file = "ableton-js-client.port"
+def _to_bytes(data):
+    if data is None:
+        return b""
+    if isinstance(data, bytearray):
+        return bytes(data)
+    if sys.version_info[0] >= 3:
+        if isinstance(data, bytes):
+            return data
+        return data.encode("utf-8")
+    if isinstance(data, unicode):
+        return data.encode("utf-8")
+    return data
 
-server_port_path = os.path.join(tempfile.gettempdir(), server_port_file)
-client_port_path = os.path.join(tempfile.gettempdir(), client_port_file)
+
+def _to_text(data):
+    if sys.version_info[0] >= 3:
+        if isinstance(data, bytes):
+            return data.decode("utf-8")
+        return data
+    if isinstance(data, unicode):
+        return data
+    return data.decode("utf-8")
+
+
+def encode_text_frame(payload_bytes):
+    payload = _to_bytes(payload_bytes)
+    header = bytearray()
+    header.append(0x81)
+    length = len(payload)
+    if length < 126:
+        header.append(length)
+    elif length < 65536:
+        header.append(126)
+        header.extend(struct.pack("!H", length))
+    else:
+        header.append(127)
+        header.extend(struct.pack("!Q", length))
+    return bytes(header) + payload
+
+
+def encode_pong_frame(payload_bytes):
+    payload = _to_bytes(payload_bytes)
+    header = bytearray()
+    header.append(0x8A)
+    length = len(payload)
+    if length < 126:
+        header.append(length)
+    elif length < 65536:
+        header.append(126)
+        header.extend(struct.pack("!H", length))
+    else:
+        header.append(127)
+        header.extend(struct.pack("!Q", length))
+    return bytes(header) + payload
+
+
+def encode_close_frame():
+    return b"\x88\x00"
 
 
 class Socket(object):
@@ -32,261 +94,317 @@ class Socket(object):
 
     def __init__(self, handler):
         self.input_handler = handler
-        self._server_addr = ("127.0.0.1", 0)
-        self._client_addr = ("127.0.0.1", 39031)
-        self._last_error = ""
+        self._queue = queue.Queue()
+        self._connections = []
+        self._lock = threading.Lock()
         self._socket = None
-        self._chunk_limit = None
-        self._send_buffer = []
-        self._message_id = 0
-        self._receive_buffer = bytearray()
-        # Dictionary to store chunks per message: {message_id: {chunk_index: chunk_data}}
-        self._chunks = {}
+        self._running = True
+        self._last_error = ""
+        self._host = WEBSOCKET_HOST
+        self._port = int(WEBSOCKET_PORT)
 
-        self.read_remote_port()
-        self.init_socket()
+        self._thread = threading.Thread(target=self._serve)
+        self._thread.daemon = True
+        self._thread.start()
 
     def log_error_once(self, msg):
         if self._last_error != msg:
             self._last_error = msg
             logger.error(msg)
 
-    def set_client_port(self, port):
-        logger.info("Setting client port: " + str(port))
-        self.show_message("Client connected on port " + str(port))
-        self._client_addr = ("127.0.0.1", int(port))
-
-    def read_remote_port(self):
-        '''Reads the port our client is listening on'''
-
-        try:
-            os.stat(client_port_path)
-        except Exception as e:
-            self.log_error_once("Couldn't stat remote port file:")
-            return
-
-        try:
-            old_port = self._client_addr[1]
-
-            with open(client_port_path) as file:
-                port = int(file.read())
-
-                if port != old_port:
-                    logger.info("[" + str(id(self)) + "] Client port changed from " +
-                                str(old_port) + " to " + str(port))
-                    self._client_addr = ("127.0.0.1", port)
-
-                    if self._socket:
-                        self.send(
-                            "connect", {"port": self._server_addr[1]}, immediate=True)
-        except Exception as e:
-            self.log_error_once(
-                "Couldn't read remote port file: " + str(e.args))
-
-    def shutdown(self):
-        logger.info("Shutting down...")
-        send_buffer_length = len(self._send_buffer)
-
-        for i, packet in enumerate(self._send_buffer):
-            logger.info("Sending remaining packet " + str(i) +
-                        " of " + str(send_buffer_length))
-            self._socket.sendto(packet, self._client_addr)
-
-        self._send_buffer.clear()
-        self._socket.close()
-        self._socket = None
-
-    def init_socket(self):
-        logger.info("Initializing socket")
-
-        try:
-            self._server_addr = ("127.0.0.1", 0)
-
-            self._socket = socket.socket(
-                socket.AF_INET, socket.SOCK_DGRAM)
-            self._socket.setblocking(0)
-            self._socket.bind(self._server_addr)
-            port = self._socket.getsockname()[1]
-
-            # Get the chunk limit of the socket, minus 100 for some headroom
-            self._chunk_limit = self._socket.getsockopt(
-                socket.SOL_SOCKET, socket.SO_SNDBUF) - 100
-
-            logger.info("Chunk limit: " + str(self._chunk_limit))
-
-            # Write the chosen port to a file
-            try:
-                with open(server_port_path, "w") as file:
-                    file.write(str(port))
-            except Exception as e:
-                self.log_error_once(
-                    "Couldn't save port in file: " + str(e.args))
-                raise e
-
-            try:
-                self.send("connect", {"port": port}, immediate=True)
-            except Exception as e:
-                logger.error("Couldn't send connect to " +
-                             str(self._client_addr) + ":")
-                logger.exception(e)
-
-            self.show_message("Started server on port " + str(port))
-
-            logger.info('Started server on: ' + str(self._socket.getsockname()) +
-                        ', client addr: ' + str(self._client_addr))
-        except Exception as e:
-            msg = 'ERROR: Cannot bind to ' + \
-                str(self._server_addr) + ': ' + \
-                str(e.args) + ', trying again. ' + \
-                'If this keeps happening, try restarting your computer.'
-            self.log_error_once(
-                msg + " (Client address: " + str(self._client_addr) + ")")
-            self.show_message(msg)
-            t = Live.Base.Timer(
-                callback=self.init_socket, interval=5000, repeat=False)
-            t.start()
-
-    def _sendto(self, msg, immediate):
-        '''Send a raw message to the client, compressed and chunked, if necessary'''
-        compressed = zlib.compress(msg.encode("utf8")) + b'\n'
-
-        if self._socket == None or self._chunk_limit == None:
-            return
-
-        self._message_id = (self._message_id + 1) % 256
-        message_id_byte = struct.pack("B", self._message_id)
-
-        if len(compressed) < self._chunk_limit:
-            packet = message_id_byte + b'\x00\x01' + compressed
-
-            if immediate:
-                self._socket.sendto(packet, self._client_addr)
-            else:
-                self._send_buffer.append(packet)
-        else:
-            chunks = list(split_by_n(compressed, self._chunk_limit))
-            count = len(chunks)
-            count_byte = struct.pack("B", count)
-            for i, chunk in enumerate(chunks):
-                packet_byte = struct.pack("B", i)
-                self._send_buffer.append(
-                    message_id_byte + packet_byte + count_byte + chunk)
-
     def send(self, name, obj=None, uuid=None, immediate=False):
         def jsonReplace(o):
             try:
                 return list(o)
-            except:
+            except Exception:
                 pass
-
             return str(o)
-
-        data = None
 
         try:
             data = json.dumps(
-                {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace, ensure_ascii=False)
-            self._sendto(data, immediate)
-        except socket.error as e:
-            logger.error("Socket error:")
-            logger.exception(e)
-            logger.error("Server: " + str(self._server_addr) + ", client: " +
-                         str(self._client_addr) + ", socket: " + str(self._socket))
-            logger.error("Data:" + data)
+                {"event": name, "data": obj, "uuid": uuid},
+                default=jsonReplace,
+                ensure_ascii=False,
+            )
+            frame = encode_text_frame(_to_bytes(data))
+            self._send_frame(frame)
         except Exception as e:
             logger.error("Error " + name + "(" + str(uuid) + "):")
             logger.exception(e)
 
-    def process(self):
-        try:
-            while 1:
+    def _send_frame(self, frame, connection=None):
+        targets = [connection] if connection is not None else list(self._connections)
+        with self._lock:
+            for conn in targets:
                 try:
-                    # Send 30 UDP packets at a time, to avoid
-                    # Node's receive buffer from overflowing
-                    for i in range(30):
-                        self._socket.sendto(
-                            self._send_buffer.pop(0), self._client_addr)
-                except:
-                    pass
+                    conn.sendall(frame)
+                except Exception:
+                    self._drop_connection(conn)
 
-                data = self._socket.recv(65536)
-                if len(data) and self.input_handler:
-                    # Parse packet format: [messageId][chunkIndex][totalChunks][chunkData]
-                    if len(data) < 3:
-                        # Packet too short, skip it
+    def _drop_connection(self, conn):
+        try:
+            self._connections.remove(conn)
+        except Exception:
+            pass
+        try:
+            conn.close()
+        except Exception:
+            pass
+
+    def shutdown(self):
+        logger.info("Shutting down...")
+        self._running = False
+        with self._lock:
+            for conn in list(self._connections):
+                try:
+                    conn.sendall(encode_close_frame())
+                except Exception:
+                    pass
+                try:
+                    conn.close()
+                except Exception:
+                    pass
+            self._connections = []
+        if self._socket:
+            try:
+                self._socket.close()
+            except Exception:
+                pass
+            self._socket = None
+
+    def process(self):
+        while True:
+            try:
+                payload = self._queue.get_nowait()
+            except queue.Empty:
+                return
+            try:
+                if self.input_handler:
+                    self.input_handler(payload)
+            except Exception as e:
+                logger.error("Error processing request:")
+                logger.exception(e)
+
+    def _serve(self):
+        while self._running:
+            try:
+                self._bind_and_listen()
+                self._accept_loop()
+            except Exception as e:
+                if not self._running:
+                    return
+                msg = (
+                    "ERROR: Cannot bind to %s:%s: %s, trying again. If this keeps happening, try restarting your computer."
+                    % (self._host, self._port, e.args)
+                )
+                self.log_error_once(msg)
+                self.show_message(msg)
+                if self._socket:
+                    try:
+                        self._socket.close()
+                    except Exception:
+                        pass
+                    self._socket = None
+                time.sleep(5)
+
+    def _bind_and_listen(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        try:
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        except Exception:
+            pass
+        sock.bind((self._host, self._port))
+        sock.listen(16)
+        self._socket = sock
+        self._last_error = ""
+        logger.info("WebSocket server listening on %s:%s" % (self._host, self._port))
+        self.show_message("Started %s on %s:%s" % (PLUGIN_NAME, self._host, self._port))
+
+    def _accept_loop(self):
+        while self._running and self._socket:
+            try:
+                conn, addr = self._socket.accept()
+            except socket.error:
+                if not self._running:
+                    return
+                continue
+            try:
+                conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            except Exception:
+                pass
+            logger.info("Client connected: " + str(addr))
+            thread = threading.Thread(target=self._handle_connection, args=(conn,))
+            thread.daemon = True
+            thread.start()
+
+    def _handle_connection(self, conn):
+        leftover = self._handshake(conn)
+        if leftover is None:
+            try:
+                conn.close()
+            except Exception:
+                pass
+            return
+
+        with self._lock:
+            self._connections.append(conn)
+
+        self.send("connect", {"port": self._port})
+
+        buffer = bytearray(_to_bytes(leftover))
+        fragments = bytearray()
+        fragment_opcode = None
+
+        try:
+            while self._running:
+                try:
+                    data = conn.recv(65536)
+                except socket.error:
+                    break
+                if not data:
+                    break
+                buffer.extend(bytearray(_to_bytes(data)))
+
+                while True:
+                    frame = self._try_read_frame(buffer)
+                    if frame is None:
+                        break
+                    opcode, fin, payload = frame
+
+                    if opcode == 0x8:
+                        try:
+                            conn.sendall(encode_close_frame())
+                        except Exception:
+                            pass
+                        return
+                    if opcode == 0x9:
+                        self._send_frame(encode_pong_frame(payload), conn)
+                        continue
+                    if opcode == 0xA:
                         continue
 
-                    # Get message ID, chunk index, and total chunks from first 3 bytes
-                    message_id = data[0]
-                    chunk_index = data[1]
-                    total_chunks = data[2]
+                    if opcode == 0x0:
+                        if fragment_opcode is None:
+                            continue
+                        fragments.extend(payload)
+                        if fin:
+                            self._handle_payload(fragment_opcode, fragments)
+                            fragments = bytearray()
+                            fragment_opcode = None
+                        continue
 
-                    # Handle Python 2/3 compatibility
-                    if isinstance(message_id, bytes):
-                        message_id = ord(message_id)
-                    if isinstance(chunk_index, bytes):
-                        chunk_index = ord(chunk_index)
-                    if isinstance(total_chunks, bytes):
-                        total_chunks = ord(total_chunks)
+                    if not fin:
+                        fragment_opcode = opcode
+                        fragments = bytearray(payload)
+                        continue
 
-                    chunk_data = data[3:]
-
-                    # Initialize message tracking if this is the first chunk for this message
-                    if message_id not in self._chunks:
-                        self._chunks[message_id] = {}
-
-                    # Store the chunk
-                    self._chunks[message_id][chunk_index] = chunk_data
-
-                    # Check if we have all chunks for this message
-                    if len(self._chunks[message_id]) == total_chunks:
-                        # We have all chunks! Reassemble in order
-                        packet_parts = []
-                        for i in range(total_chunks):
-                            if i in self._chunks[message_id]:
-                                packet_parts.append(
-                                    self._chunks[message_id][i])
-                            else:
-                                # Missing chunk - this shouldn't happen if total_chunks is correct
-                                logger.error(
-                                    "Missing chunk %d for message %d" % (i, message_id))
-                                break
-                        else:
-                            # All chunks present, reassemble
-                            packet = b''.join(packet_parts)
-
-                            # Remove this message from tracking
-                            del self._chunks[message_id]
-
-                            # Handle Python 2/3 compatibility for zlib.decompress
-                            if sys.version_info[0] < 3:
-                                packet = str(packet)
-
-                            try:
-                                unzipped = zlib.decompress(packet)
-
-                                # Handle bytes to string conversion for Python 3
-                                if sys.version_info[0] >= 3 and isinstance(unzipped, bytes):
-                                    unzipped = unzipped.decode('utf-8')
-
-                                payload = json.loads(unzipped)
-                            except Exception as e:
-                                logger.error("Error processing request:")
-                                logger.exception(e)
-                                self._chunks.pop(message_id, None)
-                                continue
-
-                            try:
-                                self.input_handler(payload)
-                            except Exception as e:
-                                logger.error("Error processing request:")
-                                logger.exception(e)
-
-        except socket.error as e:
-            if (e.errno != 35 and e.errno != 10035 and e.errno != 10054 and e.errno != 10022):
-                logger.error("Socket error:")
-                logger.exception(e)
-            return
+                    self._handle_payload(opcode, payload)
         except Exception as e:
-            logger.error("Error processing request:")
+            logger.error("Connection error:")
             logger.exception(e)
+        finally:
+            with self._lock:
+                self._drop_connection(conn)
+            logger.info("Client disconnected")
+
+    def _handle_payload(self, opcode, payload):
+        if opcode != 0x1:
+            return
+        try:
+            text = _to_text(bytes(payload))
+            parsed = json.loads(text)
+        except Exception as e:
+            logger.error("Error decoding request:")
+            logger.exception(e)
+            return
+        self._queue.put(parsed)
+
+    def _handshake(self, conn):
+        data = b""
+        while b"\r\n\r\n" not in data:
+            try:
+                chunk = conn.recv(4096)
+            except socket.error:
+                return None
+            if not chunk:
+                return None
+            data += _to_bytes(chunk)
+            if len(data) > 16384:
+                return None
+
+        header_blob, leftover = data.split(b"\r\n\r\n", 1)
+        try:
+            header_text = _to_text(header_blob)
+        except Exception:
+            return None
+
+        headers = {}
+        lines = header_text.split("\r\n")
+        for line in lines[1:]:
+            if not line or ": " not in line:
+                continue
+            key, value = line.split(": ", 1)
+            headers[key.strip().lower()] = value.strip()
+
+        key = headers.get("sec-websocket-key")
+        if not key:
+            return None
+
+        accept_src = _to_bytes(key + WS_GUID)
+        accept = base64.b64encode(hashlib.sha1(accept_src).digest())
+        if sys.version_info[0] >= 3:
+            accept = accept.decode("ascii")
+
+        response = (
+            "HTTP/1.1 101 Switching Protocols\r\n"
+            "Upgrade: websocket\r\n"
+            "Connection: Upgrade\r\n"
+            "Sec-WebSocket-Accept: " + accept + "\r\n\r\n"
+        )
+        try:
+            conn.sendall(_to_bytes(response))
+        except Exception:
+            return None
+        return leftover
+
+    def _try_read_frame(self, buffer):
+        if len(buffer) < 2:
+            return None
+
+        b1 = _byte_at(buffer, 0)
+        b2 = _byte_at(buffer, 1)
+        opcode = b1 & 0x0F
+        masked = (b2 & 0x80) != 0
+        length = b2 & 0x7F
+        index = 2
+
+        if length == 126:
+            if len(buffer) < 4:
+                return None
+            length = struct.unpack("!H", bytes(buffer[2:4]))[0]
+            index = 4
+        elif length == 127:
+            if len(buffer) < 10:
+                return None
+            length = struct.unpack("!Q", bytes(buffer[2:10]))[0]
+            index = 10
+
+        mask = None
+        if masked:
+            if len(buffer) < index + 4:
+                return None
+            mask = buffer[index : index + 4]
+            index += 4
+
+        if len(buffer) < index + length:
+            return None
+
+        payload = bytearray(buffer[index : index + length])
+        if mask is not None:
+            for i in range(len(payload)):
+                payload[i] = payload[i] ^ _byte_at(mask, i % 4)
+
+        del buffer[: index + length]
+        fin = (b1 & 0x80) != 0
+        return opcode, fin, payload

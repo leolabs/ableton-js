@@ -15,7 +15,3 @@ class Internal(Interface):
 
     def get_version(self, ns):
         return version
-
-    def set_client_port(self, nsid, port):
-        self.socket.set_client_port(port)
-        return True

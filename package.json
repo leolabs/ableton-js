@@ -1,7 +1,7 @@
 {
   "name": "ableton-js",
-  "version": "4.1.0",
-  "description": "Control Ableton Live from Node",
+  "version": "5.0.0",
+  "description": "Control Ableton Live from Node.js, Deno, or the browser",
   "type": "module",
   "exports": {
     ".": {
@@ -28,7 +28,7 @@
     "url": "https://github.com/leolabs/ableton-js.git"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=21"
   },
   "files": [
     "**/*.js",

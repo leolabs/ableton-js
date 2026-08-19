@@ -4,14 +4,13 @@
   "compilerOptions": {
     "module": "nodenext",
     "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
     "strict": true,
     "declaration": true,
     "esModuleInterop": true,
-    "downlevelIteration": true,
     "moduleResolution": "nodenext",
     "allowJs": false,
     "outDir": "./",
-    "rootDir": "./src/",
-    "types": ["node"]
+    "rootDir": "./src/"
   }
 }

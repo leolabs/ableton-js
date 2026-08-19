@@ -2,7 +2,7 @@ from __future__ import absolute_import
 import time
 
 from .version import version
-from .Config import DEBUG, FAST_POLLING
+from .Config import DEBUG
 from .Logging import logger
 from .Socket import Socket
 from .Interface import Interface
@@ -69,11 +69,9 @@ class AbletonJS(ControlSurface):
         self._last_tick = time.time() * 1000
         self.tick()
 
-        if FAST_POLLING:
-            self.recv_loop = Live.Base.Timer(
-                callback=self.socket.process, interval=10, repeat=True)
-
-            self.recv_loop.start()
+        self.recv_loop = Live.Base.Timer(
+            callback=self.socket.process, interval=1, repeat=True)
+        self.recv_loop.start()
 
     def tick(self):
         tick_time = time.time() * 1000
@@ -88,7 +86,7 @@ class AbletonJS(ControlSurface):
         process_time = time.time() * 1000
 
         if process_time - tick_time > 100:
-            logger.warning("UDP processing is taking long, delta: " +
+            logger.warning("WebSocket processing is taking long, delta: " +
                            str(round(tick_time - process_time)) + "ms")
 
         self.schedule_message(1, self.tick)
@@ -108,9 +106,8 @@ class AbletonJS(ControlSurface):
 
     def disconnect(self):
         logger.info("Disconnecting")
-        if FAST_POLLING:
-            self.recv_loop.stop()
-        self.socket.send("disconnect", immediate=True)
+        self.recv_loop.stop()
+        self.socket.send("disconnect")
         self.socket.shutdown()
         Interface.listeners.clear()
         Interface.obj_ids.clear()
