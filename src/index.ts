@@ -102,7 +102,7 @@ export interface AbletonOptions {
    * Defines how long ableton-js waits for an answer from the Remote
    * Script after sending a command before throwing a timeout error.
    *
-   * @default 2000
+   * @default 3000
    */
   commandTimeoutMs?: number;
 
@@ -110,7 +110,7 @@ export interface AbletonOptions {
    * Defines how long ableton-js waits for an answer from the Remote
    * Script after sending a command logging a warning about the delay.
    *
-   * @default 1000
+   * @default 2000
    */
   commandWarnMs?: number;
 
@@ -489,7 +489,7 @@ export class Ableton extends EventEmitter<EventMap> {
             ...command,
           };
           const msg = JSON.stringify(payload);
-          const timeout = this.options?.commandTimeoutMs ?? 2000;
+          const timeout = this.options?.commandTimeoutMs ?? 3000;
           const arg = truncate(JSON.stringify(command.args), { length: 100 });
           const cls = command.nsid
             ? `${command.ns}(${command.nsid})`
@@ -521,7 +521,7 @@ export class Ableton extends EventEmitter<EventMap> {
             res: (result: any) => {
               const duration = Date.now() - currentTimestamp;
 
-              if (duration > (this.options?.commandWarnMs ?? 1000)) {
+              if (duration > (this.options?.commandWarnMs ?? 2000)) {
                 this.logger?.warn(`Command took longer than expected`, {
                   command,
                   duration,
