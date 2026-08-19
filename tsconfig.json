@@ -11,6 +11,7 @@
     "moduleResolution": "nodenext",
     "allowJs": false,
     "outDir": "./",
-    "rootDir": "./src/"
+    "rootDir": "./src/",
+    "types": ["node"]
   }
 }
