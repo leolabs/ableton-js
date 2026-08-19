@@ -79,7 +79,7 @@ class AbletonJS(ControlSurface):
         tick_time = time.time() * 1000
 
         if tick_time - self._last_tick > 200:
-            logger.warning("UDP tick is lagging, delta: " +
+            logger.warning("Ableton Live's main thread is lagging, delta: " +
                            str(round(tick_time - self._last_tick)) + "ms")
 
         self._last_tick = tick_time
