@@ -87,6 +87,54 @@ def encode_close_frame():
     return b"\x88\x00"
 
 
+class ClientConnection(object):
+    """Socket plus a send thread so Live's MIDI thread never blocks on sendall."""
+
+    def __init__(self, sock):
+        self.sock = sock
+        self.out_queue = queue.Queue()
+        self._closed = False
+        thread = threading.Thread(target=self._send_loop)
+        thread.daemon = True
+        thread.start()
+
+    def enqueue(self, frame):
+        if self._closed:
+            return False
+        try:
+            self.out_queue.put_nowait(frame)
+            return True
+        except queue.Full:
+            return False
+
+    def close(self):
+        if self._closed:
+            return
+        self._closed = True
+        try:
+            self.out_queue.put_nowait(None)
+        except Exception:
+            pass
+        try:
+            self.sock.close()
+        except Exception:
+            pass
+
+    def _send_loop(self):
+        while True:
+            frame = self.out_queue.get()
+            if frame is None:
+                break
+            try:
+                self.sock.sendall(frame)
+            except Exception:
+                break
+        try:
+            self.sock.close()
+        except Exception:
+            pass
+
+
 class Socket(object):
     @staticmethod
     def set_message(func):
@@ -133,12 +181,20 @@ class Socket(object):
             logger.exception(e)
 
     def _send_frame(self, frame, connection=None):
-        targets = [connection] if connection is not None else list(self._connections)
         with self._lock:
-            for conn in targets:
-                try:
-                    conn.sendall(frame)
-                except Exception:
+            if connection is not None:
+                targets = [connection]
+            else:
+                targets = list(self._connections)
+
+        stale = []
+        for conn in targets:
+            if not conn.enqueue(frame):
+                stale.append(conn)
+
+        if stale:
+            with self._lock:
+                for conn in stale:
                     self._drop_connection(conn)
 
     def _drop_connection(self, conn):
@@ -146,25 +202,17 @@ class Socket(object):
             self._connections.remove(conn)
         except Exception:
             pass
-        try:
-            conn.close()
-        except Exception:
-            pass
+        conn.close()
 
     def shutdown(self):
         logger.info("Shutting down...")
         self._running = False
         with self._lock:
-            for conn in list(self._connections):
-                try:
-                    conn.sendall(encode_close_frame())
-                except Exception:
-                    pass
-                try:
-                    conn.close()
-                except Exception:
-                    pass
+            clients = list(self._connections)
             self._connections = []
+        for conn in clients:
+            conn.enqueue(encode_close_frame())
+            conn.close()
         if self._socket:
             try:
                 self._socket.close()
@@ -247,10 +295,25 @@ class Socket(object):
                 pass
             return
 
+        client = ClientConnection(conn)
         with self._lock:
-            self._connections.append(conn)
+            self._connections.append(client)
 
-        self.send("connect", {"port": self._port})
+        self._send_frame(
+            encode_text_frame(
+                _to_bytes(
+                    json.dumps(
+                        {
+                            "event": "connect",
+                            "data": {"port": self._port},
+                            "uuid": None,
+                        },
+                        ensure_ascii=False,
+                    )
+                )
+            ),
+            client,
+        )
 
         buffer = bytearray(_to_bytes(leftover))
         fragments = bytearray()
@@ -273,13 +336,10 @@ class Socket(object):
                     opcode, fin, payload = frame
 
                     if opcode == 0x8:
-                        try:
-                            conn.sendall(encode_close_frame())
-                        except Exception:
-                            pass
+                        client.enqueue(encode_close_frame())
                         return
                     if opcode == 0x9:
-                        self._send_frame(encode_pong_frame(payload), conn)
+                        self._send_frame(encode_pong_frame(payload), client)
                         continue
                     if opcode == 0xA:
                         continue
@@ -305,7 +365,7 @@ class Socket(object):
             logger.exception(e)
         finally:
             with self._lock:
-                self._drop_connection(conn)
+                self._drop_connection(client)
             logger.info("Client disconnected")
 
     def _handle_payload(self, opcode, payload):
