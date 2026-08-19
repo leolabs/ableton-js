@@ -262,14 +262,25 @@ class Socket(object):
                             if sys.version_info[0] < 3:
                                 packet = str(packet)
 
-                            unzipped = zlib.decompress(packet)
+                            try:
+                                unzipped = zlib.decompress(packet)
 
-                            # Handle bytes to string conversion for Python 3
-                            if sys.version_info[0] >= 3 and isinstance(unzipped, bytes):
-                                unzipped = unzipped.decode('utf-8')
+                                # Handle bytes to string conversion for Python 3
+                                if sys.version_info[0] >= 3 and isinstance(unzipped, bytes):
+                                    unzipped = unzipped.decode('utf-8')
 
-                            payload = json.loads(unzipped)
-                            self.input_handler(payload)
+                                payload = json.loads(unzipped)
+                            except Exception as e:
+                                logger.error("Error processing request:")
+                                logger.exception(e)
+                                self._chunks.pop(message_id, None)
+                                continue
+
+                            try:
+                                self.input_handler(payload)
+                            except Exception as e:
+                                logger.error("Error processing request:")
+                                logger.exception(e)
 
         except socket.error as e:
             if (e.errno != 35 and e.errno != 10035 and e.errno != 10054 and e.errno != 10022):
@@ -279,6 +290,3 @@ class Socket(object):
         except Exception as e:
             logger.error("Error processing request:")
             logger.exception(e)
-            # Clear chunks on error to prevent stuck state
-            # Optionally, we could clear only the problematic message_id, but for safety, clear all
-            self._chunks = {}

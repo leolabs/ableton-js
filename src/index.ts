@@ -204,6 +204,7 @@ export class Ableton extends EventEmitter<EventMap> {
     if (this._isConnected) {
       this._isConnected = false;
       this.eventListeners.clear();
+      this.cache?.clear();
 
       // If the disconnect is caused by missed heartbeats, keep
       // pending requests. Live might just be temporarily hanging.

@@ -21,7 +21,10 @@ class Interface(object):
 
     @staticmethod
     def get_obj(obj_id):
-        return Interface.obj_ids[obj_id]
+        obj = Interface.obj_ids.get(obj_id)
+        if obj is None:
+            raise Exception("Unknown object id: %s" % obj_id)
+        return obj
 
     def __init__(self, c_instance, socket):
         self.ableton = c_instance
@@ -32,7 +35,7 @@ class Interface(object):
             logger.debug(message)
 
     def get_ns(self, nsid):
-        return Interface.obj_ids[nsid]
+        return Interface.get_obj(nsid)
 
     def send_result(self, result, uuid, etag, cache):
         """Sends an empty response if the etag matches the result, or the result together with an etag."""
@@ -56,9 +59,10 @@ class Interface(object):
         etag = payload.get("etag")
         args = payload.get("args", {})
         cache = payload.get("cache", False)
-        ns = self.get_ns(payload.get("nsid"))
+        nsid = payload.get("nsid")
 
         try:
+            ns = self.get_ns(nsid)
             # Try self-defined functions first
             if hasattr(self, name) and callable(getattr(self, name)):
                 result = getattr(self, name)(ns=ns, **args)

@@ -14,7 +14,7 @@ class TrackView(Interface):
         super(TrackView, self).__init__(c_instance, socket)
 
     def get_ns(self, nsid):
-        return Interface.obj_ids[nsid].view
+        return Interface.get_obj(nsid).view
 
     def get_selected_device(self, ns):
         return Device.serialize_device(ns.selected_device)

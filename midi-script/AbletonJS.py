@@ -113,6 +113,7 @@ class AbletonJS(ControlSurface):
         self.socket.send("disconnect", immediate=True)
         self.socket.shutdown()
         Interface.listeners.clear()
+        Interface.obj_ids.clear()
         super(AbletonJS, self).disconnect()
 
     def command_handler(self, payload):
