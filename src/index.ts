@@ -237,6 +237,7 @@ export class Ableton extends EventEmitter<EventMap> {
 
     this.clientState = "starting";
     this.shouldReconnect = true;
+    this.logger?.info("Connecting to Live", { url: this.socketUrl() });
     this.connectSocket();
 
     this.logger?.info("Checking connection...");
@@ -262,6 +263,14 @@ export class Ableton extends EventEmitter<EventMap> {
     this.handleConnect("start");
 
     const heartbeat = async () => {
+      if (
+        !this._isConnected ||
+        !this.client ||
+        this.client.readyState !== WebSocket.OPEN
+      ) {
+        return;
+      }
+
       // Add a cancel function to the array of heartbeats
       let canceled = false;
       const cancel = () => {
@@ -277,7 +286,7 @@ export class Ableton extends EventEmitter<EventMap> {
         // If the heartbeat has been canceled, don't emit a disconnect event
         if (!canceled && this._isConnected) {
           this.logger?.warn("Heartbeat failed:", { error: e, canceled });
-          this.handleDisconnect("heartbeat");
+          this.closeCurrentSocket();
         }
       } finally {
         this.cancelDisconnectEvents = this.cancelDisconnectEvents.filter(
@@ -321,25 +330,17 @@ export class Ableton extends EventEmitter<EventMap> {
     }
 
     if (this.client) {
-      this.client.onopen = null;
-      this.client.onclose = null;
-      this.client.onerror = null;
-      this.client.onmessage = null;
-      try {
-        this.client.close();
-      } catch {
-        // Ignore
-      }
+      const previous = this.client;
+      this.client = undefined;
+      previous.close();
     }
 
     const url = this.socketUrl();
-    this.logger?.info("Connecting to Live", { url });
     const ws = new WebSocket(url);
     this.client = ws;
 
     ws.addEventListener("open", () => {
       this.reconnectDelay = 250;
-      this.logger?.info("WebSocket open", { url });
     });
 
     ws.addEventListener("message", (event) => {
@@ -355,10 +356,16 @@ export class Ableton extends EventEmitter<EventMap> {
       this.handleDisconnect("realtime");
       this.scheduleReconnect();
     });
+  }
 
-    ws.addEventListener("error", () => {
-      this.logger?.debug("WebSocket error", { url });
-    });
+  private closeCurrentSocket() {
+    if (!this.client || this.client.readyState === WebSocket.CLOSED) {
+      this.client = undefined;
+      this.scheduleReconnect();
+      return;
+    }
+
+    this.client.close();
   }
 
   private scheduleReconnect() {
@@ -368,7 +375,7 @@ export class Ableton extends EventEmitter<EventMap> {
 
     const delay = this.reconnectDelay;
     this.reconnectDelay = Math.min(this.reconnectDelay * 2, 2000);
-    this.logger?.info("Reconnecting to Live", { delay });
+    this.logger?.info("Reconnecting to Live", { delay, url: this.socketUrl() });
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = undefined;
       this.connectSocket();
@@ -451,7 +458,9 @@ export class Ableton extends EventEmitter<EventMap> {
     }
 
     if (data.event === "disconnect") {
-      return this.handleDisconnect("realtime");
+      this.handleDisconnect("realtime");
+      this.closeCurrentSocket();
+      return;
     }
 
     if (data.event === "connect") {
@@ -677,10 +686,18 @@ export class Ableton extends EventEmitter<EventMap> {
   }
 
   async sendRaw(msg: string) {
-    if (!this.client || this.client.readyState !== WebSocket.OPEN) {
+    if (this.clientState === "closed") {
       throw new Error(
         "The client hasn't been started yet. Please call start() first.",
       );
+    }
+
+    if (
+      !this._isConnected ||
+      !this.client ||
+      this.client.readyState !== WebSocket.OPEN
+    ) {
+      throw new Error("The client is disconnected.");
     }
 
     this.client.send(msg);
