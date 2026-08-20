@@ -282,6 +282,12 @@ export class Ableton extends EventEmitter<EventMap> {
         return;
       }
 
+      // A long in-flight command (e.g. set_data with a large payload) already
+      // proves the socket is alive; pinging would race its 3s timeout.
+      if (this.msgMap.size > 0) {
+        return;
+      }
+
       // Add a cancel function to the array of heartbeats
       let canceled = false;
       const cancel = () => {
