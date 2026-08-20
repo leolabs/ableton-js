@@ -6,6 +6,7 @@ import sys
 import hashlib
 import base64
 import threading
+import time
 
 from .Config import PLUGIN_NAME, WEBSOCKET_HOST, WEBSOCKET_PORT
 from .Logging import logger
@@ -15,7 +16,6 @@ try:
 except ImportError:
     import queue
 
-import time
 
 WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 
@@ -87,16 +87,42 @@ def encode_close_frame():
     return b"\x88\x00"
 
 
+# Send small frames on the caller thread (usually Live's MIDI thread). A
+# dedicated send thread adds ~10ms wake-up on macOS; keep it only for large
+# payloads or when a previous send is still queued.
+DIRECT_SEND_MAX_BYTES = 65536
+EAGAIN_ERRNOS = (11, 35, 10035)
+
+
 class ClientConnection(object):
-    """Socket plus a send thread so Live's MIDI thread never blocks on sendall."""
+    """Socket with optional send thread for large or potentially blocking writes."""
 
     def __init__(self, sock):
         self.sock = sock
         self.out_queue = queue.Queue()
+        self._send_lock = threading.Lock()
         self._closed = False
         thread = threading.Thread(target=self._send_loop)
         thread.daemon = True
         thread.start()
+
+    def send_or_enqueue(self, frame):
+        if self._closed:
+            return False
+        if self.out_queue.empty() and len(frame) <= DIRECT_SEND_MAX_BYTES:
+            if self._send_lock.acquire(False):
+                try:
+                    if self._closed:
+                        return False
+                    self.sock.sendall(frame)
+                    return True
+                except socket.error as e:
+                    errno = getattr(e, "errno", None)
+                    if errno not in EAGAIN_ERRNOS:
+                        return False
+                finally:
+                    self._send_lock.release()
+        return self.enqueue(frame)
 
     def enqueue(self, frame):
         if self._closed:
@@ -126,7 +152,13 @@ class ClientConnection(object):
             if frame is None:
                 break
             try:
-                self.sock.sendall(frame)
+                self._send_lock.acquire()
+                try:
+                    if self._closed:
+                        break
+                    self.sock.sendall(frame)
+                finally:
+                    self._send_lock.release()
             except Exception:
                 break
         try:
@@ -160,7 +192,7 @@ class Socket(object):
             self._last_error = msg
             logger.error(msg)
 
-    def send(self, name, obj=None, uuid=None, immediate=False):
+    def send(self, name, obj=None, uuid=None):
         def jsonReplace(o):
             try:
                 return list(o)
@@ -189,7 +221,7 @@ class Socket(object):
 
         stale = []
         for conn in targets:
-            if not conn.enqueue(frame):
+            if not conn.send_or_enqueue(frame):
                 stale.append(conn)
 
         if stale:
