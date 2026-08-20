@@ -67,6 +67,7 @@
     "vitest": "^4.0.15"
   },
   "dependencies": {
+    "@noble/hashes": "^2.3.0",
     "lodash": "^4.17.21",
     "lru-cache": "^7.14.0",
     "p-limit": "^7.2.0",

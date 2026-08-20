@@ -1,4 +1,8 @@
 from __future__ import absolute_import
+import binascii
+import hashlib
+import hmac
+import os
 import socket
 import json
 import threading
@@ -37,6 +41,17 @@ def _auth_enabled():
     return bool(PASSWORD)
 
 
+def _random_salt():
+    raw = binascii.hexlify(os.urandom(16))
+    if isinstance(raw, bytes):
+        return raw.decode("ascii")
+    return raw
+
+
+def _auth_hash(salt):
+    return hmac.new(to_bytes(PASSWORD), to_bytes(salt), hashlib.sha256).hexdigest()
+
+
 class ClientConnection(object):
     """Socket with optional send thread for large or potentially blocking writes."""
 
@@ -46,6 +61,7 @@ class ClientConnection(object):
         self._send_lock = threading.Lock()
         self._closed = False
         self.authenticated = not _auth_enabled()
+        self.auth_salt = None
         thread = threading.Thread(target=self._send_loop)
         thread.daemon = True
         thread.start()
@@ -284,7 +300,9 @@ class Socket(object):
 
         connect_data = {"port": self._port}
         if _auth_enabled():
+            client.auth_salt = _random_salt()
             connect_data["requiresAuth"] = True
+            connect_data["salt"] = client.auth_salt
         self._send_event("connect", connect_data, None, client)
 
         buffer = bytearray(to_bytes(leftover))
@@ -364,7 +382,7 @@ class Socket(object):
         uuid = parsed.get("uuid")
         if parsed.get("ns") == "internal" and parsed.get("name") == "authenticate":
             args = parsed.get("args") or {}
-            if args.get("password") == PASSWORD:
+            if client.auth_salt and args.get("hash") == _auth_hash(client.auth_salt):
                 client.authenticated = True
                 self._send_event("result", True, uuid, client)
                 logger.info("Client authenticated")

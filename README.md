@@ -37,7 +37,10 @@ port (`new Ableton({ host, port })`).
 
 To require a password, set `PASSWORD` in `Config.py` to a string and pass the
 same value to `new Ableton({ password })`. Auth is off when `PASSWORD` is `None`
-or empty.
+or empty. When enabled, the plugin sends a per-connection salt and the client
+authenticates with HMAC-SHA256 so the password itself is not sent in plaintext.
+The WebSocket is still unencrypted (`ws://`) after login, so I'd prefer binding
+to loopback if possible.
 
 If you've forked this project on macOS, you can also use yarn to do that for
 you. Running `yarn ableton10:start` or `yarn ableton11:start` (depending on your

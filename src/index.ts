@@ -13,6 +13,7 @@ import { Cache, isCached, CacheResponse } from "./util/cache.js";
 import { Logger } from "./util/logger.js";
 import { Session } from "./ns/session.js";
 import { EventEmitter } from "./util/event-emitter.js";
+import { hmacSha256Hex } from "./util/hmac-sha256.js";
 
 const DEFAULT_HOST = "127.0.0.1";
 const DEFAULT_PORT = 39031;
@@ -31,7 +32,7 @@ interface Command {
 
 function truncateCommandArgs(command: Omit<Command, "uuid">) {
   if (command.ns === "internal" && command.name === "authenticate") {
-    return "{ password: *** }";
+    return "{ hash: *** }";
   }
 
   return truncate(JSON.stringify(command.args), { length: 100 });
@@ -96,6 +97,7 @@ export interface AbletonOptions {
 
   /**
    * Shared secret matching PASSWORD in Config.py.
+   * Sent as HMAC-SHA256 of the plugin's per-connection salt.
    */
   password?: string;
 
@@ -504,11 +506,21 @@ export class Ableton extends EventEmitter<EventMap> {
         return;
       }
 
+      if (!data.data?.salt) {
+        this.abortAuthentication(
+          new Error(
+            "The AbletonJS plugin did not send an authentication salt.",
+          ),
+        );
+        return;
+      }
+
       try {
+        const hash = hmacSha256Hex(this.options.password, data.data.salt);
         await this.sendCommand({
           ns: "internal",
           name: "authenticate",
-          args: { password: this.options.password },
+          args: { hash },
         });
       } catch (e) {
         const error =
