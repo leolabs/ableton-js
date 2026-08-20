@@ -112,10 +112,11 @@ Ableton.js uses a WebSocket (`ws://127.0.0.1:39031` by default) to talk to the
 MIDI Remote Script. Each message is a JSON text frame containing required data
 and a UUID so request and response can be associated with each other.
 
-The Remote Script is the server. Multiple clients may connect; commands from any
-client are executed, and events are broadcast to every client. Property
-listeners are global in Live: removing a listener from one client removes it for
-everyone. This is something I'll try to improve in the future.
+The Remote Script is the server and supports connections from multiple clients.
+Command replies (`result` / `error`) and property listener updates are sent only
+to the client that issued the command or subscribed. Removing a listener, or
+disconnecting, drops that client's subscriptions only. Live still uses a single
+listener per property until the last subscriber leaves.
 
 ### Caching
 

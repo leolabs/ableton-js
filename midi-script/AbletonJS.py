@@ -40,7 +40,7 @@ class AbletonJS(ControlSurface):
         self.tracked_midi = set()
 
         Socket.set_message(self.show_message)
-        self.socket = Socket(self.command_handler)
+        self.socket = Socket(self.command_handler, self.client_disconnected)
 
         self.handlers = {
             "application": Application(c_instance, self.socket, self.application()),
@@ -113,7 +113,7 @@ class AbletonJS(ControlSurface):
         Interface.obj_ids.clear()
         super(AbletonJS, self).disconnect()
 
-    def command_handler(self, payload):
+    def command_handler(self, payload, connection):
 
         namespace = payload["ns"]
 
@@ -123,7 +123,11 @@ class AbletonJS(ControlSurface):
 
         if namespace in self.handlers:
             handler = self.handlers[namespace]
-            handler.handle(payload)
+            handler.handle(payload, connection)
         else:
             self.socket.send("error", "No handler for namespace " +
-                             str(namespace), payload["uuid"])
+                             str(namespace), payload["uuid"], connection)
+
+    def client_disconnected(self, connection):
+        Interface.drop_connection(connection)
+        self.handlers["midi"].drop_connection(connection)

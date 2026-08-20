@@ -37,10 +37,10 @@ class Interface(object):
     def get_ns(self, nsid):
         return Interface.get_obj(nsid)
 
-    def send_result(self, result, uuid, etag, cache):
+    def send_result(self, result, uuid, etag, cache, connection):
         """Sends an empty response if the etag matches the result, or the result together with an etag."""
         if not cache:
-            return self.socket.send("result", result, uuid)
+            return self.socket.send("result", result, uuid, connection)
 
         def jsonReplace(o):
             return str(o)
@@ -49,11 +49,11 @@ class Interface(object):
         hash = hashlib.md5(response.encode("utf-8", "replace")).hexdigest()
 
         if hash == etag:
-            return self.socket.send("result", {"__cached": True}, uuid)
+            return self.socket.send("result", {"__cached": True}, uuid, connection)
         else:
-            return self.socket.send("result", {"data": result, "etag": hash}, uuid)
+            return self.socket.send("result", {"data": result, "etag": hash}, uuid, connection)
 
-    def handle(self, payload):
+    def handle(self, payload, connection):
         name = payload.get("name")
         uuid = payload.get("uuid")
         etag = payload.get("etag")
@@ -65,28 +65,34 @@ class Interface(object):
             ns = self.get_ns(nsid)
             # Try self-defined functions first
             if hasattr(self, name) and callable(getattr(self, name)):
-                result = getattr(self, name)(ns=ns, **args)
-                self.send_result(result, uuid, etag, cache)
+                if name == "add_listener" or name == "remove_listener":
+                    kwargs = dict(args)
+                    kwargs.pop("connection", None)
+                    result = getattr(self, name)(
+                        ns=ns, connection=connection, **kwargs)
+                else:
+                    result = getattr(self, name)(ns=ns, **args)
+                self.send_result(result, uuid, etag, cache, connection)
             # Check if the function exists in the Ableton API as fallback
             elif hasattr(ns, name) and callable(getattr(ns, name)):
                 if isinstance(args, dict):
                     result = getattr(ns, name)(**args)
-                    self.send_result(result, uuid, etag, cache)
+                    self.send_result(result, uuid, etag, cache, connection)
                 elif isinstance(args, list):
                     result = getattr(ns, name)(*args)
-                    self.send_result(result, uuid, etag, cache)
+                    self.send_result(result, uuid, etag, cache, connection)
                 else:
                     self.socket.send("error", "Function call failed: " + str(args) +
-                                     " are invalid arguments", uuid)
+                                     " are invalid arguments", uuid, connection)
             else:
                 self.socket.send("error", "Function call failed: " + payload["name"] +
-                                 " doesn't exist or isn't callable", uuid)
+                                 " doesn't exist or isn't callable", uuid, connection)
         except Exception as e:
             logger.error("Handler Error:")
             logger.exception(e)
-            self.socket.send("error", str(e.args[0]), uuid)
+            self.socket.send("error", str(e.args[0]), uuid, connection)
 
-    def add_listener(self, ns, prop, eventId, nsid="Default"):
+    def add_listener(self, ns, prop, eventId, connection, nsid="Default"):
         try:
             add_fn = getattr(ns, "add_" + prop + "_listener")
         except:
@@ -96,33 +102,81 @@ class Interface(object):
         self.log_debug("Listener key: " + key)
 
         if key in self.listeners:
-            self.log_debug("Key already has a listener")
-            return self.listeners[key]["id"]
+            subscribers = self.listeners[key]["subscribers"]
+            if connection in subscribers:
+                self.log_debug("Connection already subscribed")
+                return subscribers[connection]
+            subscribers[connection] = eventId
+            self.log_debug("Added subscriber, event ID: " + eventId)
+            return eventId
 
         def fn():
             value = self.get_prop(ns, prop)
-            return self.socket.send(eventId, value)
+            entry = self.listeners.get(key)
+            if not entry:
+                return
+            for conn, eid in list(entry["subscribers"].items()):
+                self.socket.send(eid, value, connection=conn)
 
         self.log_debug("Attaching listener: " +
                        key + ", event ID: " + eventId)
         add_fn(fn)
-        self.listeners[key] = {"id": eventId, "fn": fn}
+        self.listeners[key] = {
+            "fn": fn,
+            "subscribers": {connection: eventId},
+            "ns": ns,
+            "prop": prop,
+        }
         return eventId
 
-    def remove_listener(self, ns, prop, nsid="Default"):
+    def remove_listener(self, ns, prop, connection, nsid="Default"):
         key = str(nsid) + ":" + prop
         self.log_debug("Remove key: " + key)
         if key not in self.listeners:
             raise Exception("Listener " + str(prop) + " does not exist.")
 
+        subscribers = self.listeners[key]["subscribers"]
+        if connection not in subscribers:
+            raise Exception("Listener " + str(prop) + " does not exist.")
+
+        subscribers.pop(connection, None)
+        if subscribers:
+            return True
+
         try:
-            remove_fn = getattr(ns, "remove_" + prop + "_listener")
-            remove_fn(self.listeners[key]["fn"])
-            self.listeners.pop(key, None)
+            Interface._detach_listener(key)
             return True
         except Exception as e:
             raise Exception("Listener " + str(prop) +
                             " could not be removed: " + str(e))
+
+    @staticmethod
+    def drop_connection(connection):
+        empty = []
+        for key, entry in list(Interface.listeners.items()):
+            subscribers = entry.get("subscribers") or {}
+            if connection in subscribers:
+                subscribers.pop(connection, None)
+            if not subscribers:
+                empty.append(key)
+        for key in empty:
+            try:
+                Interface._detach_listener(key)
+            except Exception:
+                logger.error("Could not detach listener " + str(key))
+                Interface.listeners.pop(key, None)
+
+    @staticmethod
+    def _detach_listener(key):
+        entry = Interface.listeners.get(key)
+        if not entry:
+            return
+        ns = entry.get("ns")
+        prop = entry.get("prop")
+        fn = entry.get("fn")
+        remove_fn = getattr(ns, "remove_" + prop + "_listener")
+        remove_fn(fn)
+        Interface.listeners.pop(key, None)
 
     def get_prop(self, ns, prop):
         try:

@@ -132,8 +132,9 @@ class Socket(object):
     def set_message(func):
         Socket.show_message = func
 
-    def __init__(self, handler):
+    def __init__(self, handler, disconnect_handler=None):
         self.input_handler = handler
+        self.disconnect_handler = disconnect_handler
         self._queue = queue.Queue()
         self._connections = []
         self._lock = threading.Lock()
@@ -152,7 +153,7 @@ class Socket(object):
             self._last_error = msg
             logger.error(msg)
 
-    def send(self, name, obj=None, uuid=None):
+    def send(self, name, obj=None, uuid=None, connection=None):
         def jsonReplace(o):
             try:
                 return list(o)
@@ -167,7 +168,7 @@ class Socket(object):
                 ensure_ascii=False,
             )
             frame = encode_text_frame(to_bytes(data))
-            self._send_frame(frame)
+            self._send_frame(frame, connection)
         except Exception as e:
             logger.error("Error " + name + "(" + str(uuid) + "):")
             logger.exception(e)
@@ -202,6 +203,11 @@ class Socket(object):
         except Exception:
             pass
         conn.close()
+        # Live listener teardown must run on the main thread via process().
+        try:
+            self._queue.put((conn, None))
+        except Exception:
+            pass
 
     def shutdown(self):
         logger.info("Shutting down...")
@@ -222,12 +228,15 @@ class Socket(object):
     def process(self):
         while True:
             try:
-                payload = self._queue.get_nowait()
+                connection, payload = self._queue.get_nowait()
             except queue.Empty:
                 return
             try:
-                if self.input_handler:
-                    self.input_handler(payload)
+                if payload is None:
+                    if self.disconnect_handler:
+                        self.disconnect_handler(connection)
+                elif self.input_handler:
+                    self.input_handler(payload, connection)
             except Exception as e:
                 logger.error("Error processing request:")
                 logger.exception(e)
@@ -372,7 +381,7 @@ class Socket(object):
         if self._gate_auth(client, parsed):
             return
 
-        self._queue.put(parsed)
+        self._queue.put((client, parsed))
 
     def _gate_auth(self, client, parsed):
         """Return True if the message was consumed and should not be queued."""
