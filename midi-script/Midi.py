@@ -78,4 +78,4 @@ class Midi(Interface):
     def send_midi(self, midi_bytes):
         payload = {"bytes": midi_bytes}
         for conn, event_id in list(self.subscribers.items()):
-            self.socket.send(event_id, payload, connection=conn)
+            self.socket.send_to(conn, event_id, payload)

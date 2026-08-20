@@ -40,7 +40,7 @@ class Interface(object):
     def send_result(self, result, uuid, etag, cache, connection):
         """Sends an empty response if the etag matches the result, or the result together with an etag."""
         if not cache:
-            return self.socket.send("result", result, uuid, connection)
+            return self.socket.send_to(connection, "result", result, uuid)
 
         def jsonReplace(o):
             return str(o)
@@ -49,9 +49,10 @@ class Interface(object):
         hash = hashlib.md5(response.encode("utf-8", "replace")).hexdigest()
 
         if hash == etag:
-            return self.socket.send("result", {"__cached": True}, uuid, connection)
+            return self.socket.send_to(connection, "result", {"__cached": True}, uuid)
         else:
-            return self.socket.send("result", {"data": result, "etag": hash}, uuid, connection)
+            return self.socket.send_to(
+                connection, "result", {"data": result, "etag": hash}, uuid)
 
     def handle(self, payload, connection):
         name = payload.get("name")
@@ -82,15 +83,23 @@ class Interface(object):
                     result = getattr(ns, name)(*args)
                     self.send_result(result, uuid, etag, cache, connection)
                 else:
-                    self.socket.send("error", "Function call failed: " + str(args) +
-                                     " are invalid arguments", uuid, connection)
+                    self.socket.send_to(
+                        connection,
+                        "error",
+                        "Function call failed: " + str(args) +
+                        " are invalid arguments",
+                        uuid)
             else:
-                self.socket.send("error", "Function call failed: " + payload["name"] +
-                                 " doesn't exist or isn't callable", uuid, connection)
+                self.socket.send_to(
+                    connection,
+                    "error",
+                    "Function call failed: " + payload["name"] +
+                    " doesn't exist or isn't callable",
+                    uuid)
         except Exception as e:
             logger.error("Handler Error:")
             logger.exception(e)
-            self.socket.send("error", str(e.args[0]), uuid, connection)
+            self.socket.send_to(connection, "error", str(e.args[0]), uuid)
 
     def add_listener(self, ns, prop, eventId, connection, nsid="Default"):
         try:
@@ -116,7 +125,7 @@ class Interface(object):
             if not entry:
                 return
             for conn, eid in list(entry["subscribers"].items()):
-                self.socket.send(eid, value, connection=conn)
+                self.socket.send_to(conn, eid, value)
 
         self.log_debug("Attaching listener: " +
                        key + ", event ID: " + eventId)

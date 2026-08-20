@@ -153,7 +153,13 @@ class Socket(object):
             self._last_error = msg
             logger.error(msg)
 
-    def send(self, name, obj=None, uuid=None, connection=None):
+    def send_to(self, connection, name, obj=None, uuid=None):
+        self._send_json(name, obj, uuid, connection)
+
+    def broadcast(self, name, obj=None, uuid=None):
+        self._send_json(name, obj, uuid, None)
+
+    def _send_json(self, name, obj, uuid, connection):
         def jsonReplace(o):
             try:
                 return list(o)
@@ -168,25 +174,23 @@ class Socket(object):
                 ensure_ascii=False,
             )
             frame = encode_text_frame(to_bytes(data))
-            self._send_frame(frame, connection)
+            if connection is None:
+                self._broadcast_frame(frame)
+            else:
+                self._send_frame(frame, connection)
         except Exception as e:
             logger.error("Error " + name + "(" + str(uuid) + "):")
             logger.exception(e)
 
-    def _send_event(self, event, obj, uuid, connection):
-        data = json.dumps(
-            {"event": event, "data": obj, "uuid": uuid},
-            ensure_ascii=False,
-        )
-        self._send_frame(encode_text_frame(to_bytes(data)), connection)
+    def _send_frame(self, frame, connection):
+        self._deliver_frame(frame, [connection])
 
-    def _send_frame(self, frame, connection=None):
+    def _broadcast_frame(self, frame):
         with self._lock:
-            if connection is not None:
-                targets = [connection]
-            else:
-                targets = list(self._connections)
+            targets = list(self._connections)
+        self._deliver_frame(frame, targets)
 
+    def _deliver_frame(self, frame, targets):
         stale = []
         for conn in targets:
             if not conn.send_or_enqueue(frame):
@@ -312,7 +316,7 @@ class Socket(object):
             client.auth_salt = _random_salt()
             connect_data["requiresAuth"] = True
             connect_data["salt"] = client.auth_salt
-        self._send_event("connect", connect_data, None, client)
+        self.send_to(client, "connect", connect_data)
 
         buffer = bytearray(to_bytes(leftover))
         fragments = bytearray()
@@ -393,14 +397,14 @@ class Socket(object):
             args = parsed.get("args") or {}
             if client.auth_salt and args.get("hash") == _auth_hash(client.auth_salt):
                 client.authenticated = True
-                self._send_event("result", True, uuid, client)
+                self.send_to(client, "result", True, uuid)
                 logger.info("Client authenticated")
             else:
                 logger.info("Client authentication failed")
-                self._send_event("error", "Invalid password", uuid, client)
+                self.send_to(client, "error", "Invalid password", uuid)
                 with self._lock:
                     self._drop_connection(client)
             return True
 
-        self._send_event("error", "Unauthorized", uuid, client)
+        self.send_to(client, "error", "Unauthorized", uuid)
         return True

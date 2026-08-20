@@ -107,7 +107,7 @@ class AbletonJS(ControlSurface):
     def disconnect(self):
         logger.info("Disconnecting")
         self.recv_loop.stop()
-        self.socket.send("disconnect")
+        self.socket.broadcast("disconnect")
         self.socket.shutdown()
         Interface.listeners.clear()
         Interface.obj_ids.clear()
@@ -125,8 +125,11 @@ class AbletonJS(ControlSurface):
             handler = self.handlers[namespace]
             handler.handle(payload, connection)
         else:
-            self.socket.send("error", "No handler for namespace " +
-                             str(namespace), payload["uuid"], connection)
+            self.socket.send_to(
+                connection,
+                "error",
+                "No handler for namespace " + str(namespace),
+                payload["uuid"])
 
     def client_disconnected(self, connection):
         Interface.drop_connection(connection)
