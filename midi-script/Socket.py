@@ -87,11 +87,8 @@ class ClientConnection(object):
     def enqueue(self, frame):
         if self._closed:
             return False
-        try:
-            self.out_queue.put_nowait(frame)
-            return True
-        except queue.Full:
-            return False
+        self.out_queue.put_nowait(frame)
+        return True
 
     def close(self):
         if self._closed:
