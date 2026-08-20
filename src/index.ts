@@ -575,10 +575,16 @@ export class Ableton extends EventEmitter<EventMap> {
             }
           };
 
+          const finish = () => {
+            this.msgMap.delete(msgId);
+            clearCurrentTimeout();
+          };
+
           const startTimeout = () => {
             clearCurrentTimeout();
 
             timeoutId = setTimeout(() => {
+              finish();
               rej(
                 new TimeoutError(
                   `The command ${cls}.${command.name}(${args}) timed out after ${timeout} ms.`,
@@ -601,12 +607,15 @@ export class Ableton extends EventEmitter<EventMap> {
               }
 
               this.setPing(duration);
-              clearCurrentTimeout();
+              finish();
               res(result);
             },
-            rej,
+            rej: (error: any) => {
+              finish();
+              rej(error);
+            },
             clearTimeout: () => {
-              clearCurrentTimeout();
+              finish();
               rej(
                 new DisconnectError(
                   `Live disconnected before being able to respond to ${cls}.${command.name}(${args})`,
@@ -616,7 +625,12 @@ export class Ableton extends EventEmitter<EventMap> {
             },
           });
 
-          this.sendRaw(msg).then(startTimeout).catch(rej);
+          this.sendRaw(msg)
+            .then(startTimeout)
+            .catch((error) => {
+              finish();
+              rej(error);
+            });
         }),
     );
   }
