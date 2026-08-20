@@ -16,7 +16,7 @@ I've used Ableton.js to build a setlist manager called
 your Ableton setlists from any device, re-order songs and add notes to them, and
 get an overview of the current state of your set.
 
-[![AbleSet Header](https://public-files.gumroad.com/variants/oplxt68bsgq1hu61t8bydfkgppr5/baaca0eb0e33dc4f9d45910b8c86623f0144cea0fe0c2093c546d17d535752eb)](https://ableset.app/?utm_campaign=ableton-js)
+[![AbleSet Header](https://ableset.com/images/ableton-js-banner.png)](https://ableset.com/?utm_campaign=ableton-js)
 
 ## Prerequisites
 
