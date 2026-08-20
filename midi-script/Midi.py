@@ -1,6 +1,6 @@
 from __future__ import absolute_import
 
-from .Interface import Interface
+from .Interface import ConnectionSubscribers, Interface
 from .Logging import logger
 
 
@@ -10,7 +10,7 @@ class Midi(Interface):
         self.outputs = set()
         self.tracked_midi = tracked_midi
         self.update_midi = update_midi_callback
-        self.subscribers = {}
+        self.subscribers = ConnectionSubscribers()
 
     def get_ns(self, nsid):
         return self
@@ -39,43 +39,34 @@ class Midi(Interface):
         self.tracked_midi.clear()
         self.update_midi()
 
-    def add_listener(self, ns, prop, eventId, connection, nsid="Default"):
+    def _require_midi(self, prop):
         if prop != "midi":
             raise Exception("Listener " + str(prop) + " does not exist.")
 
-        if connection in self.subscribers:
-            return self.subscribers[connection]
-
-        first = not self.subscribers
-        self.subscribers[connection] = eventId
+    def add_listener(self, ns, prop, eventId, connection, nsid="Default"):
+        self._require_midi(prop)
+        first = self.subscribers.is_empty()
+        event_id = self.subscribers.subscribe(connection, eventId)
         if first:
             self._enable_tracking()
-
-        return eventId
+        return event_id
 
     def remove_listener(self, ns, prop, connection, nsid="Default"):
-        if prop != "midi":
-            raise Exception("Listener " + str(prop) + " does not exist.")
-
-        if connection not in self.subscribers:
+        self._require_midi(prop)
+        if not self.subscribers.unsubscribe(connection):
             raise Exception("Listener midi does not exist.")
-
-        self.subscribers.pop(connection, None)
-        if not self.subscribers:
+        if self.subscribers.is_empty():
             self._disable_tracking()
         return True
 
     def drop_connection(self, connection):
-        if connection not in self.subscribers:
+        if not self.subscribers.unsubscribe(connection):
             return
-        self.subscribers.pop(connection, None)
-        if not self.subscribers:
+        if self.subscribers.is_empty():
             try:
                 self._disable_tracking()
             except Exception:
                 logger.error("Could not disable MIDI tracking after disconnect")
 
     def send_midi(self, midi_bytes):
-        payload = {"bytes": midi_bytes}
-        for conn, event_id in list(self.subscribers.items()):
-            self.socket.send_to(conn, event_id, payload)
+        self.subscribers.send_each(self.socket, {"bytes": midi_bytes})

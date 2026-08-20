@@ -5,6 +5,36 @@ from .Config import DEBUG
 from .Logging import logger
 
 
+class ConnectionSubscribers(object):
+    """Maps a WebSocket connection to its event id for one listener."""
+
+    def __init__(self):
+        self._subs = {}
+
+    def is_empty(self):
+        return not self._subs
+
+    def subscribe(self, connection, event_id):
+        existing = self._subs.get(connection)
+        if existing is not None:
+            return existing
+        self._subs[connection] = event_id
+        return event_id
+
+    def unsubscribe(self, connection):
+        if connection not in self._subs:
+            return False
+        del self._subs[connection]
+        return True
+
+    def items(self):
+        return list(self._subs.items())
+
+    def send_each(self, socket, data):
+        for conn, event_id in self.items():
+            socket.send_to(conn, event_id, data)
+
+
 class Interface(object):
     obj_ids = dict()
     listeners = dict()
@@ -111,28 +141,25 @@ class Interface(object):
         self.log_debug("Listener key: " + key)
 
         if key in self.listeners:
-            subscribers = self.listeners[key]["subscribers"]
-            if connection in subscribers:
-                self.log_debug("Connection already subscribed")
-                return subscribers[connection]
-            subscribers[connection] = eventId
-            self.log_debug("Added subscriber, event ID: " + eventId)
-            return eventId
+            return self.listeners[key]["subscribers"].subscribe(
+                connection, eventId)
+
+        subscribers = ConnectionSubscribers()
+        subscribers.subscribe(connection, eventId)
 
         def fn():
             value = self.get_prop(ns, prop)
             entry = self.listeners.get(key)
             if not entry:
                 return
-            for conn, eid in list(entry["subscribers"].items()):
-                self.socket.send_to(conn, eid, value)
+            entry["subscribers"].send_each(self.socket, value)
 
         self.log_debug("Attaching listener: " +
                        key + ", event ID: " + eventId)
         add_fn(fn)
         self.listeners[key] = {
             "fn": fn,
-            "subscribers": {connection: eventId},
+            "subscribers": subscribers,
             "ns": ns,
             "prop": prop,
         }
@@ -145,11 +172,9 @@ class Interface(object):
             raise Exception("Listener " + str(prop) + " does not exist.")
 
         subscribers = self.listeners[key]["subscribers"]
-        if connection not in subscribers:
+        if not subscribers.unsubscribe(connection):
             raise Exception("Listener " + str(prop) + " does not exist.")
-
-        subscribers.pop(connection, None)
-        if subscribers:
+        if not subscribers.is_empty():
             return True
 
         try:
@@ -163,10 +188,9 @@ class Interface(object):
     def drop_connection(connection):
         empty = []
         for key, entry in list(Interface.listeners.items()):
-            subscribers = entry.get("subscribers") or {}
-            if connection in subscribers:
-                subscribers.pop(connection, None)
-            if not subscribers:
+            subscribers = entry["subscribers"]
+            subscribers.unsubscribe(connection)
+            if subscribers.is_empty():
                 empty.append(key)
         for key in empty:
             try:
