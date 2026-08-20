@@ -110,6 +110,14 @@ export interface AbletonOptions {
   heartbeatInterval?: number;
 
   /**
+   * Defines how long ableton-js waits for the WebSocket handshake to
+   * complete before aborting and reconnecting, in milliseconds.
+   *
+   * @default 5000
+   */
+  connectTimeoutMs?: number;
+
+  /**
    * Defines how long ableton-js waits for an answer from the Remote
    * Script after sending a command before throwing a timeout error.
    *
@@ -155,6 +163,7 @@ export class Ableton extends EventEmitter<EventMap> {
   private eventListeners = new Map<string, Array<(data: any) => any>>();
   private heartbeatInterval: ReturnType<typeof setInterval> | undefined;
   private reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+  private connectTimer: ReturnType<typeof setTimeout> | undefined;
   private _isConnected = false;
   private latency: number = 0;
   private reconnectDelay = 250;
@@ -336,6 +345,13 @@ export class Ableton extends EventEmitter<EventMap> {
     return `ws://${this.host}:${this.port}`;
   }
 
+  private clearConnectTimer() {
+    if (this.connectTimer) {
+      clearTimeout(this.connectTimer);
+      this.connectTimer = undefined;
+    }
+  }
+
   private connectSocket() {
     if (!this.shouldReconnect) {
       return;
@@ -345,6 +361,8 @@ export class Ableton extends EventEmitter<EventMap> {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = undefined;
     }
+
+    this.clearConnectTimer();
 
     if (this.client) {
       const previous = this.client;
@@ -356,22 +374,40 @@ export class Ableton extends EventEmitter<EventMap> {
     const ws = new WebSocket(url);
     this.client = ws;
 
+    const timeout = this.options?.connectTimeoutMs ?? 5000;
+    this.connectTimer = setTimeout(() => {
+      this.connectTimer = undefined;
+      if (this.client !== ws || ws.readyState !== WebSocket.CONNECTING) {
+        return;
+      }
+
+      this.logger?.warn("WebSocket connection timed out", { url, timeout });
+      this.client = undefined;
+      ws.close();
+      this.handleDisconnect("realtime");
+      this.scheduleReconnect();
+    }, timeout);
+
     ws.addEventListener("open", () => {
-      this.reconnectDelay = 250;
+      if (this.client === ws) {
+        this.clearConnectTimer();
+        this.reconnectDelay = 250;
+      }
     });
 
     ws.addEventListener("message", (event) => {
-      if (typeof event.data === "string") {
+      if (this.client === ws && typeof event.data === "string") {
         this.handleIncoming(event.data);
       }
     });
 
     ws.addEventListener("close", () => {
       if (this.client === ws) {
+        this.clearConnectTimer();
         this.client = undefined;
+        this.handleDisconnect("realtime");
+        this.scheduleReconnect();
       }
-      this.handleDisconnect("realtime");
-      this.scheduleReconnect();
     });
   }
 
@@ -408,6 +444,8 @@ export class Ableton extends EventEmitter<EventMap> {
       clearTimeout(this.reconnectTimer);
       this.reconnectTimer = undefined;
     }
+
+    this.clearConnectTimer();
 
     if (this.heartbeatInterval) {
       clearInterval(this.heartbeatInterval);
