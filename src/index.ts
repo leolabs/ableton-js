@@ -430,62 +430,58 @@ export class Ableton extends EventEmitter<EventMap> {
 
   private handleIncoming(msg: string) {
     try {
-      this.handleUncompressedMessage(msg);
-    } catch (e) {
-      this.emit("error", e as Error);
-    }
-  }
+      this.emit("raw_message", msg);
+      const data: Response = JSON.parse(msg);
+      const functionCallback = this.msgMap.get(data.uuid);
 
-  private handleUncompressedMessage(msg: string) {
-    this.emit("raw_message", msg);
-    const data: Response = JSON.parse(msg);
-    const functionCallback = this.msgMap.get(data.uuid);
+      this.emit("message", data);
 
-    this.emit("message", data);
-
-    if (data.event === "result" && functionCallback) {
-      this.msgMap.delete(data.uuid);
-      return functionCallback.res(data.data);
-    }
-
-    if (data.event === "error" && functionCallback) {
-      this.msgMap.delete(data.uuid);
-      return functionCallback.rej(new Error(data.data));
-    }
-
-    if (data.event === "result" || data.event === "error") {
-      return;
-    }
-
-    if (data.event === "disconnect") {
-      this.handleDisconnect("realtime");
-      this.closeCurrentSocket();
-      return;
-    }
-
-    if (data.event === "connect") {
-      this.cancelDisconnectEvents.forEach((cancel) => cancel());
-
-      if (data.data?.port && data.data?.port !== this.port) {
-        this.logger?.info("Got server port via connect:", {
-          port: data.data.port,
-        });
+      if (data.event === "result" && functionCallback) {
+        this.msgMap.delete(data.uuid);
+        return functionCallback.res(data.data);
       }
 
-      return this.handleConnect(
-        this.clientState === "starting" ? "start" : "realtime",
-      );
-    }
+      if (data.event === "error" && functionCallback) {
+        this.msgMap.delete(data.uuid);
+        return functionCallback.rej(new Error(data.data));
+      }
 
-    const eventCallback = this.eventListeners.get(data.event);
-    if (eventCallback) {
-      return eventCallback.forEach((cb) => cb(data.data));
-    }
+      if (data.event === "result" || data.event === "error") {
+        return;
+      }
 
-    if (data.uuid) {
-      this.logger?.warn("Message could not be assigned to any request:", {
-        msg,
-      });
+      if (data.event === "disconnect") {
+        this.handleDisconnect("realtime");
+        this.closeCurrentSocket();
+        return;
+      }
+
+      if (data.event === "connect") {
+        this.cancelDisconnectEvents.forEach((cancel) => cancel());
+
+        if (data.data?.port && data.data?.port !== this.port) {
+          this.logger?.info("Got server port via connect:", {
+            port: data.data.port,
+          });
+        }
+
+        return this.handleConnect(
+          this.clientState === "starting" ? "start" : "realtime",
+        );
+      }
+
+      const eventCallback = this.eventListeners.get(data.event);
+      if (eventCallback) {
+        return eventCallback.forEach((cb) => cb(data.data));
+      }
+
+      if (data.uuid) {
+        this.logger?.warn("Message could not be assigned to any request:", {
+          msg,
+        });
+      }
+    } catch (e) {
+      this.emit("error", e as Error);
     }
   }
 
