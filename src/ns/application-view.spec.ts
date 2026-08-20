@@ -7,7 +7,7 @@ const gettableProps: (keyof GettableProperties)[] = [
   "focused_document_view",
 ];
 
-describe("Application", () => {
+describe("Application View", () => {
   it("should be able to read all properties without erroring", async () => {
     await withAbleton(async (ab) => {
       await Promise.all(gettableProps.map((p) => ab.application.view.get(p)));

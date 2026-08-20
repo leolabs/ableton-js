@@ -20,7 +20,7 @@ const gettableProps: (keyof GettableProperties)[] = [
   "hotswap_target",
 ];
 
-describe("Application", () => {
+describe("Browser", () => {
   it("should be able to read all properties without erroring", async () => {
     await withAbleton(async (ab) => {
       await Promise.all(
