@@ -35,8 +35,9 @@ can change the bind address and port in `midi-script/Config.py`
 (`WEBSOCKET_HOST` / `WEBSOCKET_PORT`). The JS client must use the same host and
 port (`new Ableton({ host, port })`).
 
-Binding anything other than loopback has no authentication — any client that can
-reach the port can control Live.
+To require a password, set `PASSWORD` in `Config.py` to a string and pass the
+same value to `new Ableton({ password })`. Auth is off when `PASSWORD` is `None`
+or empty.
 
 If you've forked this project on macOS, you can also use yarn to do that for
 you. Running `yarn ableton10:start` or `yarn ableton11:start` (depending on your

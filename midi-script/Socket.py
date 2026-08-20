@@ -4,7 +4,7 @@ import json
 import threading
 import time
 
-from .Config import PLUGIN_NAME, WEBSOCKET_HOST, WEBSOCKET_PORT
+from .Config import PLUGIN_NAME, WEBSOCKET_HOST, WEBSOCKET_PORT, PASSWORD
 from .Logging import logger
 from .WebSocket import (
     OPCODE_CLOSE,
@@ -33,6 +33,10 @@ DIRECT_SEND_MAX_BYTES = 65536
 EAGAIN_ERRNOS = (11, 35, 10035)
 
 
+def _auth_enabled():
+    return bool(PASSWORD)
+
+
 class ClientConnection(object):
     """Socket with optional send thread for large or potentially blocking writes."""
 
@@ -41,6 +45,7 @@ class ClientConnection(object):
         self.out_queue = queue.Queue()
         self._send_lock = threading.Lock()
         self._closed = False
+        self.authenticated = not _auth_enabled()
         thread = threading.Thread(target=self._send_loop)
         thread.daemon = True
         thread.start()
@@ -150,6 +155,13 @@ class Socket(object):
         except Exception as e:
             logger.error("Error " + name + "(" + str(uuid) + "):")
             logger.exception(e)
+
+    def _send_event(self, event, obj, uuid, connection):
+        data = json.dumps(
+            {"event": event, "data": obj, "uuid": uuid},
+            ensure_ascii=False,
+        )
+        self._send_frame(encode_text_frame(to_bytes(data)), connection)
 
     def _send_frame(self, frame, connection=None):
         with self._lock:
@@ -270,21 +282,10 @@ class Socket(object):
         with self._lock:
             self._connections.append(client)
 
-        self._send_frame(
-            encode_text_frame(
-                to_bytes(
-                    json.dumps(
-                        {
-                            "event": "connect",
-                            "data": {"port": self._port},
-                            "uuid": None,
-                        },
-                        ensure_ascii=False,
-                    )
-                )
-            ),
-            client,
-        )
+        connect_data = {"port": self._port}
+        if _auth_enabled():
+            connect_data["requiresAuth"] = True
+        self._send_event("connect", connect_data, None, client)
 
         buffer = bytearray(to_bytes(leftover))
         fragments = bytearray()
@@ -320,7 +321,7 @@ class Socket(object):
                             continue
                         fragments.extend(payload)
                         if fin:
-                            self._handle_payload(fragment_opcode, fragments)
+                            self._handle_payload(fragment_opcode, fragments, client)
                             fragments = bytearray()
                             fragment_opcode = None
                         continue
@@ -330,7 +331,7 @@ class Socket(object):
                         fragments = bytearray(payload)
                         continue
 
-                    self._handle_payload(opcode, payload)
+                    self._handle_payload(opcode, payload, client)
         except Exception as e:
             logger.error("Connection error:")
             logger.exception(e)
@@ -339,7 +340,7 @@ class Socket(object):
                 self._drop_connection(client)
             logger.info("Client disconnected")
 
-    def _handle_payload(self, opcode, payload):
+    def _handle_payload(self, opcode, payload, client):
         if opcode != OPCODE_TEXT:
             return
         try:
@@ -349,4 +350,30 @@ class Socket(object):
             logger.error("Error decoding request:")
             logger.exception(e)
             return
+
+        if self._gate_auth(client, parsed):
+            return
+
         self._queue.put(parsed)
+
+    def _gate_auth(self, client, parsed):
+        """Return True if the message was consumed and should not be queued."""
+        if not _auth_enabled() or client.authenticated:
+            return False
+
+        uuid = parsed.get("uuid")
+        if parsed.get("ns") == "internal" and parsed.get("name") == "authenticate":
+            args = parsed.get("args") or {}
+            if args.get("password") == PASSWORD:
+                client.authenticated = True
+                self._send_event("result", True, uuid, client)
+                logger.info("Client authenticated")
+            else:
+                logger.info("Client authentication failed")
+                self._send_event("error", "Invalid password", uuid, client)
+                with self._lock:
+                    self._drop_connection(client)
+            return True
+
+        self._send_event("error", "Unauthorized", uuid, client)
+        return True

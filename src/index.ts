@@ -29,6 +29,14 @@ interface Command {
   args?: { [k: string]: any };
 }
 
+function truncateCommandArgs(command: Omit<Command, "uuid">) {
+  if (command.ns === "internal" && command.name === "authenticate") {
+    return "{ password: *** }";
+  }
+
+  return truncate(JSON.stringify(command.args), { length: 100 });
+}
+
 interface Response {
   uuid: string;
   event: "result" | "error" | "connect" | "disconnect" | string;
@@ -73,22 +81,23 @@ export class DisconnectError extends Error {
 
 export interface AbletonOptions {
   /**
-   * WebSocket host of the Remote Script. Use 127.0.0.1 rather than
-   * localhost so the client does not accidentally connect via IPv6.
-   *
-   * Must match WEBSOCKET_HOST in midi-script/Config.py.
+   * WebSocket host of the Remote Script.
    *
    * @default 127.0.0.1
    */
   host?: string;
 
   /**
-   * WebSocket port of the Remote Script. Must match WEBSOCKET_PORT
-   * in midi-script/Config.py.
+   * WebSocket port of the Remote Script.
    *
    * @default 39031
    */
   port?: number;
+
+  /**
+   * Shared secret matching PASSWORD in Config.py.
+   */
+  password?: string;
 
   /**
    * Defines how regularly ableton-js should ping the Remote Script
@@ -212,12 +221,12 @@ export class Ableton extends EventEmitter<EventMap> {
   async waitForConnection() {
     if (this._isConnected) {
       return;
-    } else {
-      return Promise.race([
-        new Promise((res) => this.once("connect", res)),
-        this.internal.get("ping").catch(() => new Promise(() => {})),
-      ]);
     }
+
+    return new Promise<void>((res, rej) => {
+      this.once("connect", () => res());
+      this.once("error", (error) => rej(error));
+    });
   }
 
   /**
@@ -457,17 +466,8 @@ export class Ableton extends EventEmitter<EventMap> {
       }
 
       if (data.event === "connect") {
-        this.cancelDisconnectEvents.forEach((cancel) => cancel());
-
-        if (data.data?.port && data.data?.port !== this.port) {
-          this.logger?.info("Got server port via connect:", {
-            port: data.data.port,
-          });
-        }
-
-        return this.handleConnect(
-          this.clientState === "starting" ? "start" : "realtime",
-        );
+        this.handleServerConnect(data);
+        return;
       }
 
       const eventCallback = this.eventListeners.get(data.event);
@@ -485,6 +485,50 @@ export class Ableton extends EventEmitter<EventMap> {
     }
   }
 
+  private async handleServerConnect(data: Response) {
+    this.cancelDisconnectEvents.forEach((cancel) => cancel());
+
+    if (data.data?.port && data.data?.port !== this.port) {
+      this.logger?.info("Got server port via connect:", {
+        port: data.data.port,
+      });
+    }
+
+    if (data.data?.requiresAuth) {
+      if (!this.options?.password) {
+        this.abortAuthentication(
+          new Error(
+            "The AbletonJS plugin requires a password. Pass it to the constructor.",
+          ),
+        );
+        return;
+      }
+
+      try {
+        await this.sendCommand({
+          ns: "internal",
+          name: "authenticate",
+          args: { password: this.options.password },
+        });
+      } catch (e) {
+        const error =
+          e instanceof Error ? e : new Error("Authentication failed");
+        this.abortAuthentication(error);
+        return;
+      }
+    }
+
+    this.handleConnect(this.clientState === "starting" ? "start" : "realtime");
+  }
+
+  private abortAuthentication(error: Error) {
+    this.logger?.error(error.message);
+    this.shouldReconnect = false;
+    this.clientState = "closed";
+    this.emit("error", error);
+    this.closeCurrentSocket();
+  }
+
   /**
    * Sends a raw command to Ableton. Usually, you won't need this.
    * A good starting point in general is the `song` prop.
@@ -500,7 +544,7 @@ export class Ableton extends EventEmitter<EventMap> {
           };
           const msg = JSON.stringify(payload);
           const timeout = this.options?.commandTimeoutMs ?? 3000;
-          const arg = truncate(JSON.stringify(command.args), { length: 100 });
+          const args = truncateCommandArgs(command);
           const cls = command.nsid
             ? `${command.ns}(${command.nsid})`
             : command.ns;
@@ -519,7 +563,7 @@ export class Ableton extends EventEmitter<EventMap> {
             timeoutId = setTimeout(() => {
               rej(
                 new TimeoutError(
-                  `The command ${cls}.${command.name}(${arg}) timed out after ${timeout} ms.`,
+                  `The command ${cls}.${command.name}(${args}) timed out after ${timeout} ms.`,
                   payload,
                 ),
               );
@@ -547,7 +591,7 @@ export class Ableton extends EventEmitter<EventMap> {
               clearCurrentTimeout();
               rej(
                 new DisconnectError(
-                  `Live disconnected before being able to respond to ${cls}.${command.name}(${arg})`,
+                  `Live disconnected before being able to respond to ${cls}.${command.name}(${args})`,
                   payload,
                 ),
               );
@@ -688,11 +732,7 @@ export class Ableton extends EventEmitter<EventMap> {
       );
     }
 
-    if (
-      !this._isConnected ||
-      !this.client ||
-      this.client.readyState !== WebSocket.OPEN
-    ) {
+    if (!this.client || this.client.readyState !== WebSocket.OPEN) {
       throw new Error("The client is disconnected.");
     }
 
