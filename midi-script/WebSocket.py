@@ -156,8 +156,40 @@ def try_read_frame(buffer):
 
     payload = bytearray(buffer[index : index + length])
     if mask is not None:
-        for i in range(len(payload)):
-            payload[i] = payload[i] ^ byte_at(mask, i % 4)
+        apply_mask(payload, mask)
 
     del buffer[: index + length]
     return opcode, (b1 & 0x80) != 0, payload
+
+
+def apply_mask(payload, mask):
+    """XOR a WebSocket payload with its 4-byte mask.
+
+    Client frames are always masked. A byte-at-a-time loop is too slow for
+    multi-megabyte messages (e.g. song.set_data with a large array).
+    """
+    n = len(payload)
+    if n == 0:
+        return payload
+
+    if sys.version_info[0] >= 3:
+        mask_bytes = bytes(bytearray(mask)[:4])
+        if len(mask_bytes) < 4:
+            return payload
+        chunk = 8192
+        i = 0
+        while i < n:
+            j = min(i + chunk, n)
+            slen = j - i
+            offset = i % 4
+            key = (mask_bytes * ((offset + slen) // 4 + 1))[offset : offset + slen]
+            src = int.from_bytes(payload[i:j], "little")
+            payload[i:j] = (src ^ int.from_bytes(key, "little")).to_bytes(
+                slen, "little"
+            )
+            i = j
+        return payload
+
+    for i in range(n):
+        payload[i] = byte_at(payload, i) ^ byte_at(mask, i % 4)
+    return payload
