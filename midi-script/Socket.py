@@ -390,18 +390,24 @@ class Socket(object):
             return False
 
         uuid = parsed.get("uuid")
-        if parsed.get("ns") == "internal" and parsed.get("name") == "authenticate":
-            args = parsed.get("args") or {}
-            if client.auth_salt and args.get("hash") == _auth_hash(client.auth_salt):
-                client.authenticated = True
-                self.send_to(client, "result", True, uuid)
-                logger.info("Client authenticated")
-            else:
-                logger.info("Client authentication failed")
-                self.send_to(client, "error", "Invalid password", uuid)
-                with self._lock:
-                    self._drop_connection(client)
+        commands = parsed.get("commands")
+        if not isinstance(commands, list) or len(commands) == 0:
+            self.send_to(client, "error", "Unauthorized", uuid)
             return True
 
-        self.send_to(client, "error", "Unauthorized", uuid)
+        first = commands[0] or {}
+        if first.get("ns") != "internal" or first.get("name") != "authenticate":
+            self.send_to(client, "error", "Unauthorized", uuid)
+            return True
+
+        args = first.get("args") or {}
+        if client.auth_salt and args.get("hash") == _auth_hash(client.auth_salt):
+            client.authenticated = True
+            logger.info("Client authenticated")
+            return False
+
+        logger.info("Client authentication failed")
+        self.send_to(client, "error", "Invalid password", uuid)
+        with self._lock:
+            self._drop_connection(client)
         return True

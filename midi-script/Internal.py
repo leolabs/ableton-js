@@ -15,3 +15,7 @@ class Internal(Interface):
 
     def get_version(self, ns):
         return version
+
+    def authenticate(self, ns, hash=None):
+        # Socket._gate_auth already validated the hash and marked the connection.
+        return True

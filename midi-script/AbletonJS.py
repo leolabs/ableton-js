@@ -114,22 +114,44 @@ class AbletonJS(ControlSurface):
         super(AbletonJS, self).disconnect()
 
     def command_handler(self, payload, connection):
+        uuid = payload.get("uuid")
+        commands = payload.get("commands")
 
-        namespace = payload["ns"]
-
-        # Don't clutter the logs
-        if not (namespace == "internal" and payload["name"] == "get_prop" and payload["args"]["prop"] == "ping") and DEBUG:
-            logger.debug("Received command: " + str(payload))
-
-        if namespace in self.handlers:
-            handler = self.handlers[namespace]
-            handler.handle(payload, connection)
-        else:
+        if not isinstance(commands, list):
             self.socket.send_to(
                 connection,
                 "error",
-                "No handler for namespace " + str(namespace),
-                payload["uuid"])
+                "Missing or invalid commands array",
+                uuid)
+            return
+
+        if DEBUG:
+            should_log = True
+            if len(commands) == 1:
+                cmd = commands[0] or {}
+                if (cmd.get("ns") == "internal" and
+                        cmd.get("name") == "get_prop" and
+                        (cmd.get("args") or {}).get("prop") == "ping"):
+                    should_log = False
+            if should_log:
+                logger.debug("Received command: " + str(payload))
+
+        results = []
+        for command in commands:
+            try:
+                namespace = command.get("ns")
+                if namespace not in self.handlers:
+                    raise Exception(
+                        "No handler for namespace " + str(namespace))
+                data = self.handlers[namespace].dispatch(command, connection)
+                results.append({"ok": True, "data": data})
+            except Exception as e:
+                logger.error("Handler Error:")
+                logger.exception(e)
+                message = str(e.args[0]) if e.args else str(e)
+                results.append({"ok": False, "error": message})
+
+        self.socket.send_to(connection, "result", results, uuid)
 
     def client_disconnected(self, connection):
         Interface.drop_connection(connection)

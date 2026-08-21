@@ -1,5 +1,4 @@
 import truncate from "lodash/truncate.js";
-import { v4 } from "uuid";
 import semver from "semver";
 import LruCache from "lru-cache";
 import pLimit from "p-limit";
@@ -21,7 +20,6 @@ const DEFAULT_PORT = 39031;
 const limit = pLimit(200);
 
 interface Command {
-  uuid: string;
   ns: string;
   nsid?: string;
   name: string;
@@ -30,12 +28,43 @@ interface Command {
   args?: { [k: string]: any };
 }
 
-function truncateCommandArgs(command: Omit<Command, "uuid">) {
+interface CommandEnvelope {
+  uuid: string;
+  commands: Command[];
+}
+
+interface CommandSlotResult {
+  ok: boolean;
+  data?: any;
+  error?: string;
+}
+
+interface QueuedCommand {
+  command: Command;
+  res: (data: any) => void;
+  rej: (error: any) => void;
+}
+
+function truncateCommandArgs(command: Command) {
   if (command.ns === "internal" && command.name === "authenticate") {
     return "{ hash: *** }";
   }
 
   return truncate(JSON.stringify(command.args), { length: 100 });
+}
+
+function summarizeCommands(commands: Command[]) {
+  if (commands.length === 0) {
+    return "commands[0]";
+  }
+
+  const first = commands[0]!;
+  const head = `${first.ns}.${first.name}(${truncateCommandArgs(first)})`;
+  if (commands.length === 1) {
+    return head;
+  }
+
+  return `commands[${commands.length}] starting with ${head}`;
 }
 
 interface Response {
@@ -65,7 +94,7 @@ export interface EventListener {
 export class TimeoutError extends Error {
   constructor(
     public message: string,
-    public payload: Command,
+    public payload: CommandEnvelope,
   ) {
     super(message);
   }
@@ -74,7 +103,7 @@ export class TimeoutError extends Error {
 export class DisconnectError extends Error {
   constructor(
     public message: string,
-    public payload: Command,
+    public payload: CommandEnvelope,
   ) {
     super(message);
   }
@@ -160,6 +189,8 @@ export class Ableton extends EventEmitter<EventMap> {
       clearTimeout: () => any;
     }
   >();
+  private commandQueue: QueuedCommand[] = [];
+  private flushScheduled = false;
   private eventListeners = new Map<string, Array<(data: any) => any>>();
   private heartbeatInterval: ReturnType<typeof setInterval> | undefined;
   private reconnectTimer: ReturnType<typeof setTimeout> | undefined;
@@ -199,6 +230,12 @@ export class Ableton extends EventEmitter<EventMap> {
     }
   }
 
+  private lastId = BigInt(1);
+
+  private getId() {
+    return String(this.lastId++);
+  }
+
   private handleConnect(type: ConnectEventType) {
     if (!this._isConnected) {
       this._isConnected = true;
@@ -218,10 +255,22 @@ export class Ableton extends EventEmitter<EventMap> {
       if (type === "realtime") {
         this.msgMap.forEach((msg) => msg.clearTimeout());
         this.msgMap.clear();
+        this.rejectCommandQueue(
+          new Error("Live disconnected before the command could be sent."),
+        );
       }
 
       this.logger?.info("Live disconnected", { type });
       this.emit("disconnect", type);
+    }
+  }
+
+  private rejectCommandQueue(error: Error) {
+    const queued = this.commandQueue;
+    this.commandQueue = [];
+    this.flushScheduled = false;
+    for (const entry of queued) {
+      entry.rej(error);
     }
   }
 
@@ -293,7 +342,7 @@ export class Ableton extends EventEmitter<EventMap> {
 
       // A long in-flight command (e.g. set_data with a large payload) already
       // proves the socket is alive; pinging would race its 3s timeout.
-      if (this.msgMap.size > 0) {
+      if (this.msgMap.size > 0 || this.commandQueue.length > 0) {
         return;
       }
 
@@ -588,92 +637,147 @@ export class Ableton extends EventEmitter<EventMap> {
   /**
    * Sends a raw command to Ableton. Usually, you won't need this.
    * A good starting point in general is the `song` prop.
+   *
+   * Commands issued in the same event-loop turn are automatically
+   * coalesced into a single WebSocket round-trip.
    */
-  async sendCommand(command: Omit<Command, "uuid">): Promise<any> {
-    return limit(
-      () =>
-        new Promise((res, rej) => {
-          const msgId = v4();
-          const payload: Command = {
-            uuid: msgId,
-            ...command,
-          };
-          const msg = JSON.stringify(payload);
-          const timeout = this.options?.commandTimeoutMs ?? 3000;
-          const args = truncateCommandArgs(command);
-          const cls = command.nsid
-            ? `${command.ns}(${command.nsid})`
-            : command.ns;
-
-          let timeoutId: ReturnType<typeof setTimeout> | null = null;
-
-          const clearCurrentTimeout = () => {
-            if (timeoutId) {
-              clearTimeout(timeoutId);
-            }
-          };
-
-          const finish = () => {
-            this.msgMap.delete(msgId);
-            clearCurrentTimeout();
-          };
-
-          const startTimeout = () => {
-            clearCurrentTimeout();
-
-            timeoutId = setTimeout(() => {
-              finish();
-              rej(
-                new TimeoutError(
-                  `The command ${cls}.${command.name}(${args}) timed out after ${timeout} ms.`,
-                  payload,
-                ),
-              );
-            }, timeout);
-          };
-
-          const currentTimestamp = Date.now();
-          this.msgMap.set(msgId, {
-            res: (result: any) => {
-              const duration = Date.now() - currentTimestamp;
-
-              if (duration > (this.options?.commandWarnMs ?? 2000)) {
-                this.logger?.warn(`Command took longer than expected`, {
-                  command,
-                  duration,
-                });
-              }
-
-              this.setPing(duration);
-              finish();
-              res(result);
-            },
-            rej: (error: any) => {
-              finish();
-              rej(error);
-            },
-            clearTimeout: () => {
-              finish();
-              rej(
-                new DisconnectError(
-                  `Live disconnected before being able to respond to ${cls}.${command.name}(${args})`,
-                  payload,
-                ),
-              );
-            },
-          });
-
-          this.sendRaw(msg)
-            .then(startTimeout)
-            .catch((error) => {
-              finish();
-              rej(error);
-            });
-        }),
-    );
+  async sendCommand(command: Command): Promise<any> {
+    return new Promise((res, rej) => {
+      this.commandQueue.push({ command, res, rej });
+      if (!this.flushScheduled) {
+        this.flushScheduled = true;
+        queueMicrotask(() => {
+          this.flushScheduled = false;
+          void this.flushCommandQueue();
+        });
+      }
+    });
   }
 
-  async sendCachedCommand(command: Omit<Command, "uuid" | "cache">) {
+  private async flushCommandQueue() {
+    if (this.commandQueue.length === 0) {
+      return;
+    }
+
+    const queued = this.commandQueue;
+    this.commandQueue = [];
+
+    if (queued.length > 1) {
+      this.logger?.debug("Flushing command queue", { length: queued.length });
+    }
+
+    await limit(async () => {
+      try {
+        const results = await this.sendCommandEnvelope(
+          queued.map((entry) => entry.command),
+        );
+
+        if (!Array.isArray(results) || results.length !== queued.length) {
+          const error = new Error("Unexpected commands response from Ableton.");
+          for (const entry of queued) {
+            entry.rej(error);
+          }
+          return;
+        }
+
+        for (let i = 0; i < queued.length; i++) {
+          const entry = queued[i]!;
+          const slot = results[i]!;
+          if (slot.ok) {
+            entry.res(slot.data);
+          } else {
+            entry.rej(new Error(slot.error ?? "Command failed"));
+          }
+        }
+      } catch (error) {
+        for (const entry of queued) {
+          entry.rej(error);
+        }
+      }
+    });
+  }
+
+  private sendCommandEnvelope(
+    commands: Command[],
+  ): Promise<CommandSlotResult[]> {
+    return new Promise((res, rej) => {
+      const msgId = this.getId();
+      const payload: CommandEnvelope = {
+        uuid: msgId,
+        commands,
+      };
+      const msg = JSON.stringify(payload);
+      const timeout = this.options?.commandTimeoutMs ?? 3000;
+      const summary = summarizeCommands(commands);
+
+      let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+      const clearCurrentTimeout = () => {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+      };
+
+      const finish = () => {
+        this.msgMap.delete(msgId);
+        clearCurrentTimeout();
+      };
+
+      const startTimeout = () => {
+        clearCurrentTimeout();
+
+        timeoutId = setTimeout(() => {
+          finish();
+          rej(
+            new TimeoutError(
+              `The command ${summary} timed out after ${timeout} ms.`,
+              payload,
+            ),
+          );
+        }, timeout);
+      };
+
+      const currentTimestamp = Date.now();
+      this.msgMap.set(msgId, {
+        res: (result: any) => {
+          const duration = Date.now() - currentTimestamp;
+
+          if (duration > (this.options?.commandWarnMs ?? 2000)) {
+            this.logger?.warn(`Commands took longer than expected`, {
+              commands: summary,
+              duration,
+            });
+          }
+
+          this.setPing(duration);
+          finish();
+          res(result);
+        },
+        rej: (error: any) => {
+          finish();
+          rej(error);
+        },
+        clearTimeout: () => {
+          finish();
+          rej(
+            new DisconnectError(
+              `Live disconnected before being able to respond to ${summary}`,
+              payload,
+            ),
+          );
+        },
+      });
+
+      this.sendRaw(msg)
+        .then(startTimeout)
+        .catch((error) => {
+          finish();
+          rej(error);
+        });
+    });
+  }
+
+  async sendCachedCommand(command: Omit<Command, "cache">) {
     const args = command.args?.prop ?? JSON.stringify(command.args);
     const cacheKey = [command.ns, command.nsid, args].filter(Boolean).join("/");
     const cached = this.cache?.get(cacheKey);
@@ -734,7 +838,7 @@ export class Ableton extends EventEmitter<EventMap> {
     prop: string,
     listener: (data: any) => any,
   ) {
-    const eventId = v4();
+    const eventId = this.getId();
     const result = await this.sendCommand({
       ns,
       nsid,

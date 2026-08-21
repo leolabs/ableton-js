@@ -67,10 +67,10 @@ class Interface(object):
     def get_ns(self, nsid):
         return Interface.get_obj(nsid)
 
-    def send_result(self, result, uuid, etag, cache, connection):
-        """Sends an empty response if the etag matches the result, or the result together with an etag."""
+    def format_result(self, result, etag, cache):
+        """Returns the payload the client expects for a command result."""
         if not cache:
-            return self.socket.send_to(connection, "result", result, uuid)
+            return result
 
         def jsonReplace(o):
             return str(o)
@@ -79,57 +79,43 @@ class Interface(object):
         hash = hashlib.md5(response.encode("utf-8", "replace")).hexdigest()
 
         if hash == etag:
-            return self.socket.send_to(connection, "result", {"__cached": True}, uuid)
-        else:
-            return self.socket.send_to(
-                connection, "result", {"data": result, "etag": hash}, uuid)
+            return {"__cached": True}
+        return {"data": result, "etag": hash}
 
-    def handle(self, payload, connection):
+    def dispatch(self, payload, connection):
+        """Runs one command and returns its result value (or cache wrapper)."""
         name = payload.get("name")
-        uuid = payload.get("uuid")
         etag = payload.get("etag")
         args = payload.get("args", {})
         cache = payload.get("cache", False)
         nsid = payload.get("nsid")
 
-        try:
-            ns = self.get_ns(nsid)
-            # Try self-defined functions first
-            if hasattr(self, name) and callable(getattr(self, name)):
-                if name == "add_listener" or name == "remove_listener":
-                    kwargs = dict(args)
-                    kwargs.pop("connection", None)
-                    result = getattr(self, name)(
-                        ns=ns, connection=connection, **kwargs)
-                else:
-                    result = getattr(self, name)(ns=ns, **args)
-                self.send_result(result, uuid, etag, cache, connection)
-            # Check if the function exists in the Ableton API as fallback
-            elif hasattr(ns, name) and callable(getattr(ns, name)):
-                if isinstance(args, dict):
-                    result = getattr(ns, name)(**args)
-                    self.send_result(result, uuid, etag, cache, connection)
-                elif isinstance(args, list):
-                    result = getattr(ns, name)(*args)
-                    self.send_result(result, uuid, etag, cache, connection)
-                else:
-                    self.socket.send_to(
-                        connection,
-                        "error",
-                        "Function call failed: " + str(args) +
-                        " are invalid arguments",
-                        uuid)
+        ns = self.get_ns(nsid)
+
+        if hasattr(self, name) and callable(getattr(self, name)):
+            if name == "add_listener" or name == "remove_listener":
+                kwargs = dict(args)
+                kwargs.pop("connection", None)
+                result = getattr(self, name)(
+                    ns=ns, connection=connection, **kwargs)
             else:
-                self.socket.send_to(
-                    connection,
-                    "error",
-                    "Function call failed: " + payload["name"] +
-                    " doesn't exist or isn't callable",
-                    uuid)
-        except Exception as e:
-            logger.error("Handler Error:")
-            logger.exception(e)
-            self.socket.send_to(connection, "error", str(e.args[0]), uuid)
+                result = getattr(self, name)(ns=ns, **args)
+            return self.format_result(result, etag, cache)
+
+        if hasattr(ns, name) and callable(getattr(ns, name)):
+            if isinstance(args, dict):
+                result = getattr(ns, name)(**args)
+            elif isinstance(args, list):
+                result = getattr(ns, name)(*args)
+            else:
+                raise Exception(
+                    "Function call failed: " + str(args) +
+                    " are invalid arguments")
+            return self.format_result(result, etag, cache)
+
+        raise Exception(
+            "Function call failed: " + str(name) +
+            " doesn't exist or isn't callable")
 
     def add_listener(self, ns, prop, eventId, connection, nsid="Default"):
         try:

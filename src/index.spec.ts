@@ -195,4 +195,76 @@ describe("AbletonJS", () => {
       });
     });
   });
+
+  describe("Command batching", () => {
+    it("should coalesce same-tick commands into one envelope", async () => {
+      await withAbleton(async (ab) => {
+        const sendRaw = vi.spyOn(ab, "sendRaw");
+        await sleep(10);
+        sendRaw.mockClear();
+
+        await Promise.all([
+          ab.song.get("tempo"),
+          ab.song.get("is_playing"),
+          ab.song.get("loop"),
+        ]);
+
+        expect(sendRaw).toHaveBeenCalledTimes(1);
+        const payload = JSON.parse(sendRaw.mock.calls[0]![0] as string);
+        expect(payload.uuid).toEqual(expect.any(String));
+        expect(payload.commands).toHaveLength(3);
+        expect(
+          payload.commands.every(
+            (command: { name: string }) => command.name === "get_prop",
+          ),
+        ).toBe(true);
+      });
+    });
+
+    it("should send sequential awaits as separate envelopes", async () => {
+      await withAbleton(async (ab) => {
+        const sendRaw = vi.spyOn(ab, "sendRaw");
+        await sleep(10);
+        sendRaw.mockClear();
+
+        await ab.song.get("tempo");
+        await ab.song.get("is_playing");
+
+        expect(sendRaw).toHaveBeenCalledTimes(2);
+        expect(
+          JSON.parse(sendRaw.mock.calls[0]![0] as string).commands,
+        ).toHaveLength(1);
+        expect(
+          JSON.parse(sendRaw.mock.calls[1]![0] as string).commands,
+        ).toHaveLength(1);
+      });
+    });
+
+    it("should add many listeners in one envelope", async () => {
+      await withAbleton(async (ab) => {
+        const tracks = await ab.song.get("tracks");
+        expect(tracks.length).toBeGreaterThanOrEqual(2);
+
+        const sendRaw = vi.spyOn(ab, "sendRaw");
+        sendRaw.mockClear();
+
+        const targets = tracks.slice(0, 2);
+        const removes = await Promise.all(
+          targets.map((track) => track.addListener("name", vi.fn())),
+        );
+
+        expect(sendRaw).toHaveBeenCalledTimes(1);
+        const payload = JSON.parse(sendRaw.mock.calls[0]![0] as string);
+        expect(payload.commands).toHaveLength(2);
+        expect(
+          payload.commands.every(
+            (command: { name: string; ns: string }) =>
+              command.name === "add_listener" && command.ns === "track",
+          ),
+        ).toBe(true);
+
+        await Promise.all(removes.map((remove) => remove()));
+      });
+    });
+  });
 });

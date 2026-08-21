@@ -79,6 +79,12 @@ const test = async () => {
 
   // Set the tempo
   await ableton.song.set("tempo", 85);
+
+  // Commands started in the same tick are sent together
+  const tracks = await ableton.song.get("tracks");
+  await Promise.all(
+    tracks.map((t) => t.addListener("name", (n) => console.log(t.raw.id, n))),
+  );
 };
 
 test();
@@ -131,64 +137,83 @@ and the client returns the cached data.
 
 ### Commands
 
-A command payload consists of the following properties:
+Every request is an envelope with one or more commands. Commands started in the
+same JavaScript tick (for example via `Promise.all`) are automatically combined
+into a single WebSocket round-trip.
 
 ```js
 {
-  "uuid": "a20f25a0-83e2-11e9-bbe1-bd3a580ef903", // A unique command id
-  "ns": "song", // The command namespace
-  "nsid": null, // The namespace id, for example to address a specific track or device
-  "name": "get_prop", // Command name
-  "args": { "prop": "current_song_time" }, // Command arguments
-  "etag": "4e0794e44c7eb58bdbbbf7268e8237b4", // MD5 hash of the data if it might be cached locally
-  "cache": true // If this is true, the plugin will calculate an etag and return a placeholder if it matches the provided one
+  "uuid": "1", // Envelope id
+  "commands": [
+    {
+      "ns": "song", // The command namespace
+      "nsid": null, // The namespace id, for example to address a specific track or device
+      "name": "get_prop", // Command name
+      "args": { "prop": "current_song_time" }, // Command arguments
+      "etag": "4e0794e44c7eb58bdbbbf7268e8237b4", // MD5 hash of the data if it might be cached locally
+      "cache": true // If this is true, the plugin will calculate an etag and return a placeholder if it matches the provided one
+    }
+  ]
 }
 ```
 
-The MIDI Script answers with a JSON object looking like this:
+The MIDI Script answers with a JSON object looking like this. `data` is always
+an array with one result per command:
 
 ```js
 {
-  "data": 0.0, // The command's return value, can be of any JSON-compatible type
+  "data": [{ "ok": true, "data": 0.0 }], // Per-command results
   "event": "result", // This can be 'result' or 'error'
-  "uuid": "a20f25a0-83e2-11e9-bbe1-bd3a580ef903" // The same UUID that was used to send the command
+  "uuid": "1" // The same UUID that was used to send the envelope
 }
 ```
 
-If you're getting a cached prop, the JSON object could look like this:
+A failed command looks like `{ "ok": false, "error": "..." }` in its slot. Other
+commands in the same envelope still run. A top-level `event: "error"` means the
+whole envelope failed (for example auth or a malformed payload).
+
+If you're getting a cached prop, the per-command `data` could look like this:
 
 ```js
 {
-  "data": { "data": 0.0, "etag": "4e0794e44c7eb58bdbbbf7268e8237b4" },
-  "event": "result", // This can be 'result' or 'error'
-  "uuid": "a20f25a0-83e2-11e9-bbe1-bd3a580ef903" // The same UUID that was used to send the command
+  "data": [
+    {
+      "ok": true,
+      "data": { "data": 0.0, "etag": "4e0794e44c7eb58bdbbbf7268e8237b4" }
+    }
+  ],
+  "event": "result",
+  "uuid": "1"
 }
 ```
 
-Or, if the data hasn't changed, it looks like this:
+Or, if the data hasn't changed, the per-command `data` looks like this:
 
 ```js
 {
-  "data": { "__cached": true },
-  "event": "result", // This can be 'result' or 'error'
-  "uuid": "a20f25a0-83e2-11e9-bbe1-bd3a580ef903" // The same UUID that was used to send the command
+  "data": [{ "ok": true, "data": { "__cached": true } }],
+  "event": "result",
+  "uuid": "1"
 }
 ```
 
 ### Events
 
-To attach an event listener to a specific property, the client sends a command
-object:
+To attach an event listener to a specific property, the client sends a command:
 
 ```js
 {
-  "uuid": "922d54d0-83e3-11e9-ba7c-917478f8b91b", // A unique command id
-  "ns": "song", // The command namespace
-  "name": "add_listener", // The command to add an event listener
-  "args": {
-    "prop": "current_song_time", // The property that should be watched
-    "eventId": "922d2dc0-83e3-11e9-ba7c-917478f8b91b" // A unique event id
-  }
+  "uuid": "1", // Envelope id
+  "commands": [
+    {
+      "ns": "song",
+      "name": "add_listener",
+      "args": {
+        "prop": "current_song_time",
+        "eventId": "2"
+      }
+    }
+  ]
 }
 ```
 
@@ -197,19 +222,19 @@ listener has been attached:
 
 ```js
 {
-  "data": "922d2dc0-83e3-11e9-ba7c-917478f8b91b", // The unique event id
-  "event": "result", // Should be result, is error when something goes wrong
-  "uuid": "922d54d0-83e3-11e9-ba7c-917478f8b91b" // The unique command id
+  "data": [{ "ok": true, "data": "2" }],
+  "event": "result",
+  "uuid": "1"
 }
 ```
 
 From now on, when the observed property changes, the MIDI Script sends an event
-object:
+object (not wrapped in a commands envelope):
 
 ```js
 {
   "data": 68.0, // The new value, can be any JSON-compatible type
-  "event": "922d2dc0-83e3-11e9-ba7c-917478f8b91b", // The event id
+  "event": "2", // The event id
   "uuid": null // Is always null and may be removed in future versions
 }
 ```
