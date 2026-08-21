@@ -1,6 +1,7 @@
 from __future__ import absolute_import
-from .Interface import Interface
+
 from .DeviceParameter import DeviceParameter
+from .Interface import Interface
 
 
 class Device(Interface):
@@ -28,21 +29,24 @@ class Device(Interface):
 
     def get_chains(self, ns):
         from .Chain import Chain
+
         try:
-            return map(Chain.serialize_chain, ns.chains)
+            return [Chain.serialize_chain(c) for c in ns.chains]
         except AttributeError:
             return []
 
-    def get_return_chain(self, ns):
+    def get_return_chains(self, ns):
         from .Chain import Chain
+
         try:
-            return Chain.serialize_chain(ns.return_chain)
+            return [Chain.serialize_chain(c) for c in ns.return_chains]
         except AttributeError:
-            return None
+            return []
 
     def get_drum_pads(self, ns):
         from .DrumPad import DrumPad
+
         try:
-            return map(DrumPad.serialize_drum_pad, ns.drum_pads)
+            return [DrumPad.serialize_drum_pad(p) for p in ns.drum_pads]
         except AttributeError:
             return []

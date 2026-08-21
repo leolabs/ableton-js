@@ -7,14 +7,17 @@ import { DrumPad, RawDrumPad } from "./drum-pad.js";
 export interface GettableProperties {
   can_have_chains: boolean;
   can_have_drum_pads: boolean;
+  /** Rack devices only. Empty array for other devices. */
   chains: RawChain[];
   class_display_name: string;
   class_name: string;
+  /** Drum Racks only. Empty array for other devices. */
   drum_pads: RawDrumPad[];
   is_active: boolean;
   name: string;
   parameters: RawDeviceParameter[];
-  return_chain: RawChain | null;
+  /** Rack devices only. Empty array for other devices. */
+  return_chains: RawChain[];
   type: DeviceType;
 }
 
@@ -22,7 +25,7 @@ export interface TransformedProperties {
   chains: Chain[];
   drum_pads: DrumPad[];
   parameters: DeviceParameter[];
-  return_chain: Chain | null;
+  return_chains: Chain[];
 }
 
 export interface SettableProperties {
@@ -65,14 +68,14 @@ export class Device extends Namespace<
       chains: (chains) => chains.map((c) => new Chain(ableton, c)),
       drum_pads: (pads) => pads.map((p) => new DrumPad(ableton, p)),
       parameters: (ps) => ps.map((p) => new DeviceParameter(ableton, p)),
-      return_chain: (c) => (c ? new Chain(ableton, c) : null),
+      return_chains: (chains) => chains.map((c) => new Chain(ableton, c)),
     };
 
     this.cachedProps = {
       chains: true,
       drum_pads: true,
       parameters: true,
-      return_chain: true,
+      return_chains: true,
     };
   }
 }

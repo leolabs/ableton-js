@@ -30,7 +30,6 @@ export interface TransformedProperties {
 }
 
 export interface SettableProperties {
-  name: string;
   color: number;
 }
 

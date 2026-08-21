@@ -11,24 +11,20 @@ class Chain(Interface):
 
         chain_id = Interface.save_obj(chain)
 
-        mute = False
-        solo = False
-        color = None
-
         try:
             mute = chain.mute
         except:
-            pass
+            mute = False
 
         try:
             solo = chain.solo
         except:
-            pass
+            solo = False
 
         try:
             color = chain.color
         except:
-            pass
+            color = None
 
         return {
             "id": chain_id,
@@ -43,8 +39,10 @@ class Chain(Interface):
 
     def get_devices(self, ns):
         from .Device import Device
+
         return map(Device.serialize_device, ns.devices)
 
     def get_mixer_device(self, ns):
         from .MixerDevice import MixerDevice
+
         return MixerDevice.serialize_mixer_device(ns.mixer_device)

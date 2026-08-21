@@ -39,7 +39,6 @@ export interface ObservableProperties {
   detail_clip: RawClip | null;
   draw_mode: any;
   follow_song: any;
-  highlighted_clip_slot: any;
   selected_chain: any;
   selected_parameter: any;
   selected_scene: RawScene | null;

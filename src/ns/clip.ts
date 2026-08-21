@@ -2,6 +2,7 @@ import { Ableton } from "../index.js";
 import { Namespace } from "./index.js";
 import { Color } from "../util/color.js";
 import { DeviceParameter } from "./device-parameter.js";
+import { Envelope } from "./envelope.js";
 import {
   Note,
   NoteExtended,
@@ -80,7 +81,6 @@ export interface GettableProperties {
   position: number;
   ram_mode: boolean;
   sample_length: number;
-  selected_notes: NoteTuple[];
   signature_denominator: number;
   signature_numerator: number;
   start_marker: number;
@@ -96,7 +96,6 @@ export interface GettableProperties {
 export interface TransformedProperties {
   color: Color;
   notes: Note[];
-  selected_notes: Note[];
 }
 
 export interface SettableProperties {
@@ -180,7 +179,6 @@ export class Clip extends Namespace<
     this.transformers = {
       color: (c) => new Color(c),
       notes: (n) => (n as NoteTuple[]).map(tupleToNote),
-      selected_notes: (n) => n.map(tupleToNote),
     };
   }
 
@@ -201,18 +199,40 @@ export class Clip extends Namespace<
   }
 
   /**
+   * Returns the envelope for the given parameter, or `null` if it does not
+   * exist. Arrangement clips and parameters from another track always return `null`.
+   */
+  async automationEnvelope(
+    parameter: DeviceParameter,
+  ): Promise<Envelope | null> {
+    const raw = await this.sendCommand("automation_envelope", {
+      parameter_id: parameter.raw.id,
+    });
+    return raw ? new Envelope(this.ableton, raw) : null;
+  }
+
+  /**
    * Clears the envelope of this clip's given parameter.
    */
   clearEnvelope(parameter: DeviceParameter): Promise<void> {
-    return this.sendCommand("clear_envelope", { parameter });
+    return this.sendCommand("clear_envelope", {
+      parameter_id: parameter.raw.id,
+    });
   }
 
   /**
    * Creates an envelope for a given parameter and returns it.
    * This should only be used if the envelope doesn't exist.
-   * Raises an error if the the envelope can't be created.
+   * Raises an error if the envelope can't be created.
    */
-  private createAutomationEnvelope() {}
+  async createAutomationEnvelope(
+    parameter: DeviceParameter,
+  ): Promise<Envelope> {
+    const raw = await this.sendCommand("create_automation_envelope", {
+      parameter_id: parameter.raw.id,
+    });
+    return new Envelope(this.ableton, raw);
+  }
 
   /**
    * Crops the clip. The region that is cropped depends on whether
@@ -271,7 +291,6 @@ export class Clip extends Namespace<
 
   /**
    * Returns all notes that match the given range.
-   * @deprecated starting with Live 11, use `getNotesExtended` instead
    */
   async getNotes(
     fromTime: number,
@@ -305,6 +324,21 @@ export class Clip extends Namespace<
       from_time: fromTime,
       time_span: timeSpan,
     });
+  }
+
+  /**
+   * Returns the clip's currently selected notes.
+   */
+  async getSelectedNotes(): Promise<Note[]> {
+    const notes: NoteTuple[] = await this.sendCommand("get_selected_notes");
+    return notes.map(tupleToNote);
+  }
+
+  /**
+   * Returns the clip's currently selected notes with extended properties.
+   */
+  async getSelectedNotesExtended(): Promise<NoteExtended[]> {
+    return this.sendCommand("get_selected_notes_extended");
   }
 
   /**

@@ -16,6 +16,7 @@ from .CuePoint import CuePoint
 from .Device import Device
 from .DeviceParameter import DeviceParameter
 from .DrumPad import DrumPad
+from .Envelope import Envelope
 from .MixerDevice import MixerDevice
 from .Scene import Scene
 from .Song import Song
@@ -54,6 +55,7 @@ class AbletonJS(ControlSurface):
             "device": Device(c_instance, self.socket),
             "device-parameter": DeviceParameter(c_instance, self.socket),
             "drum-pad": DrumPad(c_instance, self.socket),
+            "envelope": Envelope(c_instance, self.socket),
             "internal": Internal(c_instance, self.socket),
             "midi": Midi(c_instance, self.socket, self.tracked_midi, self.request_rebuild_midi_map),
             "mixer-device": MixerDevice(c_instance, self.socket),
