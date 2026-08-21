@@ -32,8 +32,8 @@ After starting Ableton Live, add the script to your list of control surfaces:
 
 The Remote Script opens a WebSocket server on `127.0.0.1:39031` by default. You
 can change the bind address and port in `midi-script/Config.py`
-(`WEBSOCKET_HOST` / `WEBSOCKET_PORT`). The JS client must use the same host and
-port (`new Ableton({ host, port })`).
+(`WEBSOCKET_HOST` / `WEBSOCKET_PORT`). The JS client must use the same port
+(`new Ableton({ port })`).
 
 To require a password, set `PASSWORD` in `Config.py` to a string and pass the
 same value to `new Ableton({ password })`. Auth is off when `PASSWORD` is `None`
