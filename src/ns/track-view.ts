@@ -1,10 +1,6 @@
 import { Ableton } from "../index.js";
 import { Namespace } from "./index.js";
-import { Device, RawDevice } from "./device.js";
-import { Track, RawTrack } from "./track.js";
-import { Scene, RawScene } from "./scene.js";
-import { RawDeviceParameter, DeviceParameter } from "./device-parameter.js";
-import { ClipSlot, RawClipSlot } from "./clip-slot.js";
+import { RawDevice, AnyDevice, wrapDevice } from "./device.js";
 
 export enum DeviceInsertMode {
   Default = "default",
@@ -19,7 +15,7 @@ export interface GettableProperties {
 }
 
 export interface TransformedProperties {
-  selected_device: Device;
+  selected_device: AnyDevice;
 }
 
 export interface SettableProperties {
@@ -43,7 +39,7 @@ export class TrackView extends Namespace<
     super(ableton, "track-view", nsid);
 
     this.transformers = {
-      selected_device: (device) => new Device(ableton, device),
+      selected_device: (device) => wrapDevice(ableton, device),
     };
 
     this.cachedProps = {

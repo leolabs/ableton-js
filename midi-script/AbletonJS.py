@@ -1,35 +1,38 @@
 from __future__ import absolute_import
+
 import time
 
-from .version import version
-from .Config import DEBUG
-from .Logging import logger
-from .Socket import Socket
-from .Interface import Interface
+import Live
+from _Framework.ControlSurface import ControlSurface
+
 from .Application import Application
-from .Session import Session
 from .ApplicationView import ApplicationView
 from .Browser import Browser
 from .BrowserItem import BrowserItem
 from .Chain import Chain
+from .Clip import Clip
+from .ClipSlot import ClipSlot
+from .Config import DEBUG
 from .CuePoint import CuePoint
 from .Device import Device
 from .DeviceParameter import DeviceParameter
+from .DeviceView import DeviceView
 from .DrumPad import DrumPad
 from .Envelope import Envelope
+from .Interface import Interface
+from .Internal import Internal
+from .Logging import logger
+from .LooperDevice import LooperDevice
+from .Midi import Midi
 from .MixerDevice import MixerDevice
 from .Scene import Scene
+from .Session import Session
+from .Socket import Socket
 from .Song import Song
 from .SongView import SongView
 from .Track import Track
 from .TrackView import TrackView
-from .Internal import Internal
-from .ClipSlot import ClipSlot
-from .Clip import Clip
-from .Midi import Midi
-
-from _Framework.ControlSurface import ControlSurface
-import Live
+from .version import version
 
 
 class AbletonJS(ControlSurface):
@@ -45,7 +48,9 @@ class AbletonJS(ControlSurface):
 
         self.handlers = {
             "application": Application(c_instance, self.socket, self.application()),
-            "application-view": ApplicationView(c_instance, self.socket, self.application()),
+            "application-view": ApplicationView(
+                c_instance, self.socket, self.application()
+            ),
             # added for red box control
             "session": Session(c_instance, self.socket, self),
             "browser": Browser(c_instance, self.socket, self.application()),
@@ -54,10 +59,17 @@ class AbletonJS(ControlSurface):
             "cue-point": CuePoint(c_instance, self.socket),
             "device": Device(c_instance, self.socket),
             "device-parameter": DeviceParameter(c_instance, self.socket),
+            "device-view": DeviceView(c_instance, self.socket),
             "drum-pad": DrumPad(c_instance, self.socket),
             "envelope": Envelope(c_instance, self.socket),
             "internal": Internal(c_instance, self.socket),
-            "midi": Midi(c_instance, self.socket, self.tracked_midi, self.request_rebuild_midi_map),
+            "looper-device": LooperDevice(c_instance, self.socket),
+            "midi": Midi(
+                c_instance,
+                self.socket,
+                self.tracked_midi,
+                self.request_rebuild_midi_map,
+            ),
             "mixer-device": MixerDevice(c_instance, self.socket),
             "scene": Scene(c_instance, self.socket),
             "song": Song(c_instance, self.socket),
@@ -72,15 +84,19 @@ class AbletonJS(ControlSurface):
         self.tick()
 
         self.recv_loop = Live.Base.Timer(
-            callback=self.socket.process, interval=1, repeat=True)
+            callback=self.socket.process, interval=1, repeat=True
+        )
         self.recv_loop.start()
 
     def tick(self):
         tick_time = time.time() * 1000
 
         if tick_time - self._last_tick > 200:
-            logger.warning("Ableton Live's main thread is lagging, delta: " +
-                           str(round(tick_time - self._last_tick)) + "ms")
+            logger.warning(
+                "Ableton Live's main thread is lagging, delta: "
+                + str(round(tick_time - self._last_tick))
+                + "ms"
+            )
 
         self._last_tick = tick_time
         self.socket.process()
@@ -88,8 +104,11 @@ class AbletonJS(ControlSurface):
         process_time = time.time() * 1000
 
         if process_time - tick_time > 100:
-            logger.warning("WebSocket processing is taking long, delta: " +
-                           str(round(tick_time - process_time)) + "ms")
+            logger.warning(
+                "WebSocket processing is taking long, delta: "
+                + str(round(tick_time - process_time))
+                + "ms"
+            )
 
         self.schedule_message(1, self.tick)
 
@@ -98,10 +117,12 @@ class AbletonJS(ControlSurface):
         for midi in self.tracked_midi:
             if midi[0] == "cc":
                 Live.MidiMap.forward_midi_cc(
-                    script_handle, midi_map_handle, midi[1], midi[2])
+                    script_handle, midi_map_handle, midi[1], midi[2]
+                )
             elif midi[0] == "note":
                 Live.MidiMap.forward_midi_note(
-                    script_handle, midi_map_handle, midi[1], midi[2])
+                    script_handle, midi_map_handle, midi[1], midi[2]
+                )
 
     def receive_midi(self, midi_bytes):
         self.handlers["midi"].send_midi(midi_bytes)
@@ -121,19 +142,19 @@ class AbletonJS(ControlSurface):
 
         if not isinstance(commands, list):
             self.socket.send_to(
-                connection,
-                "error",
-                "Missing or invalid commands array",
-                uuid)
+                connection, "error", "Missing or invalid commands array", uuid
+            )
             return
 
         if DEBUG:
             should_log = True
             if len(commands) == 1:
                 cmd = commands[0] or {}
-                if (cmd.get("ns") == "internal" and
-                        cmd.get("name") == "get_prop" and
-                        (cmd.get("args") or {}).get("prop") == "ping"):
+                if (
+                    cmd.get("ns") == "internal"
+                    and cmd.get("name") == "get_prop"
+                    and (cmd.get("args") or {}).get("prop") == "ping"
+                ):
                     should_log = False
             if should_log:
                 logger.debug("Received command: " + str(payload))
@@ -143,8 +164,7 @@ class AbletonJS(ControlSurface):
             try:
                 namespace = command.get("ns")
                 if namespace not in self.handlers:
-                    raise Exception(
-                        "No handler for namespace " + str(namespace))
+                    raise Exception("No handler for namespace " + str(namespace))
                 data = self.handlers[namespace].dispatch(command, connection)
                 results.append({"ok": True, "data": data})
             except Exception as e:

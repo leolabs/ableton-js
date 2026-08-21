@@ -1,6 +1,6 @@
 import { Ableton } from "../index.js";
 import { Namespace } from "./index.js";
-import { Device, RawDevice } from "./device.js";
+import { RawDevice, AnyDevice, wrapDevice } from "./device.js";
 import { ClipSlot, RawClipSlot } from "./clip-slot.js";
 import { MixerDevice, RawMixerDevice } from "./mixer-device.js";
 import { Clip, RawClip } from "./clip.js";
@@ -92,7 +92,7 @@ export interface GettableProperties {
 
 export interface TransformedProperties {
   color: Color;
-  devices: Device[];
+  devices: AnyDevice[];
   clip_slots: ClipSlot[];
   arrangement_clips: Clip[];
   mixer_device: MixerDevice;
@@ -200,7 +200,7 @@ export class Track extends Namespace<
       arrangement_clips: (clips: RawClip[]) =>
         clips.map((clip) => new Clip(ableton, clip)),
       color: (c) => new Color(c),
-      devices: (devices) => devices.map((d) => new Device(ableton, d)),
+      devices: (devices) => devices.map((d) => wrapDevice(ableton, d)),
       clip_slots: (clip_slots) =>
         clip_slots.map((c) => new ClipSlot(ableton, c)),
       mixer_device: (mixer_device) => new MixerDevice(ableton, mixer_device),

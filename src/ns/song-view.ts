@@ -2,7 +2,6 @@ import { Namespace } from "./index.js";
 import { Ableton } from "../index.js";
 import { Clip, RawClip } from "./clip.js";
 import { ClipSlot, RawClipSlot } from "./clip-slot.js";
-import { Device } from "./device.js";
 import { DeviceParameter, RawDeviceParameter } from "./device-parameter.js";
 import { RawScene, Scene } from "./scene.js";
 import { RawTrack, Track } from "./track.js";
@@ -71,7 +70,7 @@ export class SongView extends Namespace<
     };
   }
 
-  async selectDevice(device: Device) {
+  async selectDevice(device: { raw: { id: string } }) {
     return this.ableton.sendCommand({
       ns: this.ns,
       name: "select_device",

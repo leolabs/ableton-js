@@ -3,10 +3,13 @@ import { Namespace } from "./index.js";
 import { RawDeviceParameter, DeviceParameter } from "./device-parameter.js";
 import { Chain, RawChain } from "./chain.js";
 import { DrumPad, RawDrumPad } from "./drum-pad.js";
+import { DeviceView } from "./device-view.js";
+import { LOOPER_CLASS_NAME, LooperDevice } from "./looper-device.js";
 
 export interface GettableProperties {
   can_have_chains: boolean;
   can_have_drum_pads: boolean;
+  can_compare_ab: boolean;
   /** Rack devices only. Empty array for other devices. */
   chains: RawChain[];
   class_display_name: string;
@@ -14,6 +17,9 @@ export interface GettableProperties {
   /** Drum Racks only. Empty array for other devices. */
   drum_pads: RawDrumPad[];
   is_active: boolean;
+  is_using_compare_preset_b: boolean;
+  latency_in_ms: number;
+  latency_in_samples: number;
   name: string;
   parameters: RawDeviceParameter[];
   /** Rack devices only. Empty array for other devices. */
@@ -34,6 +40,9 @@ export interface SettableProperties {
 
 export interface ObservableProperties {
   is_active: boolean;
+  is_using_compare_preset_b: boolean;
+  latency_in_ms: number;
+  latency_in_samples: number;
   name: string;
   parameters: string;
 }
@@ -52,17 +61,33 @@ export enum DeviceType {
   Undefined = "undefined",
 }
 
+export type AnyDevice = Device | LooperDevice;
+
+/**
+ * Wraps a serialized device as a {@link LooperDevice} when Live reports
+ * `class_name` `"Looper"`, otherwise as a {@link Device}.
+ */
+export function wrapDevice(ableton: Ableton, raw: RawDevice): AnyDevice {
+  if (raw.class_name === LOOPER_CLASS_NAME) {
+    return new LooperDevice(ableton, raw);
+  }
+  return new Device(ableton, raw);
+}
+
 export class Device extends Namespace<
   GettableProperties,
   TransformedProperties,
   SettableProperties,
   ObservableProperties
 > {
+  view: DeviceView;
+
   constructor(
     ableton: Ableton,
     public raw: RawDevice,
   ) {
     super(ableton, "device", raw.id);
+    this.view = new DeviceView(ableton, raw.id);
 
     this.transformers = {
       chains: (chains) => chains.map((c) => new Chain(ableton, c)),
@@ -77,5 +102,18 @@ export class Device extends Namespace<
       parameters: true,
       return_chains: true,
     };
+  }
+
+  /**
+   * Saves the current state of the device to the compare AB slot.
+   * Only relevant if `can_compare_ab`, otherwise throws.
+   */
+  savePresetToCompareAbSlot() {
+    return this.sendCommand("save_preset_to_compare_ab_slot");
+  }
+
+  /** Sets the selected bank in the device for persistency. */
+  storeChosenBank(argument: number, bank: number) {
+    return this.sendCommand("store_chosen_bank", [argument, bank]);
   }
 }

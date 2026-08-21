@@ -1,6 +1,6 @@
 import { Ableton } from "../index.js";
 import { Namespace } from "./index.js";
-import { Device, RawDevice } from "./device.js";
+import { AnyDevice, RawDevice, wrapDevice } from "./device.js";
 import { MixerDevice, RawMixerDevice } from "./mixer-device.js";
 
 export interface GettableProperties {
@@ -13,7 +13,7 @@ export interface GettableProperties {
 }
 
 export interface TransformedProperties {
-  devices: Device[];
+  devices: AnyDevice[];
   mixer_device: MixerDevice;
 }
 
@@ -54,7 +54,7 @@ export class Chain extends Namespace<
     super(ableton, "chain", raw.id);
 
     this.transformers = {
-      devices: (devices) => devices.map((d) => new Device(ableton, d)),
+      devices: (devices) => devices.map((d) => wrapDevice(ableton, d)),
       mixer_device: (m) => new MixerDevice(ableton, m),
     };
 
