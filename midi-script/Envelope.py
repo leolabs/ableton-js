@@ -2,7 +2,6 @@ from __future__ import absolute_import
 
 import Live
 
-from .Clip import Clip
 from .DeviceParameter import DeviceParameter
 from .Interface import Interface
 

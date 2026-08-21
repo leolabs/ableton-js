@@ -11,24 +11,20 @@ class DrumPad(Interface):
 
         pad_id = Interface.save_obj(pad)
 
-        mute = False
-        solo = False
-        note = None
-
         try:
             mute = pad.mute
         except:
-            pass
+            mute = False
 
         try:
             solo = pad.solo
         except:
-            pass
+            solo = False
 
         try:
             note = pad.note
         except:
-            pass
+            note = None
 
         return {
             "id": pad_id,
@@ -43,4 +39,5 @@ class DrumPad(Interface):
 
     def get_chains(self, ns):
         from .Chain import Chain
+
         return map(Chain.serialize_chain, ns.chains)
