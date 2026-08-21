@@ -85,12 +85,19 @@ interface EventMap {
   ping: [number];
 }
 
+/**
+ * A property listener registered with the Remote Script.
+ */
 export interface EventListener {
   prop: string;
   eventId: string;
   listener: (data: any) => any;
 }
 
+/**
+ * Thrown when a command envelope does not receive a reply
+ * within `commandTimeoutMs`.
+ */
 export class TimeoutError extends Error {
   constructor(
     public message: string,
@@ -100,6 +107,10 @@ export class TimeoutError extends Error {
   }
 }
 
+/**
+ * Thrown when Live disconnects while a command envelope
+ * is still waiting for a reply.
+ */
 export class DisconnectError extends Error {
   constructor(
     public message: string,
@@ -179,6 +190,10 @@ export interface AbletonOptions {
   logger?: Logger;
 }
 
+/**
+ * Client for the AbletonJS Remote Script.
+ * Connect with {@link Ableton.start}, then use namespaces like {@link Ableton.song}.
+ */
 export class Ableton extends EventEmitter<EventMap> {
   private client: WebSocket | undefined;
   private msgMap = new Map<
@@ -203,17 +218,27 @@ export class Ableton extends EventEmitter<EventMap> {
   private host: string;
   private port: number;
 
+  /** LRU cache used by cached property reads when caching is enabled. */
   public cache?: Cache;
+  /** The current Live Set (tracks, scenes, tempo, playback, …). */
   public song = new Song(this);
-  public session = new Session(this); // added for red session ring control
+  /** Red box / session ring control. */
+  public session = new Session(this);
+  /** Live application metadata and dialogs. */
   public application = new Application(this);
+  /** Internal plugin helpers (ping, version, auth). */
   public internal = new Internal(this);
+  /** Forwarded MIDI note/CC tracking. */
   public midi = new Midi(this);
 
   private logger: Logger | undefined;
   private clientState: "closed" | "starting" | "started" = "closed";
   private cancelDisconnectEvents: Array<() => unknown> = [];
 
+  /**
+   * Creates a client for the AbletonJS Remote Script.
+   * Call {@link Ableton.start} before sending commands.
+   */
   constructor(private options?: AbletonOptions) {
     super();
 
@@ -355,8 +380,12 @@ export class Ableton extends EventEmitter<EventMap> {
       this.cancelDisconnectEvents.push(cancel);
 
       try {
+        const start = performance.now();
         await this.internal.get("ping");
         this.handleConnect("heartbeat");
+
+        this.latency = performance.now() - start;
+        this.emit("ping", this.latency);
       } catch (e) {
         // If the heartbeat has been canceled, don't emit a disconnect event
         if (!canceled && this._isConnected) {
@@ -525,11 +554,6 @@ export class Ableton extends EventEmitter<EventMap> {
    */
   getPing() {
     return this.latency;
-  }
-
-  private setPing(latency: number) {
-    this.latency = latency;
-    this.emit("ping", this.latency);
   }
 
   private handleIncoming(msg: string) {
@@ -749,7 +773,6 @@ export class Ableton extends EventEmitter<EventMap> {
             });
           }
 
-          this.setPing(duration);
           finish();
           res(result);
         },
@@ -777,6 +800,11 @@ export class Ableton extends EventEmitter<EventMap> {
     });
   }
 
+  /**
+   * Sends a command using the response cache when possible.
+   * Used by cached `get_prop` calls; prefer {@link Ableton.getProp} or
+   * `Namespace.get` instead of calling this directly.
+   */
   async sendCachedCommand(command: Omit<Command, "cache">) {
     const args = command.args?.prop ?? JSON.stringify(command.args);
     const cacheKey = [command.ns, command.nsid, args].filter(Boolean).join("/");
@@ -803,6 +831,15 @@ export class Ableton extends EventEmitter<EventMap> {
     }
   }
 
+  /**
+   * Gets a property from a Live object.
+   * Prefer the typed `get` helpers on namespaces such as `song` or `track`.
+   *
+   * @param ns Namespace name (e.g. `"song"`, `"track"`)
+   * @param nsid Object id when addressing a specific Live object
+   * @param prop Property name
+   * @param cache When true and caching is enabled, use etag-based caching
+   */
   async getProp(
     ns: string,
     nsid: string | undefined,
@@ -818,6 +855,15 @@ export class Ableton extends EventEmitter<EventMap> {
     }
   }
 
+  /**
+   * Sets a property on a Live object.
+   * Prefer the typed `set` helpers on namespaces such as `song` or `track`.
+   *
+   * @param ns Namespace name (e.g. `"song"`, `"track"`)
+   * @param nsid Object id when addressing a specific Live object
+   * @param prop Property name
+   * @param value Value to assign
+   */
   async setProp(
     ns: string,
     nsid: string | undefined,
@@ -832,6 +878,12 @@ export class Ableton extends EventEmitter<EventMap> {
     });
   }
 
+  /**
+   * Subscribes to changes of a Live object property.
+   * Prefer the typed `addListener` helpers on namespaces such as `song` or `track`.
+   *
+   * @returns A function that removes this listener
+   */
   async addPropListener(
     ns: string,
     nsid: string | undefined,
@@ -858,6 +910,12 @@ export class Ableton extends EventEmitter<EventMap> {
     return () => this.removePropListener(ns, nsid, prop, result, listener);
   }
 
+  /**
+   * Removes a property listener previously added with {@link Ableton.addPropListener}.
+   * Usually you call the unsubscribe function returned by `addPropListener` instead.
+   *
+   * @returns `true` if the listener was removed, `false` if it was not found
+   */
   async removePropListener(
     ns: string,
     nsid: string | undefined,
@@ -899,6 +957,10 @@ export class Ableton extends EventEmitter<EventMap> {
     this.eventListeners.clear();
   }
 
+  /**
+   * Sends a raw WebSocket text frame to the Remote Script.
+   * This bypasses command queuing and batching; use with caution.
+   */
   async sendRaw(msg: string) {
     if (this.clientState === "closed") {
       throw new Error(
@@ -913,6 +975,7 @@ export class Ableton extends EventEmitter<EventMap> {
     this.client.send(msg);
   }
 
+  /** Whether the client currently has an active connection to Live. */
   isConnected() {
     return this._isConnected;
   }
