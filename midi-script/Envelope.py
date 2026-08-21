@@ -36,15 +36,6 @@ class Envelope(Interface):
     def __init__(self, c_instance, socket):
         super(Envelope, self).__init__(c_instance, socket)
 
-    def get_canonical_parent(self, ns):
-        parent = ns.canonical_parent
-        if parent is None:
-            return None
-        try:
-            return Clip.serialize_clip(parent)
-        except Exception:
-            return {"id": Interface.save_obj(parent)}
-
     def get_parameter(self, ns):
         return DeviceParameter.serialize_device_parameter(ns.parameter)
 

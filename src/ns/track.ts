@@ -44,7 +44,6 @@ export interface GettableProperties {
   can_be_armed: boolean;
   can_be_frozen: boolean;
   can_show_chains: boolean;
-  canonical_parent: number;
   clip_slots: RawClipSlot[];
   color: number;
   color_index: number;

@@ -17,7 +17,6 @@ export interface EnvelopeEvent {
 }
 
 export interface GettableProperties {
-  canonical_parent: RawClip | null;
   parameter: RawDeviceParameter;
 }
 
@@ -53,7 +52,6 @@ export class Envelope extends Namespace<
     };
 
     this.cachedProps = {
-      canonical_parent: true,
       parameter: true,
     };
   }
@@ -87,10 +85,7 @@ export class Envelope extends Namespace<
   /**
    * Returns the events in the specified time range.
    */
-  eventsInRange(
-    fromTime: number,
-    toTime: number,
-  ): Promise<EnvelopeEvent[]> {
+  eventsInRange(fromTime: number, toTime: number): Promise<EnvelopeEvent[]> {
     return this.sendCommand("events_in_range", {
       from_time: fromTime,
       to_time: toTime,
@@ -100,11 +95,7 @@ export class Envelope extends Namespace<
   /**
    * Given a start time, a step length and a value, creates a step in the envelope.
    */
-  insertStep(
-    startTime: number,
-    length: number,
-    value: number,
-  ): Promise<void> {
+  insertStep(startTime: number, length: number, value: number): Promise<void> {
     return this.sendCommand("insert_step", {
       start_time: startTime,
       length,
