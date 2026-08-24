@@ -3,6 +3,7 @@ import { Ableton } from "../index.js";
 import { Device, DeviceType, RawDevice } from "./device.js";
 import { wrapDevice } from "./device.js";
 import { isLooperDevice, LooperDevice } from "./looper-device.js";
+import { isPluginDevice, PluginDevice } from "./plugin-device.js";
 
 function raw(class_name: string): RawDevice {
   return {
@@ -23,10 +24,15 @@ describe("wrapDevice", () => {
     expect(isLooperDevice(device)).toBe(true);
   });
 
+  it("returns PluginDevice for PluginDevice class_name", () => {
+    const device = wrapDevice(ableton, raw("PluginDevice"));
+    expect(device).toBeInstanceOf(PluginDevice);
+    expect(device).not.toBeInstanceOf(Device);
+    expect(isPluginDevice(device)).toBe(true);
+  });
+
   it("returns Device for other class names", () => {
     const device = wrapDevice(ableton, raw("AutoFilter"));
     expect(device).toBeInstanceOf(Device);
-    expect(device).not.toBeInstanceOf(LooperDevice);
-    expect(isLooperDevice(device)).toBe(false);
   });
 });

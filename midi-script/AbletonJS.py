@@ -25,6 +25,7 @@ from .Logging import logger
 from .LooperDevice import LooperDevice
 from .Midi import Midi
 from .MixerDevice import MixerDevice
+from .PluginDevice import PluginDevice
 from .Scene import Scene
 from .Session import Session
 from .Socket import Socket
@@ -71,6 +72,7 @@ class AbletonJS(ControlSurface):
                 self.request_rebuild_midi_map,
             ),
             "mixer-device": MixerDevice(c_instance, self.socket),
+            "plugin-device": PluginDevice(c_instance, self.socket),
             "scene": Scene(c_instance, self.socket),
             "song": Song(c_instance, self.socket),
             "song-view": SongView(c_instance, self.socket),

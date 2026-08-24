@@ -5,6 +5,7 @@ import { Chain, RawChain } from "./chain.js";
 import { DrumPad, RawDrumPad } from "./drum-pad.js";
 import { DeviceView } from "./device-view.js";
 import { LOOPER_CLASS_NAME, LooperDevice } from "./looper-device.js";
+import { PLUGIN_CLASS_NAME, PluginDevice } from "./plugin-device.js";
 
 export interface GettableProperties {
   can_have_chains: boolean;
@@ -61,15 +62,18 @@ export enum DeviceType {
   Undefined = "undefined",
 }
 
-export type AnyDevice = Device | LooperDevice;
+export type AnyDevice = Device | LooperDevice | PluginDevice;
 
 /**
- * Wraps a serialized device as a {@link LooperDevice} when Live reports
- * `class_name` `"Looper"`, otherwise as a {@link Device}.
+ * Wraps a serialized device as a subclass when Live's `class_name` matches,
+ * otherwise as a {@link Device}.
  */
 export function wrapDevice(ableton: Ableton, raw: RawDevice): AnyDevice {
   if (raw.class_name === LOOPER_CLASS_NAME) {
     return new LooperDevice(ableton, raw);
+  }
+  if (raw.class_name === PLUGIN_CLASS_NAME) {
+    return new PluginDevice(ableton, raw);
   }
   return new Device(ableton, raw);
 }
