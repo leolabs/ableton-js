@@ -1,9 +1,8 @@
 from __future__ import absolute_import
+
 import base64
 import hashlib
-import socket
 import struct
-import sys
 
 WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
 HANDSHAKE_MAX_BYTES = 16384
@@ -16,35 +15,20 @@ OPCODE_PING = 0x9
 OPCODE_PONG = 0xA
 
 
-def byte_at(data, index):
-    value = data[index]
-    if isinstance(value, int):
-        return value
-    return ord(value)
-
-
 def to_bytes(data):
     if data is None:
         return b""
     if isinstance(data, bytearray):
         return bytes(data)
-    if sys.version_info[0] >= 3:
-        if isinstance(data, bytes):
-            return data
-        return data.encode("utf-8")
-    if isinstance(data, unicode):
-        return data.encode("utf-8")
-    return data
+    if isinstance(data, bytes):
+        return data
+    return data.encode("utf-8")
 
 
 def to_text(data):
-    if sys.version_info[0] >= 3:
-        if isinstance(data, bytes):
-            return data.decode("utf-8")
-        return data
-    if isinstance(data, unicode):
-        return data
-    return data.decode("utf-8")
+    if isinstance(data, bytes):
+        return data.decode("utf-8")
+    return data
 
 
 def encode_frame(opcode, payload_bytes=b""):
@@ -80,7 +64,7 @@ def handshake(conn):
     while b"\r\n\r\n" not in data:
         try:
             chunk = conn.recv(HANDSHAKE_RECV_SIZE)
-        except socket.error:
+        except OSError:
             return None
         if not chunk:
             return None
@@ -91,7 +75,7 @@ def handshake(conn):
     header_blob, leftover = data.split(b"\r\n\r\n", 1)
     try:
         header_text = to_text(header_blob)
-    except Exception:
+    except UnicodeDecodeError:
         return None
 
     headers = {}
@@ -105,9 +89,9 @@ def handshake(conn):
     if not key:
         return None
 
-    accept = base64.b64encode(hashlib.sha1(to_bytes(key + WS_GUID)).digest())
-    if sys.version_info[0] >= 3:
-        accept = accept.decode("ascii")
+    accept = base64.b64encode(hashlib.sha1(to_bytes(key + WS_GUID)).digest()).decode(
+        "ascii"
+    )
 
     response = (
         "HTTP/1.1 101 Switching Protocols\r\n"
@@ -115,10 +99,12 @@ def handshake(conn):
         "Connection: Upgrade\r\n"
         "Sec-WebSocket-Accept: " + accept + "\r\n\r\n"
     )
+
     try:
         conn.sendall(to_bytes(response))
-    except Exception:
+    except OSError:
         return None
+
     return leftover
 
 
@@ -126,8 +112,8 @@ def try_read_frame(buffer):
     if len(buffer) < 2:
         return None
 
-    b1 = byte_at(buffer, 0)
-    b2 = byte_at(buffer, 1)
+    b1 = buffer[0]
+    b2 = buffer[1]
     opcode = b1 & 0x0F
     masked = (b2 & 0x80) != 0
     length = b2 & 0x7F
@@ -172,24 +158,17 @@ def apply_mask(payload, mask):
     if n == 0:
         return payload
 
-    if sys.version_info[0] >= 3:
-        mask_bytes = bytes(bytearray(mask)[:4])
-        if len(mask_bytes) < 4:
-            return payload
-        chunk = 8192
-        i = 0
-        while i < n:
-            j = min(i + chunk, n)
-            slen = j - i
-            offset = i % 4
-            key = (mask_bytes * ((offset + slen) // 4 + 1))[offset : offset + slen]
-            src = int.from_bytes(payload[i:j], "little")
-            payload[i:j] = (src ^ int.from_bytes(key, "little")).to_bytes(
-                slen, "little"
-            )
-            i = j
+    mask_bytes = bytes(bytearray(mask)[:4])
+    if len(mask_bytes) < 4:
         return payload
-
-    for i in range(n):
-        payload[i] = byte_at(payload, i) ^ byte_at(mask, i % 4)
+    chunk = 8192
+    i = 0
+    while i < n:
+        j = min(i + chunk, n)
+        slen = j - i
+        offset = i % 4
+        key = (mask_bytes * ((offset + slen) // 4 + 1))[offset : offset + slen]
+        src = int.from_bytes(payload[i:j], "little")
+        payload[i:j] = (src ^ int.from_bytes(key, "little")).to_bytes(slen, "little")
+        i = j
     return payload

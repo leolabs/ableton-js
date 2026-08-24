@@ -2,12 +2,12 @@
 
 [![Current Version](https://img.shields.io/npm/v/ableton-js.svg)](https://www.npmjs.com/package/ableton-js/)
 
-Ableton.js lets you control your instance or instances of Ableton using Node.js,
-Deno, or a browser. It tries to cover as many functions as possible.
+Ableton.js lets you control Ableton 11 or later using Node.js, Deno, or a
+browser. It tries to cover as many functions as possible.
 
 This package is still a work-in-progress. My goal is to expose all of
-[Ableton's MIDI Remote Script](https://nsuspray.github.io/Live_API_Doc/11.0.0.xml)
-functions to TypeScript. If you'd like to contribute, please feel free to do so.
+[Ableton's MIDI Remote Script](https://ableton-live-docs.vercel.app/) functions
+to TypeScript. If you'd like to contribute, please feel free to open a PR.
 
 ## Sponsored Message
 
@@ -19,6 +19,8 @@ get an overview of the current state of your set.
 [![AbleSet Header](https://ableset.com/images/ableton-js-banner.png)](https://ableset.com/?utm_campaign=ableton-js)
 
 ## Prerequisites
+
+Ableton.js requires **Ableton Live 11 or later**.
 
 To use this library, you'll need to install and activate the MIDI Remote Script
 in Ableton.js. To do that, copy the `midi-script` folder of this repo to
@@ -43,7 +45,7 @@ The WebSocket is still unencrypted (`ws://`) after login, so I'd prefer binding
 to loopback if possible.
 
 If you've forked this project on macOS, you can also use yarn to do that for
-you. Running `yarn ableton10:start` or `yarn ableton11:start` (depending on your
+you. Running `yarn ableton11:start` or `yarn ableton12:start` (depending on your
 app version) will copy the `midi-script` folder, open Ableton and show a stream
 of log messages until you kill it.
 

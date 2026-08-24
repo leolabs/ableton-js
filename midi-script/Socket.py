@@ -1,14 +1,16 @@
 from __future__ import absolute_import
+
 import binascii
 import hashlib
 import hmac
-import os
-import socket
 import json
+import os
+import queue
+import socket
 import threading
 import time
 
-from .Config import PLUGIN_NAME, WEBSOCKET_HOST, WEBSOCKET_PORT, PASSWORD
+from .Config import PASSWORD, PLUGIN_NAME, WEBSOCKET_HOST, WEBSOCKET_PORT
 from .Logging import logger
 from .WebSocket import (
     OPCODE_CLOSE,
@@ -24,11 +26,6 @@ from .WebSocket import (
     to_text,
     try_read_frame,
 )
-
-try:
-    import Queue as queue
-except ImportError:
-    import queue
 
 # Send small frames on the caller thread (usually Live's MIDI thread). A
 # dedicated send thread adds ~10ms wake-up on macOS; keep it only for large
@@ -52,7 +49,7 @@ def _auth_hash(salt):
     return hmac.new(to_bytes(PASSWORD), to_bytes(salt), hashlib.sha256).hexdigest()
 
 
-class ClientConnection(object):
+class ClientConnection:
     """Socket with optional send thread for large or potentially blocking writes."""
 
     def __init__(self, sock):
@@ -62,26 +59,29 @@ class ClientConnection(object):
         self._closed = False
         self.authenticated = not _auth_enabled()
         self.auth_salt = None
-        thread = threading.Thread(target=self._send_loop)
-        thread.daemon = True
+        thread = threading.Thread(target=self._send_loop, daemon=True)
         thread.start()
 
     def send_or_enqueue(self, frame):
         if self._closed:
             return False
-        if self.out_queue.empty() and len(frame) <= DIRECT_SEND_MAX_BYTES:
-            if self._send_lock.acquire(False):
-                try:
-                    if self._closed:
-                        return False
-                    self.sock.sendall(frame)
-                    return True
-                except socket.error as e:
-                    errno = getattr(e, "errno", None)
-                    if errno not in EAGAIN_ERRNOS:
-                        return False
-                finally:
-                    self._send_lock.release()
+
+        if (
+            self.out_queue.empty()
+            and len(frame) <= DIRECT_SEND_MAX_BYTES
+            and self._send_lock.acquire(False)
+        ):
+            try:
+                if self._closed:
+                    return False
+                self.sock.sendall(frame)
+                return True
+            except OSError as e:
+                errno = getattr(e, "errno", None)
+                if errno not in EAGAIN_ERRNOS:
+                    return False
+            finally:
+                self._send_lock.release()
         return self.enqueue(frame)
 
     def enqueue(self, frame):
@@ -96,11 +96,11 @@ class ClientConnection(object):
         self._closed = True
         try:
             self.out_queue.put_nowait(None)
-        except Exception:
+        except:
             pass
         try:
             self.sock.close()
-        except Exception:
+        except:
             pass
 
     def _send_loop(self):
@@ -116,15 +116,15 @@ class ClientConnection(object):
                     self.sock.sendall(frame)
                 finally:
                     self._send_lock.release()
-            except Exception:
+            except:
                 break
         try:
             self.sock.close()
-        except Exception:
+        except:
             pass
 
 
-class Socket(object):
+class Socket:
     @staticmethod
     def set_message(func):
         Socket.show_message = func
@@ -141,8 +141,7 @@ class Socket(object):
         self._host = WEBSOCKET_HOST
         self._port = int(WEBSOCKET_PORT)
 
-        self._thread = threading.Thread(target=self._serve)
-        self._thread.daemon = True
+        self._thread = threading.Thread(target=self._serve, daemon=True)
         self._thread.start()
 
     def log_error_once(self, msg):
@@ -160,7 +159,7 @@ class Socket(object):
         def jsonReplace(o):
             try:
                 return list(o)
-            except Exception:
+            except:
                 pass
             return str(o)
 
@@ -201,13 +200,13 @@ class Socket(object):
     def _drop_connection(self, conn):
         try:
             self._connections.remove(conn)
-        except Exception:
+        except:
             pass
         conn.close()
         # Live listener teardown must run on the main thread via process().
         try:
             self._queue.put((conn, None))
-        except Exception:
+        except:
             pass
 
     def shutdown(self):
@@ -222,7 +221,7 @@ class Socket(object):
         if self._socket:
             try:
                 self._socket.close()
-            except Exception:
+            except:
                 pass
             self._socket = None
 
@@ -259,7 +258,7 @@ class Socket(object):
                 if self._socket:
                     try:
                         self._socket.close()
-                    except Exception:
+                    except:
                         pass
                     self._socket = None
                 time.sleep(5)
@@ -269,7 +268,7 @@ class Socket(object):
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
             sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-        except Exception:
+        except:
             pass
         sock.bind((self._host, self._port))
         sock.listen(16)
@@ -282,17 +281,18 @@ class Socket(object):
         while self._running and self._socket:
             try:
                 conn, addr = self._socket.accept()
-            except socket.error:
+            except OSError:
                 if not self._running:
                     return
                 continue
             try:
                 conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-            except Exception:
+            except:
                 pass
             logger.info("Client connected: " + str(addr))
-            thread = threading.Thread(target=self._handle_connection, args=(conn,))
-            thread.daemon = True
+            thread = threading.Thread(
+                target=self._handle_connection, args=(conn,), daemon=True
+            )
             thread.start()
 
     def _handle_connection(self, conn):
@@ -300,7 +300,7 @@ class Socket(object):
         if leftover is None:
             try:
                 conn.close()
-            except Exception:
+            except:
                 pass
             return
 
@@ -323,7 +323,7 @@ class Socket(object):
             while self._running:
                 try:
                     data = conn.recv(65536)
-                except socket.error:
+                except OSError:
                     break
                 if not data:
                     break
