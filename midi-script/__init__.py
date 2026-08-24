@@ -4,7 +4,7 @@ import sys
 
 
 def create_instance(c_instance):
-    if sys.version_info[0] < 3:
+    if sys.version_info[0] < 3:  # noqa: UP036
         from .Unsupported import Unsupported
 
         return Unsupported(c_instance)
