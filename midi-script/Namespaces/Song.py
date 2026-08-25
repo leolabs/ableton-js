@@ -1,11 +1,12 @@
 from __future__ import absolute_import
-from .Interface import Interface
-from .CuePoint import CuePoint
-from .Device import Device
-from .Scene import Scene
-from .Track import Track
 
 import Live
+
+from .CuePoint import CuePoint
+from .Device import Device
+from .Interface import Interface
+from .Scene import Scene
+from .Track import Track
 
 PLAY_QUANTIZATIONS = {
     "q_8_bars": Live.Song.Quantization.q_8_bars,

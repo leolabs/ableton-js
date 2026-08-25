@@ -1,10 +1,10 @@
 from __future__ import absolute_import
 
-from .Interface import Interface
-from .MixerDevice import MixerDevice
-from .Device import Device
 from .Clip import Clip
 from .ClipSlot import ClipSlot
+from .Device import Device
+from .Interface import Interface
+from .MixerDevice import MixerDevice
 
 
 class Track(Interface):

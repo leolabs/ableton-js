@@ -1,6 +1,7 @@
 from __future__ import absolute_import
-from .Interface import Interface
+
 from .ClipSlot import ClipSlot
+from .Interface import Interface
 
 
 class Scene(Interface):

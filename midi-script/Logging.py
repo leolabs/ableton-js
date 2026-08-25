@@ -1,5 +1,7 @@
 from __future__ import absolute_import
-from .Config import PLUGIN_NAME
+
 import logging
+
+from .Config import PLUGIN_NAME
 
 logger = logging.getLogger(PLUGIN_NAME)

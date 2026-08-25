@@ -1,10 +1,11 @@
 from __future__ import absolute_import
-from .Interface import Interface
-from .DeviceParameter import DeviceParameter
-from .Scene import Scene
-from .Track import Track
+
 from .Clip import Clip
 from .ClipSlot import ClipSlot
+from .DeviceParameter import DeviceParameter
+from .Interface import Interface
+from .Scene import Scene
+from .Track import Track
 
 
 class SongView(Interface):

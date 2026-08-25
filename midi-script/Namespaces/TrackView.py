@@ -1,8 +1,9 @@
 from __future__ import absolute_import
-from .Interface import Interface
-from .Device import Device
 
 import Live
+
+from .Device import Device
+from .Interface import Interface
 
 INSERT_MODES = {
     "default": Live.Track.DeviceInsertMode.default,
