@@ -196,6 +196,88 @@ describe("AbletonJS", () => {
     });
   });
 
+  describe("Response cache", () => {
+    const CACHE_KEY = "abletonjs_cache_test";
+
+    it("should store a response after the first cached fetch", async () => {
+      await withAbleton(async (ab) => {
+        await ab.song.setData(CACHE_KEY, { v: 1 });
+        ab.cache?.clear();
+
+        const value = await ab.song.getData(CACHE_KEY);
+        expect(value).toEqual({ v: 1 });
+        expect(ab.cache?.size).toBe(1);
+
+        const entry = [...ab.cache!.values()][0];
+        expect(entry?.data).toEqual({ v: 1 });
+        expect(entry?.etag).toEqual(expect.any(String));
+      });
+    });
+
+    it("should return locally cached data when the server reports a cache hit", async () => {
+      await withAbleton(async (ab) => {
+        const cache = ab.cache!;
+        await ab.song.setData(CACHE_KEY, "original");
+        await ab.song.getData(CACHE_KEY);
+
+        const key = [...cache.keys()][0]!;
+        const entry = cache.get(key)!;
+        cache.set(key, { ...entry, data: "from-local-cache" });
+
+        expect(await ab.song.getData(CACHE_KEY)).toBe("from-local-cache");
+      });
+    });
+
+    it("should send the stored etag on subsequent cached requests", async () => {
+      await withAbleton(async (ab) => {
+        await ab.song.setData(CACHE_KEY, 42);
+        await ab.song.getData(CACHE_KEY);
+        const etag = [...ab.cache!.values()][0]!.etag;
+
+        const sendRaw = vi.spyOn(ab, "sendRaw");
+        await sleep(10);
+        sendRaw.mockClear();
+
+        await ab.song.getData(CACHE_KEY);
+
+        const payload = JSON.parse(sendRaw.mock.calls[0]![0] as string);
+        expect(payload.commands).toHaveLength(1);
+        expect(payload.commands[0].etag).toBe(etag);
+        expect(payload.commands[0].cache).toBe(true);
+      });
+    });
+
+    it("should refresh the cache when the value changes", async () => {
+      await withAbleton(async (ab) => {
+        await ab.song.setData(CACHE_KEY, "before");
+        await ab.song.getData(CACHE_KEY);
+
+        await ab.song.setData(CACHE_KEY, "after");
+        const value = await ab.song.getData(CACHE_KEY);
+
+        expect(value).toBe("after");
+        expect([...ab.cache!.values()][0]?.data).toBe("after");
+      });
+    });
+
+    it("should cache getProp results when caching is requested", async () => {
+      await withAbleton(async (ab) => {
+        ab.cache?.clear();
+
+        const tracks = await ab.getProp("song", undefined, "tracks", true);
+        expect(tracks).toEqual(expect.any(Array));
+        expect(ab.cache?.size).toBe(1);
+
+        const entry = [...ab.cache!.values()][0];
+        expect(entry?.data).toEqual(tracks);
+        expect(entry?.etag).toEqual(expect.any(String));
+
+        const again = await ab.getProp("song", undefined, "tracks", true);
+        expect(again).toEqual(tracks);
+      });
+    });
+  });
+
   describe("Command batching", () => {
     it("should coalesce same-tick commands into one envelope", async () => {
       await withAbleton(async (ab) => {
