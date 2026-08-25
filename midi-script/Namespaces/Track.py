@@ -36,7 +36,7 @@ class Track(Interface):
             "color": track.color,
             "color_index": track.color_index,
             "is_foldable": track.is_foldable,
-            "is_grouped": track.is_grouped
+            "is_grouped": track.is_grouped,
         }
 
     @staticmethod
@@ -60,7 +60,9 @@ class Track(Interface):
         return map(Track.serialize_routing_type, ns.available_input_routing_types)
 
     def get_available_output_routing_channels(self, ns):
-        return map(Track.serialize_routing_channel, ns.available_output_routing_channels)
+        return map(
+            Track.serialize_routing_channel, ns.available_output_routing_channels
+        )
 
     def get_available_output_routing_types(self, ns):
         return map(Track.serialize_routing_type, ns.available_output_routing_types)

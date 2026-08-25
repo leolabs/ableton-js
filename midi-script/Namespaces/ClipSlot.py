@@ -16,7 +16,7 @@ class ClipSlot(Interface):
             "has_clip": clip_slot.has_clip,
             "is_playing": clip_slot.is_playing,
             "is_recording": clip_slot.is_recording,
-            "is_triggered": clip_slot.is_triggered
+            "is_triggered": clip_slot.is_triggered,
         }
 
     def __init__(self, c_instance, socket):

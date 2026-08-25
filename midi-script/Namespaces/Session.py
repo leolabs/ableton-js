@@ -24,8 +24,7 @@ class Session(Interface):
                 "Setting up session box with " + str(num_tracks) + " tracks and " + str(num_scenes) + " scenes.")
             self.session = self.sessionComponent(num_tracks, num_scenes)
             self.session.set_offsets(0, 0)
-            self.controlSurface.set_highlighting_session_component(
-                self.session)
+            self.controlSurface.set_highlighting_session_component(self.session)
             return True
 
     def set_session_offset(self, ns, track_offset, scene_offset):
@@ -35,7 +34,7 @@ class Session(Interface):
         logger.info(
             "Moving session box offset to " + str(track_offset) + " and " + str(scene_offset) + ".")
 
-        if hasattr(self, 'session'):
+        if hasattr(self, "session"):
             self.session.set_offsets(track_offset, scene_offset)
         else:
             logger.error("Session box not set up.")

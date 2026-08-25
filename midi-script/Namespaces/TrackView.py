@@ -4,9 +4,11 @@ from .Device import Device
 
 import Live
 
-INSERT_MODES = {'default': Live.Track.DeviceInsertMode.default,
-                'left': Live.Track.DeviceInsertMode.selected_left,
-                'right': Live.Track.DeviceInsertMode.selected_right}
+INSERT_MODES = {
+    "default": Live.Track.DeviceInsertMode.default,
+    "left": Live.Track.DeviceInsertMode.selected_left,
+    "right": Live.Track.DeviceInsertMode.selected_right,
+}
 
 
 class TrackView(Interface):
@@ -20,5 +22,5 @@ class TrackView(Interface):
         return Device.serialize_device(ns.selected_device)
 
     def set_device_insert_mode(self, ns, name):
-        mode = INSERT_MODES.get(str(name), INSERT_MODES['default'])
+        mode = INSERT_MODES.get(str(name), INSERT_MODES["default"])
         ns.device_insert_mode = mode

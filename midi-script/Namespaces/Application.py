@@ -20,4 +20,10 @@ class Application(Interface):
         return ns.get_bugfix_version()
 
     def get_version(self, ns):
-        return str(ns.get_major_version()) + "." + str(ns.get_minor_version()) + "." + str(ns.get_bugfix_version())
+        return (
+            str(ns.get_major_version())
+            + "."
+            + str(ns.get_minor_version())
+            + "."
+            + str(ns.get_bugfix_version())
+        )
