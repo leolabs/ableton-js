@@ -21,7 +21,10 @@ export interface GettableProperties {
   current_song_time: number;
   exclusive_arm: boolean;
   exclusive_solo: boolean;
+  file_path: string;
   groove_amount: number;
+  is_ableton_link_enabled: boolean;
+  is_ableton_link_start_stop_sync_enabled: boolean;
   is_counting_in: boolean;
   is_playing: boolean;
   last_event_time: number;
@@ -31,6 +34,7 @@ export interface GettableProperties {
   master_track: RawTrack;
   metronome: number;
   midi_recording_quantization: RecordingQuantization;
+  name: string;
   nudge_down: boolean;
   nudge_up: boolean;
   overdub: boolean;
@@ -40,7 +44,9 @@ export interface GettableProperties {
   record_mode: number;
   return_tracks: RawTrack[];
   root_note: number;
-  scale_name: number;
+  scale_intervals: number[];
+  scale_mode: boolean;
+  scale_name: string;
   scenes: RawScene[];
   select_on_launch: number;
   session_automation_record: number;
@@ -49,6 +55,7 @@ export interface GettableProperties {
   signature_denominator: number;
   signature_numerator: number;
   song_length: number;
+  start_time: number;
   swing_amount: number;
   tempo: number;
   tempo_follower_enabled: boolean;
@@ -77,6 +84,8 @@ export interface SettableProperties {
   exclusive_arm: number;
   exclusive_solo: number;
   groove_amount: number;
+  is_ableton_link_enabled: boolean;
+  is_ableton_link_start_stop_sync_enabled: boolean;
   is_counting_in: boolean;
   is_playing: boolean;
   last_event_time: number;
@@ -95,7 +104,8 @@ export interface SettableProperties {
   record_mode: number;
   return_tracks: number;
   root_note: number;
-  scale_name: number;
+  scale_mode: boolean;
+  scale_name: string;
   select_on_launch: number;
   session_automation_record: number;
   session_record: number;
@@ -103,6 +113,7 @@ export interface SettableProperties {
   signature_denominator: number;
   signature_numerator: number;
   song_length: number;
+  start_time: number;
   swing_amount: number;
   tempo: number;
   tempo_follower_enabled: boolean;
@@ -123,6 +134,8 @@ export interface ObservableProperties {
   data: number;
   exclusive_arm: number;
   groove_amount: number;
+  is_ableton_link_enabled: boolean;
+  is_ableton_link_start_stop_sync_enabled: boolean;
   is_counting_in: boolean;
   is_playing: boolean;
   loop_length: number;
@@ -138,6 +151,10 @@ export interface ObservableProperties {
   re_enable_automation_enabled: boolean;
   record_mode: number;
   return_tracks: RawTrack[];
+  root_note: number;
+  scale_intervals: number[];
+  scale_mode: boolean;
+  scale_name: string;
   scenes: RawScene[];
   session_automation_record: number;
   session_record: number;
@@ -145,10 +162,12 @@ export interface ObservableProperties {
   signature_denominator: number;
   signature_numerator: number;
   song_length: number;
+  start_time: number;
   swing_amount: number;
   tempo: number;
   tempo_follower_enabled: boolean;
   tracks: RawTrack[];
+  visible_tracks: RawTrack[];
 }
 
 export interface SmpteTime {
