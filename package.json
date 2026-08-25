@@ -1,6 +1,6 @@
 {
   "name": "ableton-js",
-  "version": "5.0.0-2",
+  "version": "5.0.0-3",
   "description": "Control Ableton Live from Node.js, Deno, or the browser",
   "type": "module",
   "exports": {

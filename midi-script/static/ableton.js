@@ -2056,18 +2056,27 @@ class q {
   }
   /**
    * Returns readable property names discovered on the Live object via introspection.
+   *
+   * This is mainly for exploring Live's API, and not all properties might be fully
+   * supported by Ableton.js yet.
    */
   async getAvailableProperties() {
     return this.sendCommand("get_available_properties");
   }
   /**
    * Returns observable property names (Live `add_<prop>_listener` APIs).
+   *
+   * This is mainly for exploring Live's API, and not all properties might be fully
+   * supported by Ableton.js yet.
    */
   async getObservableProperties() {
     return this.sendCommand("get_observable_properties");
   }
   /**
    * Returns callable method names discovered on the Live object via introspection.
+   *
+   * This is mainly for exploring Live's API, and not all functions might be fully
+   * supported by Ableton.js yet.
    */
   async getAvailableFunctions() {
     return this.sendCommand("get_available_functions");
@@ -2951,7 +2960,7 @@ class wi extends q {
     return this.sendCommand("undo");
   }
 }
-const rn = "5.0.0-2";
+const rn = "5.0.0-3";
 class Si extends q {
   constructor(e) {
     super(e, "internal");
