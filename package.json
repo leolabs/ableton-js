@@ -33,7 +33,8 @@
   "files": [
     "**/*.js",
     "**/*.d.ts",
-    "midi-script/*.py",
+    "!hooks/",
+    "midi-script/**/*.py",
     "midi-script/static/**"
   ],
   "scripts": {
