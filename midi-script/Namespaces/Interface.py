@@ -1,8 +1,8 @@
 import hashlib
 import json
 
-from .Config import DEBUG
-from .Logging import logger
+from ..Config import DEBUG
+from ..Logging import logger
 
 
 class ConnectionSubscribers:

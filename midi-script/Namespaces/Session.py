@@ -1,6 +1,6 @@
 from __future__ import absolute_import
+from ..Logging import logger
 from .Interface import Interface
-from .Logging import logger
 
 from _Framework.SessionComponent import SessionComponent
 

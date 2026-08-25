@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
+from ..Logging import logger
 from .Interface import ConnectionSubscribers, Interface
-from .Logging import logger
 
 
 class Midi(Interface):
