@@ -42,9 +42,9 @@ class Interface:
     @staticmethod
     def save_obj(obj):
         try:
-            obj_id = "live_" + str(obj._live_ptr)
+            obj_id = f"live_{obj._live_ptr}"
         except:
-            obj_id = "id_" + str(id(obj))
+            obj_id = f"id_{id(obj)}"
 
         Interface.obj_ids[obj_id] = obj
         return obj_id
@@ -53,7 +53,7 @@ class Interface:
     def get_obj(obj_id):
         obj = Interface.obj_ids.get(obj_id)
         if obj is None:
-            raise Exception("Unknown object id: %s" % obj_id)
+            raise Exception(f"Unknown object id: {obj_id}")
         return obj
 
     def __init__(self, c_instance, socket):
@@ -108,22 +108,22 @@ class Interface:
                 result = getattr(ns, name)(*args)
             else:
                 raise Exception(
-                    "Function call failed: " + str(args) + " are invalid arguments"
+                    f"Function call failed: {args} are invalid arguments"
                 )
             return self.format_result(result, etag, cache)
 
         raise Exception(
-            "Function call failed: " + str(name) + " doesn't exist or isn't callable"
+            f"Function call failed: {name} doesn't exist or isn't callable"
         )
 
     def add_listener(self, ns, prop, eventId, connection, nsid="Default"):
         try:
-            add_fn = getattr(ns, "add_" + prop + "_listener")
+            add_fn = getattr(ns, f"add_{prop}_listener")
         except:
-            raise Exception("Listener " + str(prop) + " does not exist.")
+            raise Exception(f"Listener {prop} does not exist.")
 
-        key = str(nsid) + ":" + prop
-        self.log_debug("Listener key: " + key)
+        key = f"{nsid}:{prop}"
+        self.log_debug(f"Listener key: {key}")
 
         if key in self.listeners:
             return self.listeners[key]["subscribers"].subscribe(connection, eventId)
@@ -138,7 +138,7 @@ class Interface:
                 return
             entry["subscribers"].send_each(self.socket, value)
 
-        self.log_debug("Attaching listener: " + key + ", event ID: " + eventId)
+        self.log_debug(f"Attaching listener: {key}, event ID: {eventId}")
         add_fn(fn)
         self.listeners[key] = {
             "fn": fn,
@@ -149,14 +149,14 @@ class Interface:
         return eventId
 
     def remove_listener(self, ns, prop, connection, nsid="Default"):
-        key = str(nsid) + ":" + prop
-        self.log_debug("Remove key: " + key)
+        key = f"{nsid}:{prop}"
+        self.log_debug(f"Remove key: {key}")
         if key not in self.listeners:
-            raise Exception("Listener " + str(prop) + " does not exist.")
+            raise Exception(f"Listener {prop} does not exist.")
 
         subscribers = self.listeners[key]["subscribers"]
         if not subscribers.unsubscribe(connection):
-            raise Exception("Listener " + str(prop) + " does not exist.")
+            raise Exception(f"Listener {prop} does not exist.")
         if not subscribers.is_empty():
             return True
 
@@ -164,9 +164,7 @@ class Interface:
             Interface._detach_listener(key)
             return True
         except Exception as e:
-            raise Exception(
-                "Listener " + str(prop) + " could not be removed: " + str(e)
-            )
+            raise Exception(f"Listener {prop} could not be removed: {e}")
 
     @staticmethod
     def drop_connection(connection):
@@ -180,7 +178,7 @@ class Interface:
             try:
                 Interface._detach_listener(key)
             except Exception:
-                logger.error("Could not detach listener " + str(key))
+                logger.error(f"Could not detach listener {key}")
                 Interface.listeners.pop(key, None)
 
     @staticmethod
@@ -191,13 +189,13 @@ class Interface:
         ns = entry.get("ns")
         prop = entry.get("prop")
         fn = entry.get("fn")
-        remove_fn = getattr(ns, "remove_" + prop + "_listener")
+        remove_fn = getattr(ns, f"remove_{prop}_listener")
         remove_fn(fn)
         Interface.listeners.pop(key, None)
 
     def get_prop(self, ns, prop):
         try:
-            get_fn = getattr(self, "get_" + prop)
+            get_fn = getattr(self, f"get_{prop}")
         except:
 
             def get_fn(ns):
@@ -208,7 +206,7 @@ class Interface:
 
     def set_prop(self, ns, prop, value):
         try:
-            set_fn = getattr(self, "set_" + prop)
+            set_fn = getattr(self, f"set_{prop}")
         except:
 
             def set_fn(ns, value):

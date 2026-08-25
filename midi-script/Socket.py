@@ -178,7 +178,7 @@ class Socket:
             else:
                 self._send_frame(frame, connection)
         except Exception as e:
-            logger.error("Error " + name + "(" + str(uuid) + "):")
+            logger.error(f"Error {name}({uuid}):")
             logger.exception(e)
 
     def _send_frame(self, frame, connection):
@@ -253,8 +253,7 @@ class Socket:
                 if not self._running:
                     return
                 msg = (
-                    "ERROR: Cannot bind to %s:%s: %s, trying again. If this keeps happening, try restarting your computer."
-                    % (self._host, self._port, e.args)
+                    f"ERROR: Cannot bind to {self._host}:{self._port}: {e.args}, trying again. If this keeps happening, try restarting your computer."
                 )
                 self.log_error_once(msg)
                 self.show_message(msg)
@@ -277,8 +276,8 @@ class Socket:
         sock.listen(16)
         self._socket = sock
         self._last_error = ""
-        logger.info("WebSocket server listening on %s:%s" % (self._host, self._port))
-        self.show_message("Started %s on %s:%s" % (PLUGIN_NAME, self._host, self._port))
+        logger.info(f"WebSocket server listening on {self._host}:{self._port}")
+        self.show_message(f"Started {PLUGIN_NAME} on {self._host}:{self._port}")
 
     def _accept_loop(self):
         while self._running and self._socket:
@@ -292,7 +291,7 @@ class Socket:
                 conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
             except:
                 pass
-            logger.info("Client connected: " + str(addr))
+            logger.info(f"Client connected: {addr}")
             thread = threading.Thread(
                 target=self._handle_connection, args=(conn,), daemon=True
             )

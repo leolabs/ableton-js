@@ -53,7 +53,7 @@ def serve_static(conn, method, path):
         body if method == "GET" else b"",
         content_length=len(body),
     )
-    logger.debug("%s %s -> %s" % (method, path, status))
+    logger.debug(f"{method} {path} -> {status}")
     return status
 
 
@@ -110,7 +110,7 @@ def _resolve_path(request_path):
 
 
 def _send_error(conn, status, method, path):
-    body = to_bytes("%s %s\n" % (status, _STATUS_TEXT.get(status, "Error")))
+    body = to_bytes(f"{status} {_STATUS_TEXT.get(status, 'Error')}\n")
     _send_response(
         conn,
         status,
@@ -118,18 +118,18 @@ def _send_error(conn, status, method, path):
         body if method != "HEAD" else b"",
         content_length=len(body),
     )
-    logger.info("%s %s -> %s" % (method, path, status))
+    logger.info(f"{method} {path} -> {status}")
     return status
 
 
 def _send_response(conn, status, content_type, body, content_length):
     reason = _STATUS_TEXT.get(status, "Error")
     header = (
-        "HTTP/1.1 %s %s\r\n"
-        "Content-Type: %s\r\n"
-        "Content-Length: %s\r\n"
+        f"HTTP/1.1 {status} {reason}\r\n"
+        f"Content-Type: {content_type}\r\n"
+        f"Content-Length: {content_length}\r\n"
         "Connection: close\r\n"
-        "\r\n" % (status, reason, content_type, content_length)
+        "\r\n"
     )
     try:
         conn.sendall(to_bytes(header))

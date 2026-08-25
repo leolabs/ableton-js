@@ -118,7 +118,7 @@ def complete_websocket_handshake(conn, headers):
         "HTTP/1.1 101 Switching Protocols\r\n"
         "Upgrade: websocket\r\n"
         "Connection: Upgrade\r\n"
-        "Sec-WebSocket-Accept: " + accept + "\r\n\r\n"
+        f"Sec-WebSocket-Accept: {accept}\r\n\r\n"
     )
 
     try:

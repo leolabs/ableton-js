@@ -21,14 +21,14 @@ class Midi(Interface):
             try:
                 midi_type = output.get("type")
                 if midi_type != "cc" and midi_type != "note":
-                    raise ValueError("invalid midi type " + str(midi_type))
+                    raise ValueError(f"invalid midi type {midi_type}")
                 self.outputs.add(
                     (midi_type, output.get("channel"), output.get("target"))
                 )
             except ValueError as e:
                 logger.error(e)
             except:
-                logger.error("invalid midi output requested: " + str(output))
+                logger.error(f"invalid midi output requested: {output}")
 
     def _enable_tracking(self):
         logger.info("Attaching MIDI listener")
@@ -42,7 +42,7 @@ class Midi(Interface):
 
     def _require_midi(self, prop):
         if prop != "midi":
-            raise Exception("Listener " + str(prop) + " does not exist.")
+            raise Exception(f"Listener {prop} does not exist.")
 
     def add_listener(self, ns, prop, eventId, connection, nsid="Default"):
         self._require_midi(prop)

@@ -40,7 +40,7 @@ class AbletonJS(ControlSurface):
     def __init__(self, c_instance):
         super(AbletonJS, self).__init__(c_instance)
 
-        logger.info("Starting AbletonJS " + version + "...")
+        logger.info(f"Starting AbletonJS {version}...")
 
         self.tracked_midi = set()
 
@@ -95,9 +95,7 @@ class AbletonJS(ControlSurface):
 
         if tick_time - self._last_tick > 200:
             logger.warning(
-                "Ableton Live's main thread is lagging, delta: "
-                + str(round(tick_time - self._last_tick))
-                + "ms"
+                f"Ableton Live's main thread is lagging, delta: {round(tick_time - self._last_tick)}ms"
             )
 
         self._last_tick = tick_time
@@ -107,9 +105,7 @@ class AbletonJS(ControlSurface):
 
         if process_time - tick_time > 100:
             logger.warning(
-                "WebSocket processing is taking long, delta: "
-                + str(round(tick_time - process_time))
-                + "ms"
+                f"WebSocket processing is taking long, delta: {round(tick_time - process_time)}ms"
             )
 
         self.schedule_message(1, self.tick)
@@ -159,14 +155,14 @@ class AbletonJS(ControlSurface):
                 ):
                     should_log = False
             if should_log:
-                logger.debug("Received command: " + str(payload))
+                logger.debug(f"Received command: {payload}")
 
         results = []
         for command in commands:
             try:
                 namespace = command.get("ns")
                 if namespace not in self.handlers:
-                    raise Exception("No handler for namespace " + str(namespace))
+                    raise Exception(f"No handler for namespace {namespace}")
                 data = self.handlers[namespace].dispatch(command, connection)
                 results.append({"ok": True, "data": data})
             except Exception as e:
