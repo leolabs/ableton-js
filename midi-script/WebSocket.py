@@ -59,7 +59,12 @@ def encode_close_frame():
     return encode_frame(OPCODE_CLOSE)
 
 
-def handshake(conn):
+def read_http_request(conn):
+    """Read one HTTP request from conn.
+
+    Returns (method, path, headers, leftover) or None on failure.
+    leftover is any bytes received after the header block.
+    """
     data = b""
     while b"\r\n\r\n" not in data:
         try:
@@ -78,17 +83,33 @@ def handshake(conn):
     except UnicodeDecodeError:
         return None
 
+    lines = header_text.split("\r\n")
+    request_line = lines[0].split()
+    if len(request_line) < 2:
+        return None
+    method, path = request_line[0], request_line[1]
+
     headers = {}
-    for line in header_text.split("\r\n")[1:]:
+    for line in lines[1:]:
         if not line or ": " not in line:
             continue
         key, value = line.split(": ", 1)
         headers[key.strip().lower()] = value.strip()
 
-    key = headers.get("sec-websocket-key")
-    if not key:
-        return None
+    return method, path, headers, leftover
 
+
+def is_websocket_upgrade(headers):
+    upgrade = (headers.get("upgrade") or "").lower()
+    return "websocket" in upgrade and bool(headers.get("sec-websocket-key"))
+
+
+def complete_websocket_handshake(conn, headers):
+    """Send the 101 Switching Protocols response. Returns True on success.
+
+    Caller must have already verified is_websocket_upgrade(headers).
+    """
+    key = headers["sec-websocket-key"]
     accept = base64.b64encode(hashlib.sha1(to_bytes(key + WS_GUID)).digest()).decode(
         "ascii"
     )
@@ -103,9 +124,9 @@ def handshake(conn):
     try:
         conn.sendall(to_bytes(response))
     except OSError:
-        return None
+        return False
 
-    return leftover
+    return True
 
 
 def try_read_frame(buffer):

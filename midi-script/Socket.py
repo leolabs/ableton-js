@@ -12,16 +12,19 @@ import time
 
 from .Config import PASSWORD, PLUGIN_NAME, WEBSOCKET_HOST, WEBSOCKET_PORT
 from .Logging import logger
+from .StaticServer import serve_static
 from .WebSocket import (
     OPCODE_CLOSE,
     OPCODE_CONTINUATION,
     OPCODE_PING,
     OPCODE_PONG,
     OPCODE_TEXT,
+    complete_websocket_handshake,
     encode_close_frame,
     encode_pong_frame,
     encode_text_frame,
-    handshake,
+    is_websocket_upgrade,
+    read_http_request,
     to_bytes,
     to_text,
     try_read_frame,
@@ -296,14 +299,38 @@ class Socket:
             thread.start()
 
     def _handle_connection(self, conn):
-        leftover = handshake(conn)
-        if leftover is None:
+        parsed = read_http_request(conn)
+        if parsed is None:
             try:
                 conn.close()
             except:
                 pass
             return
 
+        method, path, headers, leftover = parsed
+
+        if is_websocket_upgrade(headers):
+            if not complete_websocket_handshake(conn, headers):
+                try:
+                    conn.close()
+                except:
+                    pass
+                return
+            self._handle_websocket(conn, leftover)
+            return
+
+        try:
+            serve_static(conn, method, path)
+        except Exception as e:
+            logger.error("Static file error:")
+            logger.exception(e)
+        finally:
+            try:
+                conn.close()
+            except:
+                pass
+
+    def _handle_websocket(self, conn, leftover):
         client = ClientConnection(conn)
         with self._lock:
             self._connections.append(client)

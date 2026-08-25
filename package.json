@@ -33,7 +33,8 @@
   "files": [
     "**/*.js",
     "**/*.d.ts",
-    "midi-script/*.py"
+    "midi-script/*.py",
+    "midi-script/static/**"
   ],
   "scripts": {
     "ableton:clean": "rm -f midi-script/AbletonJS/*.pyc",
@@ -42,12 +43,13 @@
     "ableton12:launch": "set -- /Applications/Ableton*12* && open \"$1\"",
     "ableton:logs": "tail -n 50 -f ~/Library/Preferences/Ableton/*/Log.txt | grep --line-buffered -i -e AbletonJS",
     "ableton:kill": "pkill -KILL -f \"Ableton Live\"",
-    "ableton11:start": "yarn ableton:kill; yarn ableton:clean && yarn ableton:copy-script && yarn ableton11:launch && yarn ableton:logs",
-    "ableton12:start": "yarn ableton:kill; yarn ableton:clean && yarn ableton:copy-script && yarn ableton12:launch && yarn ableton:logs",
+    "ableton11:start": "yarn ableton:kill; yarn ableton:clean && yarn build:static && yarn ableton:copy-script && yarn ableton11:launch && yarn ableton:logs",
+    "ableton12:start": "yarn ableton:kill; yarn ableton:clean && yarn build:static && yarn ableton:copy-script && yarn ableton12:launch && yarn ableton:logs",
     "prepublishOnly": "yarn build",
     "build:doc": "jsdoc2md --files src/**/*.ts --configure ./jsdoc2md.json > ./API.md",
-    "version": "node hooks/prepublish.js && git add src/util/package-version.ts && git add midi-script/version.py && auto-changelog -p -l 100 && git add CHANGELOG.md",
-    "build": "tsc",
+    "version": "node hooks/prepublish.js && yarn build:static && git add src/util/package-version.ts midi-script/version.py midi-script/static/ableton.js midi-script/static/ableton.js.map && auto-changelog -p -l 100 && git add CHANGELOG.md",
+    "build": "tsc && yarn build:static",
+    "build:static": "vite build",
     "test": "vitest --run",
     "format": "prettier -w src/"
   },
@@ -61,6 +63,7 @@
     "prettier": "^3.3.3",
     "tsx": "^3.12.7",
     "typescript": "^5.1.3",
+    "vite": "^6.3.5",
     "vitest": "^4.0.15"
   },
   "dependencies": {

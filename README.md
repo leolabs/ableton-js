@@ -55,10 +55,6 @@ This library exposes an `Ableton` class which lets you control the entire
 application. You can instantiate it once and use TS to explore available
 features.
 
-It uses the standard `WebSocket` API (Node 21+, Deno, and browsers). Load it
-with a bundler in the browser. Pages served over **HTTPS cannot** connect to
-`ws://127.0.0.1` (mixed content); use `http://localhost` for local UIs.
-
 Example:
 
 ```typescript
@@ -91,6 +87,11 @@ const test = async () => {
 
 test();
 ```
+
+Ableton.js also serves files located in `midi-script/static` on the same port as
+the WebSocket, so you can host your own web app from within Live. By default,
+this folder contains a bundled version of Ableton.js and a simple `index.html`
+file that allows you to use the browser's console to try out the API.
 
 ## Events
 
