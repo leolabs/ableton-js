@@ -34,17 +34,17 @@ function on() {
   }
   return Se = s, Se;
 }
-var be, fr;
+var be, dr;
 function cn() {
-  if (fr) return be;
-  fr = 1;
+  if (dr) return be;
+  dr = 1;
   var s = Array.isArray;
   return be = s, be;
 }
-var Re, dr;
+var Re, fr;
 function hn() {
-  if (dr) return Re;
-  dr = 1;
+  if (fr) return Re;
+  fr = 1;
   var s = Xt(), e = Object.prototype, t = e.hasOwnProperty, r = e.toString, n = s ? s.toStringTag : void 0;
   function a(o) {
     var h = t.call(o, n), c = o[n];
@@ -128,7 +128,7 @@ function ln() {
   return xe = s, xe;
 }
 var Oe, yr;
-function fn() {
+function dn() {
   if (yr) return Oe;
   yr = 1;
   var s = ln();
@@ -159,7 +159,7 @@ function Vs() {
   return Ne = s, Ne;
 }
 var Pe, br;
-function dn() {
+function fn() {
   if (br) return Pe;
   br = 1;
   var s = Gs(), e = Hs(), t = "[object RegExp]";
@@ -198,7 +198,7 @@ var ke, Cr;
 function gn() {
   if (Cr) return ke;
   Cr = 1;
-  var s = dn(), e = mn(), t = pn(), r = t && t.isRegExp, n = r ? e(r) : s;
+  var s = fn(), e = mn(), t = pn(), r = t && t.isRegExp, n = r ? e(r) : s;
   return ke = n, ke;
 }
 var Fe, Lr;
@@ -223,7 +223,7 @@ var De, Ir;
 function En() {
   if (Ir) return De;
   Ir = 1;
-  var s = "\\ud800-\\udfff", e = "\\u0300-\\u036f", t = "\\ufe20-\\ufe2f", r = "\\u20d0-\\u20ff", n = e + t + r, a = "\\ufe0e\\ufe0f", o = "[" + s + "]", h = "[" + n + "]", c = "\\ud83c[\\udffb-\\udfff]", i = "(?:" + h + "|" + c + ")", l = "[^" + s + "]", u = "(?:\\ud83c[\\udde6-\\uddff]){2}", f = "[\\ud800-\\udbff][\\udc00-\\udfff]", m = "\\u200d", d = i + "?", v = "[" + a + "]?", g = "(?:" + m + "(?:" + [l, u, f].join("|") + ")" + v + d + ")*", R = v + d + g, $ = "(?:" + [l + h + "?", h, u, f, o].join("|") + ")", w = RegExp(c + "(?=" + c + ")|" + $ + R, "g");
+  var s = "\\ud800-\\udfff", e = "\\u0300-\\u036f", t = "\\ufe20-\\ufe2f", r = "\\u20d0-\\u20ff", n = e + t + r, a = "\\ufe0e\\ufe0f", o = "[" + s + "]", h = "[" + n + "]", c = "\\ud83c[\\udffb-\\udfff]", i = "(?:" + h + "|" + c + ")", l = "[^" + s + "]", u = "(?:\\ud83c[\\udde6-\\uddff]){2}", d = "[\\ud800-\\udbff][\\udc00-\\udfff]", m = "\\u200d", f = i + "?", v = "[" + a + "]?", g = "(?:" + m + "(?:" + [l, u, d].join("|") + ")" + v + f + ")*", R = v + f + g, $ = "(?:" + [l + h + "?", h, u, d, o].join("|") + ")", w = RegExp(c + "(?=" + c + ")|" + $ + R, "g");
   function I(x) {
     for (var A = w.lastIndex = 0; w.test(x); )
       ++A;
@@ -254,7 +254,7 @@ var Ge, $r;
 function Sn() {
   if ($r) return Ge;
   $r = 1;
-  var s = "\\ud800-\\udfff", e = "\\u0300-\\u036f", t = "\\ufe20-\\ufe2f", r = "\\u20d0-\\u20ff", n = e + t + r, a = "\\ufe0e\\ufe0f", o = "[" + s + "]", h = "[" + n + "]", c = "\\ud83c[\\udffb-\\udfff]", i = "(?:" + h + "|" + c + ")", l = "[^" + s + "]", u = "(?:\\ud83c[\\udde6-\\uddff]){2}", f = "[\\ud800-\\udbff][\\udc00-\\udfff]", m = "\\u200d", d = i + "?", v = "[" + a + "]?", g = "(?:" + m + "(?:" + [l, u, f].join("|") + ")" + v + d + ")*", R = v + d + g, $ = "(?:" + [l + h + "?", h, u, f, o].join("|") + ")", w = RegExp(c + "(?=" + c + ")|" + $ + R, "g");
+  var s = "\\ud800-\\udfff", e = "\\u0300-\\u036f", t = "\\ufe20-\\ufe2f", r = "\\u20d0-\\u20ff", n = e + t + r, a = "\\ufe0e\\ufe0f", o = "[" + s + "]", h = "[" + n + "]", c = "\\ud83c[\\udffb-\\udfff]", i = "(?:" + h + "|" + c + ")", l = "[^" + s + "]", u = "(?:\\ud83c[\\udde6-\\uddff]){2}", d = "[\\ud800-\\udbff][\\udc00-\\udfff]", m = "\\u200d", f = i + "?", v = "[" + a + "]?", g = "(?:" + m + "(?:" + [l, u, d].join("|") + ")" + v + f + ")*", R = v + f + g, $ = "(?:" + [l + h + "?", h, u, d, o].join("|") + ")", w = RegExp(c + "(?=" + c + ")|" + $ + R, "g");
   function I(x) {
     return x.match(w) || [];
   }
@@ -355,12 +355,12 @@ var Je, zr;
 function xn() {
   if (zr) return Je;
   zr = 1;
-  var s = Bs(), e = fn(), t = Yt(), r = Vs(), n = gn(), a = yn(), o = bn(), h = An(), c = In(), i = 30, l = "...", u = /\w*$/;
-  function f(m, d) {
+  var s = Bs(), e = dn(), t = Yt(), r = Vs(), n = gn(), a = yn(), o = bn(), h = An(), c = In(), i = 30, l = "...", u = /\w*$/;
+  function d(m, f) {
     var v = i, g = l;
-    if (r(d)) {
-      var R = "separator" in d ? d.separator : R;
-      v = "length" in d ? h(d.length) : v, g = "omission" in d ? s(d.omission) : g;
+    if (r(f)) {
+      var R = "separator" in f ? f.separator : R;
+      v = "length" in f ? h(f.length) : v, g = "omission" in f ? s(f.omission) : g;
     }
     m = c(m);
     var $ = m.length;
@@ -389,7 +389,7 @@ function xn() {
     }
     return x + g;
   }
-  return Je = f, Je;
+  return Je = d, Je;
 }
 var On = xn();
 const $n = /* @__PURE__ */ zs(On);
@@ -434,19 +434,19 @@ function re() {
     e = s.exports = {};
     const o = e.re = [], h = e.safeRe = [], c = e.src = [], i = e.t = {};
     let l = 0;
-    const u = "[a-zA-Z0-9-]", f = [
+    const u = "[a-zA-Z0-9-]", d = [
       ["\\s", 1],
       ["\\d", n],
       [u, r]
     ], m = (v) => {
-      for (const [g, R] of f)
+      for (const [g, R] of d)
         v = v.split(`${g}*`).join(`${g}{0,${R}}`).split(`${g}+`).join(`${g}{1,${R}}`);
       return v;
-    }, d = (v, g, R) => {
+    }, f = (v, g, R) => {
       const $ = m(g), w = l++;
       a(v, w, g), i[v] = w, c[w] = g, o[w] = new RegExp(g, R ? "g" : void 0), h[w] = new RegExp($, R ? "g" : void 0);
     };
-    d("NUMERICIDENTIFIER", "0|[1-9]\\d*"), d("NUMERICIDENTIFIERLOOSE", "\\d+"), d("NONNUMERICIDENTIFIER", `\\d*[a-zA-Z-]${u}*`), d("MAINVERSION", `(${c[i.NUMERICIDENTIFIER]})\\.(${c[i.NUMERICIDENTIFIER]})\\.(${c[i.NUMERICIDENTIFIER]})`), d("MAINVERSIONLOOSE", `(${c[i.NUMERICIDENTIFIERLOOSE]})\\.(${c[i.NUMERICIDENTIFIERLOOSE]})\\.(${c[i.NUMERICIDENTIFIERLOOSE]})`), d("PRERELEASEIDENTIFIER", `(?:${c[i.NUMERICIDENTIFIER]}|${c[i.NONNUMERICIDENTIFIER]})`), d("PRERELEASEIDENTIFIERLOOSE", `(?:${c[i.NUMERICIDENTIFIERLOOSE]}|${c[i.NONNUMERICIDENTIFIER]})`), d("PRERELEASE", `(?:-(${c[i.PRERELEASEIDENTIFIER]}(?:\\.${c[i.PRERELEASEIDENTIFIER]})*))`), d("PRERELEASELOOSE", `(?:-?(${c[i.PRERELEASEIDENTIFIERLOOSE]}(?:\\.${c[i.PRERELEASEIDENTIFIERLOOSE]})*))`), d("BUILDIDENTIFIER", `${u}+`), d("BUILD", `(?:\\+(${c[i.BUILDIDENTIFIER]}(?:\\.${c[i.BUILDIDENTIFIER]})*))`), d("FULLPLAIN", `v?${c[i.MAINVERSION]}${c[i.PRERELEASE]}?${c[i.BUILD]}?`), d("FULL", `^${c[i.FULLPLAIN]}$`), d("LOOSEPLAIN", `[v=\\s]*${c[i.MAINVERSIONLOOSE]}${c[i.PRERELEASELOOSE]}?${c[i.BUILD]}?`), d("LOOSE", `^${c[i.LOOSEPLAIN]}$`), d("GTLT", "((?:<|>)?=?)"), d("XRANGEIDENTIFIERLOOSE", `${c[i.NUMERICIDENTIFIERLOOSE]}|x|X|\\*`), d("XRANGEIDENTIFIER", `${c[i.NUMERICIDENTIFIER]}|x|X|\\*`), d("XRANGEPLAIN", `[v=\\s]*(${c[i.XRANGEIDENTIFIER]})(?:\\.(${c[i.XRANGEIDENTIFIER]})(?:\\.(${c[i.XRANGEIDENTIFIER]})(?:${c[i.PRERELEASE]})?${c[i.BUILD]}?)?)?`), d("XRANGEPLAINLOOSE", `[v=\\s]*(${c[i.XRANGEIDENTIFIERLOOSE]})(?:\\.(${c[i.XRANGEIDENTIFIERLOOSE]})(?:\\.(${c[i.XRANGEIDENTIFIERLOOSE]})(?:${c[i.PRERELEASELOOSE]})?${c[i.BUILD]}?)?)?`), d("XRANGE", `^${c[i.GTLT]}\\s*${c[i.XRANGEPLAIN]}$`), d("XRANGELOOSE", `^${c[i.GTLT]}\\s*${c[i.XRANGEPLAINLOOSE]}$`), d("COERCEPLAIN", `(^|[^\\d])(\\d{1,${t}})(?:\\.(\\d{1,${t}}))?(?:\\.(\\d{1,${t}}))?`), d("COERCE", `${c[i.COERCEPLAIN]}(?:$|[^\\d])`), d("COERCEFULL", c[i.COERCEPLAIN] + `(?:${c[i.PRERELEASE]})?(?:${c[i.BUILD]})?(?:$|[^\\d])`), d("COERCERTL", c[i.COERCE], !0), d("COERCERTLFULL", c[i.COERCEFULL], !0), d("LONETILDE", "(?:~>?)"), d("TILDETRIM", `(\\s*)${c[i.LONETILDE]}\\s+`, !0), e.tildeTrimReplace = "$1~", d("TILDE", `^${c[i.LONETILDE]}${c[i.XRANGEPLAIN]}$`), d("TILDELOOSE", `^${c[i.LONETILDE]}${c[i.XRANGEPLAINLOOSE]}$`), d("LONECARET", "(?:\\^)"), d("CARETTRIM", `(\\s*)${c[i.LONECARET]}\\s+`, !0), e.caretTrimReplace = "$1^", d("CARET", `^${c[i.LONECARET]}${c[i.XRANGEPLAIN]}$`), d("CARETLOOSE", `^${c[i.LONECARET]}${c[i.XRANGEPLAINLOOSE]}$`), d("COMPARATORLOOSE", `^${c[i.GTLT]}\\s*(${c[i.LOOSEPLAIN]})$|^$`), d("COMPARATOR", `^${c[i.GTLT]}\\s*(${c[i.FULLPLAIN]})$|^$`), d("COMPARATORTRIM", `(\\s*)${c[i.GTLT]}\\s*(${c[i.LOOSEPLAIN]}|${c[i.XRANGEPLAIN]})`, !0), e.comparatorTrimReplace = "$1$2$3", d("HYPHENRANGE", `^\\s*(${c[i.XRANGEPLAIN]})\\s+-\\s+(${c[i.XRANGEPLAIN]})\\s*$`), d("HYPHENRANGELOOSE", `^\\s*(${c[i.XRANGEPLAINLOOSE]})\\s+-\\s+(${c[i.XRANGEPLAINLOOSE]})\\s*$`), d("STAR", "(<|>)?=?\\s*\\*"), d("GTE0", "^\\s*>=\\s*0\\.0\\.0\\s*$"), d("GTE0PRE", "^\\s*>=\\s*0\\.0\\.0-0\\s*$");
+    f("NUMERICIDENTIFIER", "0|[1-9]\\d*"), f("NUMERICIDENTIFIERLOOSE", "\\d+"), f("NONNUMERICIDENTIFIER", `\\d*[a-zA-Z-]${u}*`), f("MAINVERSION", `(${c[i.NUMERICIDENTIFIER]})\\.(${c[i.NUMERICIDENTIFIER]})\\.(${c[i.NUMERICIDENTIFIER]})`), f("MAINVERSIONLOOSE", `(${c[i.NUMERICIDENTIFIERLOOSE]})\\.(${c[i.NUMERICIDENTIFIERLOOSE]})\\.(${c[i.NUMERICIDENTIFIERLOOSE]})`), f("PRERELEASEIDENTIFIER", `(?:${c[i.NUMERICIDENTIFIER]}|${c[i.NONNUMERICIDENTIFIER]})`), f("PRERELEASEIDENTIFIERLOOSE", `(?:${c[i.NUMERICIDENTIFIERLOOSE]}|${c[i.NONNUMERICIDENTIFIER]})`), f("PRERELEASE", `(?:-(${c[i.PRERELEASEIDENTIFIER]}(?:\\.${c[i.PRERELEASEIDENTIFIER]})*))`), f("PRERELEASELOOSE", `(?:-?(${c[i.PRERELEASEIDENTIFIERLOOSE]}(?:\\.${c[i.PRERELEASEIDENTIFIERLOOSE]})*))`), f("BUILDIDENTIFIER", `${u}+`), f("BUILD", `(?:\\+(${c[i.BUILDIDENTIFIER]}(?:\\.${c[i.BUILDIDENTIFIER]})*))`), f("FULLPLAIN", `v?${c[i.MAINVERSION]}${c[i.PRERELEASE]}?${c[i.BUILD]}?`), f("FULL", `^${c[i.FULLPLAIN]}$`), f("LOOSEPLAIN", `[v=\\s]*${c[i.MAINVERSIONLOOSE]}${c[i.PRERELEASELOOSE]}?${c[i.BUILD]}?`), f("LOOSE", `^${c[i.LOOSEPLAIN]}$`), f("GTLT", "((?:<|>)?=?)"), f("XRANGEIDENTIFIERLOOSE", `${c[i.NUMERICIDENTIFIERLOOSE]}|x|X|\\*`), f("XRANGEIDENTIFIER", `${c[i.NUMERICIDENTIFIER]}|x|X|\\*`), f("XRANGEPLAIN", `[v=\\s]*(${c[i.XRANGEIDENTIFIER]})(?:\\.(${c[i.XRANGEIDENTIFIER]})(?:\\.(${c[i.XRANGEIDENTIFIER]})(?:${c[i.PRERELEASE]})?${c[i.BUILD]}?)?)?`), f("XRANGEPLAINLOOSE", `[v=\\s]*(${c[i.XRANGEIDENTIFIERLOOSE]})(?:\\.(${c[i.XRANGEIDENTIFIERLOOSE]})(?:\\.(${c[i.XRANGEIDENTIFIERLOOSE]})(?:${c[i.PRERELEASELOOSE]})?${c[i.BUILD]}?)?)?`), f("XRANGE", `^${c[i.GTLT]}\\s*${c[i.XRANGEPLAIN]}$`), f("XRANGELOOSE", `^${c[i.GTLT]}\\s*${c[i.XRANGEPLAINLOOSE]}$`), f("COERCEPLAIN", `(^|[^\\d])(\\d{1,${t}})(?:\\.(\\d{1,${t}}))?(?:\\.(\\d{1,${t}}))?`), f("COERCE", `${c[i.COERCEPLAIN]}(?:$|[^\\d])`), f("COERCEFULL", c[i.COERCEPLAIN] + `(?:${c[i.PRERELEASE]})?(?:${c[i.BUILD]})?(?:$|[^\\d])`), f("COERCERTL", c[i.COERCE], !0), f("COERCERTLFULL", c[i.COERCEFULL], !0), f("LONETILDE", "(?:~>?)"), f("TILDETRIM", `(\\s*)${c[i.LONETILDE]}\\s+`, !0), e.tildeTrimReplace = "$1~", f("TILDE", `^${c[i.LONETILDE]}${c[i.XRANGEPLAIN]}$`), f("TILDELOOSE", `^${c[i.LONETILDE]}${c[i.XRANGEPLAINLOOSE]}$`), f("LONECARET", "(?:\\^)"), f("CARETTRIM", `(\\s*)${c[i.LONECARET]}\\s+`, !0), e.caretTrimReplace = "$1^", f("CARET", `^${c[i.LONECARET]}${c[i.XRANGEPLAIN]}$`), f("CARETLOOSE", `^${c[i.LONECARET]}${c[i.XRANGEPLAINLOOSE]}$`), f("COMPARATORLOOSE", `^${c[i.GTLT]}\\s*(${c[i.LOOSEPLAIN]})$|^$`), f("COMPARATOR", `^${c[i.GTLT]}\\s*(${c[i.FULLPLAIN]})$|^$`), f("COMPARATORTRIM", `(\\s*)${c[i.GTLT]}\\s*(${c[i.LOOSEPLAIN]}|${c[i.XRANGEPLAIN]})`, !0), e.comparatorTrimReplace = "$1$2$3", f("HYPHENRANGE", `^\\s*(${c[i.XRANGEPLAIN]})\\s+-\\s+(${c[i.XRANGEPLAIN]})\\s*$`), f("HYPHENRANGELOOSE", `^\\s*(${c[i.XRANGEPLAINLOOSE]})\\s+-\\s+(${c[i.XRANGEPLAINLOOSE]})\\s*$`), f("STAR", "(<|>)?=?\\s*\\*"), f("GTE0", "^\\s*>=\\s*0\\.0\\.0\\s*$"), f("GTE0PRE", "^\\s*>=\\s*0\\.0\\.0-0\\s*$");
   })(ie, ie.exports)), ie.exports;
 }
 var Ke, Mr;
@@ -496,13 +496,13 @@ function j() {
         throw new TypeError("Invalid minor version");
       if (this.patch > t || this.patch < 0)
         throw new TypeError("Invalid patch version");
-      u[4] ? this.prerelease = u[4].split(".").map((f) => {
-        if (/^[0-9]+$/.test(f)) {
-          const m = +f;
+      u[4] ? this.prerelease = u[4].split(".").map((d) => {
+        if (/^[0-9]+$/.test(d)) {
+          const m = +d;
           if (m >= 0 && m < t)
             return m;
         }
-        return f;
+        return d;
       }) : this.prerelease = [], this.build = u[5] ? u[5].split(".") : [], this.format();
     }
     format() {
@@ -531,32 +531,32 @@ function j() {
         return 0;
       let l = 0;
       do {
-        const u = this.prerelease[l], f = i.prerelease[l];
-        if (s("prerelease compare", l, u, f), u === void 0 && f === void 0)
+        const u = this.prerelease[l], d = i.prerelease[l];
+        if (s("prerelease compare", l, u, d), u === void 0 && d === void 0)
           return 0;
-        if (f === void 0)
+        if (d === void 0)
           return 1;
         if (u === void 0)
           return -1;
-        if (u === f)
+        if (u === d)
           continue;
-        return o(u, f);
+        return o(u, d);
       } while (++l);
     }
     compareBuild(i) {
       i instanceof h || (i = new h(i, this.options));
       let l = 0;
       do {
-        const u = this.build[l], f = i.build[l];
-        if (s("build compare", l, u, f), u === void 0 && f === void 0)
+        const u = this.build[l], d = i.build[l];
+        if (s("build compare", l, u, d), u === void 0 && d === void 0)
           return 0;
-        if (f === void 0)
+        if (d === void 0)
           return 1;
         if (u === void 0)
           return -1;
-        if (u === f)
+        if (u === d)
           continue;
-        return o(u, f);
+        return o(u, d);
       } while (++l);
     }
     // preminor will bump the version up to the next minor release, and immediately
@@ -589,11 +589,11 @@ function j() {
         // This probably shouldn't be used publicly.
         // 1.0.0 'pre' would become 1.0.0-0 which is the wrong direction.
         case "pre": {
-          const f = Number(u) ? 1 : 0;
+          const d = Number(u) ? 1 : 0;
           if (!l && u === !1)
             throw new Error("invalid increment argument: identifier is empty");
           if (this.prerelease.length === 0)
-            this.prerelease = [f];
+            this.prerelease = [d];
           else {
             let m = this.prerelease.length;
             for (; --m >= 0; )
@@ -601,11 +601,11 @@ function j() {
             if (m === -1) {
               if (l === this.prerelease.join(".") && u === !1)
                 throw new Error("invalid increment argument: identifier already exists");
-              this.prerelease.push(f);
+              this.prerelease.push(d);
             }
           }
           if (l) {
-            let m = [l, f];
+            let m = [l, d];
             u === !1 && (m = [l]), o(this.prerelease[0], l) === 0 ? isNaN(this.prerelease[1]) && (this.prerelease = m) : this.prerelease = m;
           }
           break;
@@ -684,8 +684,8 @@ function kn() {
     const h = o > 0, c = h ? n : a, i = h ? a : n, l = !!c.prerelease.length;
     if (!!i.prerelease.length && !l)
       return !i.patch && !i.minor ? "major" : c.patch ? "patch" : c.minor ? "minor" : "major";
-    const f = l ? "pre" : "";
-    return n.major !== a.major ? f + "major" : n.minor !== a.minor ? f + "minor" : n.patch !== a.patch ? f + "patch" : "prerelease";
+    const d = l ? "pre" : "";
+    return n.major !== a.major ? d + "major" : n.minor !== a.minor ? d + "minor" : n.patch !== a.patch ? d + "patch" : "prerelease";
   }, at;
 }
 var ot, Zr;
@@ -726,19 +726,19 @@ function U() {
   const s = j();
   return lt = (t, r, n) => new s(t, n).compare(new s(r, n)), lt;
 }
-var ft, ss;
+var dt, ss;
 function Un() {
-  if (ss) return ft;
+  if (ss) return dt;
   ss = 1;
   const s = U();
-  return ft = (t, r, n) => s(r, t, n), ft;
+  return dt = (t, r, n) => s(r, t, n), dt;
 }
-var dt, ns;
+var ft, ns;
 function Gn() {
-  if (ns) return dt;
+  if (ns) return ft;
   ns = 1;
   const s = U();
-  return dt = (t, r) => s(t, r, !0), dt;
+  return ft = (t, r) => s(t, r, !0), ft;
 }
 var mt, is;
 function Qt() {
@@ -765,7 +765,7 @@ function Mn() {
   return gt = (t, r) => t.sort((n, a) => s(a, n, r)), gt;
 }
 var vt, cs;
-function fe() {
+function de() {
   if (cs) return vt;
   cs = 1;
   const s = U();
@@ -792,17 +792,17 @@ function Ys() {
   const s = U();
   return yt = (t, r, n) => s(t, r, n) !== 0, yt;
 }
-var wt, fs;
+var wt, ds;
 function Kt() {
-  if (fs) return wt;
-  fs = 1;
+  if (ds) return wt;
+  ds = 1;
   const s = U();
   return wt = (t, r, n) => s(t, r, n) >= 0, wt;
 }
-var St, ds;
+var St, fs;
 function er() {
-  if (ds) return St;
-  ds = 1;
+  if (fs) return St;
+  fs = 1;
   const s = U();
   return St = (t, r, n) => s(t, r, n) <= 0, St;
 }
@@ -810,7 +810,7 @@ var bt, ms;
 function Js() {
   if (ms) return bt;
   ms = 1;
-  const s = Xs(), e = Ys(), t = fe(), r = Kt(), n = Zt(), a = er();
+  const s = Xs(), e = Ys(), t = de(), r = Kt(), n = Zt(), a = er();
   return bt = (h, c, i, l) => {
     switch (c) {
       case "===":
@@ -852,15 +852,15 @@ function Bn() {
       h = a.match(o.includePrerelease ? t[r.COERCEFULL] : t[r.COERCE]);
     else {
       const m = o.includePrerelease ? t[r.COERCERTLFULL] : t[r.COERCERTL];
-      let d;
-      for (; (d = m.exec(a)) && (!h || h.index + h[0].length !== a.length); )
-        (!h || d.index + d[0].length !== h.index + h[0].length) && (h = d), m.lastIndex = d.index + d[1].length + d[2].length;
+      let f;
+      for (; (f = m.exec(a)) && (!h || h.index + h[0].length !== a.length); )
+        (!h || f.index + f[0].length !== h.index + h[0].length) && (h = f), m.lastIndex = f.index + f[1].length + f[2].length;
       m.lastIndex = -1;
     }
     if (h === null)
       return null;
-    const c = h[2], i = h[3] || "0", l = h[4] || "0", u = o.includePrerelease && h[5] ? `-${h[5]}` : "", f = o.includePrerelease && h[6] ? `+${h[6]}` : "";
-    return e(`${c}.${i}.${l}${u}${f}`, o);
+    const c = h[2], i = h[3] || "0", l = h[4] || "0", u = o.includePrerelease && h[5] ? `-${h[5]}` : "", d = o.includePrerelease && h[6] ? `+${h[6]}` : "";
+    return e(`${c}.${i}.${l}${u}${d}`, o);
   }, Rt;
 }
 var Tt, gs;
@@ -938,11 +938,11 @@ function G() {
       return this.range;
     }
     parseRange(p) {
-      const E = ((this.options.includePrerelease && m) | (this.options.loose && d)) + ":" + p, T = r.get(E);
+      const E = ((this.options.includePrerelease && m) | (this.options.loose && f)) + ":" + p, T = r.get(E);
       if (T)
         return T;
       const y = this.options.loose, C = y ? c[i.HYPHENRANGELOOSE] : c[i.HYPHENRANGE];
-      p = p.replace(C, se(this.options.includePrerelease)), o("hyphen replace", p), p = p.replace(c[i.COMPARATORTRIM], l), o("comparator trim", p), p = p.replace(c[i.TILDETRIM], u), o("tilde trim", p), p = p.replace(c[i.CARETTRIM], f), o("caret trim", p);
+      p = p.replace(C, se(this.options.includePrerelease)), o("hyphen replace", p), p = p.replace(c[i.COMPARATORTRIM], l), o("comparator trim", p), p = p.replace(c[i.TILDETRIM], u), o("tilde trim", p), p = p.replace(c[i.CARETTRIM], d), o("caret trim", p);
       let O = p.split(" ").map((k) => $(k, this.options)).join(" ").split(/\s+/).map((k) => X(k, this.options));
       y && (O = O.filter((k) => (o("loose invalid filter", k, this.options), !!k.match(c[i.COMPARATORLOOSE])))), o("range list", O);
       const L = /* @__PURE__ */ new Map(), P = O.map((k) => new a(k, this.options));
@@ -977,13 +977,13 @@ function G() {
     }
   }
   Ct = e;
-  const t = Vn(), r = new t(), n = Jt(), a = de(), o = le(), h = j(), {
+  const t = Vn(), r = new t(), n = Jt(), a = fe(), o = le(), h = j(), {
     safeRe: c,
     t: i,
     comparatorTrimReplace: l,
     tildeTrimReplace: u,
-    caretTrimReplace: f
-  } = re(), { FLAG_INCLUDE_PRERELEASE: m, FLAG_LOOSE: d } = ue(), v = (_) => _.value === "<0.0.0-0", g = (_) => _.value === "", R = (_, p) => {
+    caretTrimReplace: d
+  } = re(), { FLAG_INCLUDE_PRERELEASE: m, FLAG_LOOSE: f } = ue(), v = (_) => _.value === "<0.0.0-0", g = (_) => _.value === "", R = (_, p) => {
     let b = !0;
     const E = _.slice();
     let T = E.pop();
@@ -1031,7 +1031,7 @@ function G() {
   return Ct;
 }
 var Lt, _s;
-function de() {
+function fe() {
   if (_s) return Lt;
   _s = 1;
   const s = Symbol("SemVer ANY");
@@ -1048,10 +1048,10 @@ function de() {
       l = l.trim().split(/\s+/).join(" "), o("comparator", l, u), this.options = u, this.loose = !!u.loose, this.parse(l), this.semver === s ? this.value = "" : this.value = this.operator + this.semver.version, o("comp", this);
     }
     parse(l) {
-      const u = this.options.loose ? r[n.COMPARATORLOOSE] : r[n.COMPARATOR], f = l.match(u);
-      if (!f)
+      const u = this.options.loose ? r[n.COMPARATORLOOSE] : r[n.COMPARATOR], d = l.match(u);
+      if (!d)
         throw new TypeError(`Invalid comparator: ${l}`);
-      this.operator = f[1] !== void 0 ? f[1] : "", this.operator === "=" && (this.operator = ""), f[2] ? this.semver = new h(f[2], this.options.loose) : this.semver = s;
+      this.operator = d[1] !== void 0 ? d[1] : "", this.operator === "=" && (this.operator = ""), d[2] ? this.semver = new h(d[2], this.options.loose) : this.semver = s;
     }
     toString() {
       return this.value;
@@ -1136,7 +1136,7 @@ var $t, bs;
 function Jn() {
   if (bs) return $t;
   bs = 1;
-  const s = j(), e = G(), t = fe();
+  const s = j(), e = G(), t = de();
   return $t = (n, a) => {
     n = new e(n, a);
     let o = new s("0.0.0");
@@ -1185,16 +1185,16 @@ var Pt, Ts;
 function tr() {
   if (Ts) return Pt;
   Ts = 1;
-  const s = j(), e = de(), { ANY: t } = e, r = G(), n = me(), a = fe(), o = Zt(), h = er(), c = Kt();
-  return Pt = (l, u, f, m) => {
+  const s = j(), e = fe(), { ANY: t } = e, r = G(), n = me(), a = de(), o = Zt(), h = er(), c = Kt();
+  return Pt = (l, u, d, m) => {
     l = new s(l, m), u = new r(u, m);
-    let d, v, g, R, $;
-    switch (f) {
+    let f, v, g, R, $;
+    switch (d) {
       case ">":
-        d = a, v = h, g = o, R = ">", $ = ">=";
+        f = a, v = h, g = o, R = ">", $ = ">=";
         break;
       case "<":
-        d = o, v = c, g = a, R = "<", $ = "<=";
+        f = o, v = c, g = a, R = "<", $ = "<=";
         break;
       default:
         throw new TypeError('Must provide a hilo val of "<" or ">"');
@@ -1205,7 +1205,7 @@ function tr() {
       const I = u.set[w];
       let x = null, A = null;
       if (I.forEach((N) => {
-        N.semver === t && (N = new e(">=0.0.0")), x = x || N, A = A || N, d(N.semver, x.semver, m) ? x = N : g(N.semver, A.semver, m) && (A = N);
+        N.semver === t && (N = new e(">=0.0.0")), x = x || N, A = A || N, f(N.semver, x.semver, m) ? x = N : g(N.semver, A.semver, m) && (A = N);
       }), x.operator === R || x.operator === $ || (!A.operator || A.operator === R) && v(l, A.semver))
         return !1;
       if (A.operator === $ && g(l, A.semver))
@@ -1243,13 +1243,13 @@ function ti() {
   return jt = (t, r, n) => {
     const a = [];
     let o = null, h = null;
-    const c = t.sort((f, m) => e(f, m, n));
-    for (const f of c)
-      s(f, r, n) ? (h = f, o || (o = f)) : (h && a.push([o, h]), h = null, o = null);
+    const c = t.sort((d, m) => e(d, m, n));
+    for (const d of c)
+      s(d, r, n) ? (h = d, o || (o = d)) : (h && a.push([o, h]), h = null, o = null);
     o && a.push([o, null]);
     const i = [];
-    for (const [f, m] of a)
-      f === m ? i.push(f) : !m && f === c[0] ? i.push("*") : m ? f === c[0] ? i.push(`<=${m}`) : i.push(`${f} - ${m}`) : i.push(`>=${f}`);
+    for (const [d, m] of a)
+      d === m ? i.push(d) : !m && d === c[0] ? i.push("*") : m ? d === c[0] ? i.push(`<=${m}`) : i.push(`${d} - ${m}`) : i.push(`>=${d}`);
     const l = i.join(" || "), u = typeof r.raw == "string" ? r.raw : String(r);
     return l.length < u.length ? l : r;
   }, jt;
@@ -1258,39 +1258,39 @@ var Dt, xs;
 function ri() {
   if (xs) return Dt;
   xs = 1;
-  const s = G(), e = de(), { ANY: t } = e, r = me(), n = U(), a = (u, f, m = {}) => {
-    if (u === f)
+  const s = G(), e = fe(), { ANY: t } = e, r = me(), n = U(), a = (u, d, m = {}) => {
+    if (u === d)
       return !0;
-    u = new s(u, m), f = new s(f, m);
-    let d = !1;
+    u = new s(u, m), d = new s(d, m);
+    let f = !1;
     e: for (const v of u.set) {
-      for (const g of f.set) {
+      for (const g of d.set) {
         const R = c(v, g, m);
-        if (d = d || R !== null, R)
+        if (f = f || R !== null, R)
           continue e;
       }
-      if (d)
+      if (f)
         return !1;
     }
     return !0;
-  }, o = [new e(">=0.0.0-0")], h = [new e(">=0.0.0")], c = (u, f, m) => {
-    if (u === f)
+  }, o = [new e(">=0.0.0-0")], h = [new e(">=0.0.0")], c = (u, d, m) => {
+    if (u === d)
       return !0;
     if (u.length === 1 && u[0].semver === t) {
-      if (f.length === 1 && f[0].semver === t)
+      if (d.length === 1 && d[0].semver === t)
         return !0;
       m.includePrerelease ? u = o : u = h;
     }
-    if (f.length === 1 && f[0].semver === t) {
+    if (d.length === 1 && d[0].semver === t) {
       if (m.includePrerelease)
         return !0;
-      f = h;
+      d = h;
     }
-    const d = /* @__PURE__ */ new Set();
+    const f = /* @__PURE__ */ new Set();
     let v, g;
     for (const S of u)
-      S.operator === ">" || S.operator === ">=" ? v = i(v, S, m) : S.operator === "<" || S.operator === "<=" ? g = l(g, S, m) : d.add(S.semver);
-    if (d.size > 1)
+      S.operator === ">" || S.operator === ">=" ? v = i(v, S, m) : S.operator === "<" || S.operator === "<=" ? g = l(g, S, m) : f.add(S.semver);
+    if (f.size > 1)
       return null;
     let R;
     if (v && g) {
@@ -1299,17 +1299,17 @@ function ri() {
       if (R === 0 && (v.operator !== ">=" || g.operator !== "<="))
         return null;
     }
-    for (const S of d) {
+    for (const S of f) {
       if (v && !r(S, String(v), m) || g && !r(S, String(g), m))
         return null;
-      for (const D of f)
+      for (const D of d)
         if (!r(S, String(D), m))
           return !1;
       return !0;
     }
     let $, w, I, x, A = g && !m.includePrerelease && g.semver.prerelease.length ? g.semver : !1, N = v && !m.includePrerelease && v.semver.prerelease.length ? v.semver : !1;
     A && A.prerelease.length === 1 && g.operator === "<" && A.prerelease[0] === 0 && (A = !1);
-    for (const S of f) {
+    for (const S of d) {
       if (x = x || S.operator === ">" || S.operator === ">=", I = I || S.operator === "<" || S.operator === "<=", v) {
         if (N && S.semver.prerelease && S.semver.prerelease.length && S.semver.major === N.major && S.semver.minor === N.minor && S.semver.patch === N.patch && (N = !1), S.operator === ">" || S.operator === ">=") {
           if ($ = i(v, S, m), $ === S && $ !== v)
@@ -1328,16 +1328,16 @@ function ri() {
         return !1;
     }
     return !(v && I && !g && R !== 0 || g && x && !v && R !== 0 || N || A);
-  }, i = (u, f, m) => {
+  }, i = (u, d, m) => {
     if (!u)
-      return f;
-    const d = n(u.semver, f.semver, m);
-    return d > 0 ? u : d < 0 || f.operator === ">" && u.operator === ">=" ? f : u;
-  }, l = (u, f, m) => {
+      return d;
+    const f = n(u.semver, d.semver, m);
+    return f > 0 ? u : f < 0 || d.operator === ">" && u.operator === ">=" ? d : u;
+  }, l = (u, d, m) => {
     if (!u)
-      return f;
-    const d = n(u.semver, f.semver, m);
-    return d < 0 ? u : d > 0 || f.operator === "<" && u.operator === "<=" ? f : u;
+      return d;
+    const f = n(u.semver, d.semver, m);
+    return f < 0 ? u : f > 0 || d.operator === "<" && u.operator === "<=" ? d : u;
   };
   return Dt = a, Dt;
 }
@@ -1345,7 +1345,7 @@ var zt, Os;
 function si() {
   if (Os) return zt;
   Os = 1;
-  const s = re(), e = ue(), t = j(), r = Ws(), n = Q(), a = Nn(), o = Pn(), h = qn(), c = kn(), i = Fn(), l = jn(), u = Dn(), f = zn(), m = U(), d = Un(), v = Gn(), g = Qt(), R = Hn(), $ = Mn(), w = fe(), I = Zt(), x = Xs(), A = Ys(), N = Kt(), S = er(), D = Js(), W = Bn(), X = de(), se = G(), _e = me(), _ = Wn(), p = Xn(), b = Yn(), E = Jn(), T = Qn(), y = tr(), C = Zn(), O = Kn(), L = ei(), P = ti(), F = ri();
+  const s = re(), e = ue(), t = j(), r = Ws(), n = Q(), a = Nn(), o = Pn(), h = qn(), c = kn(), i = Fn(), l = jn(), u = Dn(), d = zn(), m = U(), f = Un(), v = Gn(), g = Qt(), R = Hn(), $ = Mn(), w = de(), I = Zt(), x = Xs(), A = Ys(), N = Kt(), S = er(), D = Js(), W = Bn(), X = fe(), se = G(), _e = me(), _ = Wn(), p = Xn(), b = Yn(), E = Jn(), T = Qn(), y = tr(), C = Zn(), O = Kn(), L = ei(), P = ti(), F = ri();
   return zt = {
     parse: n,
     valid: a,
@@ -1355,9 +1355,9 @@ function si() {
     major: i,
     minor: l,
     patch: u,
-    prerelease: f,
+    prerelease: d,
     compare: m,
-    rcompare: d,
+    rcompare: f,
     compareLoose: v,
     compareBuild: g,
     sort: R,
@@ -1474,9 +1474,9 @@ class Y {
       dispose: i,
       disposeAfter: l,
       noDisposeOnSet: u,
-      noUpdateTTL: f,
+      noUpdateTTL: d,
       maxSize: m = 0,
-      maxEntrySize: d = 0,
+      maxEntrySize: f = 0,
       sizeCalculation: v,
       fetchMethod: g,
       fetchContext: R,
@@ -1491,7 +1491,7 @@ class Y {
     const W = t ? en(t) : Array;
     if (!W)
       throw new Error("invalid max value: " + t);
-    if (this.max = t, this.maxSize = m, this.maxEntrySize = d || this.maxSize, this.sizeCalculation = v || N, this.sizeCalculation) {
+    if (this.max = t, this.maxSize = m, this.maxEntrySize = f || this.maxSize, this.sizeCalculation = v || N, this.sizeCalculation) {
       if (!this.maxSize && !this.maxEntrySize)
         throw new TypeError(
           "cannot set sizeCalculation without setting maxSize or maxEntrySize"
@@ -1507,7 +1507,7 @@ class Y {
       throw new TypeError(
         "cannot set fetchContext without fetchMethod"
       );
-    if (this.keyMap = /* @__PURE__ */ new Map(), this.keyList = new Array(t).fill(null), this.valList = new Array(t).fill(null), this.next = new W(t), this.prev = new W(t), this.head = 0, this.tail = 0, this.free = new hi(t), this.initialFill = 1, this.size = 0, typeof i == "function" && (this.dispose = i), typeof l == "function" ? (this.disposeAfter = l, this.disposed = []) : (this.disposeAfter = null, this.disposed = null), this.noDisposeOnSet = !!u, this.noUpdateTTL = !!f, this.noDeleteOnFetchRejection = !!$, this.allowStaleOnFetchRejection = !!I, this.allowStaleOnFetchAbort = !!x, this.ignoreFetchAbort = !!A, this.maxEntrySize !== 0) {
+    if (this.keyMap = /* @__PURE__ */ new Map(), this.keyList = new Array(t).fill(null), this.valList = new Array(t).fill(null), this.next = new W(t), this.prev = new W(t), this.head = 0, this.tail = 0, this.free = new hi(t), this.initialFill = 1, this.size = 0, typeof i == "function" && (this.dispose = i), typeof l == "function" ? (this.disposeAfter = l, this.disposed = []) : (this.disposeAfter = null, this.disposed = null), this.noDisposeOnSet = !!u, this.noUpdateTTL = !!d, this.noDeleteOnFetchRejection = !!$, this.allowStaleOnFetchRejection = !!I, this.allowStaleOnFetchAbort = !!x, this.ignoreFetchAbort = !!A, this.maxEntrySize !== 0) {
       if (this.maxSize !== 0 && !B(this.maxSize))
         throw new TypeError(
           "maxSize must be a positive integer if specified"
@@ -1731,8 +1731,8 @@ class Y {
       if (t !== u) {
         if (this.isBackgroundFetch(u) ? u.__abortController.abort(new Error("replaced")) : a || (this.dispose(u, e, "set"), this.disposeAfter && this.disposed.push([u, e, "set"])), this.removeItemSize(l), this.valList[l] = t, this.addItemSize(l, o, i), i) {
           i.set = "replace";
-          const f = u && this.isBackgroundFetch(u) ? u.__staleWhileFetching : u;
-          f !== void 0 && (i.oldValue = f);
+          const d = u && this.isBackgroundFetch(u) ? u.__staleWhileFetching : u;
+          d !== void 0 && (i.oldValue = d);
         }
       } else i && (i.set = "update");
     }
@@ -1784,23 +1784,23 @@ class Y {
       signal: o.signal,
       options: r,
       context: n
-    }, c = (m, d = !1) => {
+    }, c = (m, f = !1) => {
       const { aborted: v } = o.signal, g = r.ignoreFetchAbort && m !== void 0;
-      return r.status && (v && !d ? (r.status.fetchAborted = !0, r.status.fetchError = o.signal.reason, g && (r.status.fetchAbortIgnored = !0)) : r.status.fetchResolved = !0), v && !g && !d ? l(o.signal.reason) : (this.valList[t] === f && (m === void 0 ? f.__staleWhileFetching ? this.valList[t] = f.__staleWhileFetching : this.delete(e) : (r.status && (r.status.fetchUpdated = !0), this.set(e, m, h.options))), m);
+      return r.status && (v && !f ? (r.status.fetchAborted = !0, r.status.fetchError = o.signal.reason, g && (r.status.fetchAbortIgnored = !0)) : r.status.fetchResolved = !0), v && !g && !f ? l(o.signal.reason) : (this.valList[t] === d && (m === void 0 ? d.__staleWhileFetching ? this.valList[t] = d.__staleWhileFetching : this.delete(e) : (r.status && (r.status.fetchUpdated = !0), this.set(e, m, h.options))), m);
     }, i = (m) => (r.status && (r.status.fetchRejected = !0, r.status.fetchError = m), l(m)), l = (m) => {
-      const { aborted: d } = o.signal, v = d && r.allowStaleOnFetchAbort, g = v || r.allowStaleOnFetchRejection, R = g || r.noDeleteOnFetchRejection;
-      if (this.valList[t] === f && (!R || f.__staleWhileFetching === void 0 ? this.delete(e) : v || (this.valList[t] = f.__staleWhileFetching)), g)
-        return r.status && f.__staleWhileFetching !== void 0 && (r.status.returnedStale = !0), f.__staleWhileFetching;
-      if (f.__returned === f)
+      const { aborted: f } = o.signal, v = f && r.allowStaleOnFetchAbort, g = v || r.allowStaleOnFetchRejection, R = g || r.noDeleteOnFetchRejection;
+      if (this.valList[t] === d && (!R || d.__staleWhileFetching === void 0 ? this.delete(e) : v || (this.valList[t] = d.__staleWhileFetching)), g)
+        return r.status && d.__staleWhileFetching !== void 0 && (r.status.returnedStale = !0), d.__staleWhileFetching;
+      if (d.__returned === d)
         throw m;
-    }, u = (m, d) => {
-      this.fetchMethod(e, a, h).then((v) => m(v), d), o.signal.addEventListener("abort", () => {
+    }, u = (m, f) => {
+      this.fetchMethod(e, a, h).then((v) => m(v), f), o.signal.addEventListener("abort", () => {
         (!r.ignoreFetchAbort || r.allowStaleOnFetchAbort) && (m(), r.allowStaleOnFetchAbort && (m = (v) => c(v, !0)));
       });
     };
     r.status && (r.status.fetchDispatched = !0);
-    const f = new Promise(u).then(c, i);
-    return f.__abortController = o, f.__staleWhileFetching = a, f.__returned = null, t === void 0 ? (this.set(e, f, { ...h.options, status: void 0 }), t = this.keyMap.get(e)) : this.valList[t] = f, f;
+    const d = new Promise(u).then(c, i);
+    return d.__abortController = o, d.__staleWhileFetching = a, d.__returned = null, t === void 0 ? (this.set(e, d, { ...h.options, status: void 0 }), t = this.keyMap.get(e)) : this.valList[t] = d, d;
   }
   isBackgroundFetch(e) {
     return e && typeof e == "object" && typeof e.then == "function" && Object.prototype.hasOwnProperty.call(
@@ -1823,9 +1823,9 @@ class Y {
     // fetch exclusive options
     noDeleteOnFetchRejection: l = this.noDeleteOnFetchRejection,
     allowStaleOnFetchRejection: u = this.allowStaleOnFetchRejection,
-    ignoreFetchAbort: f = this.ignoreFetchAbort,
+    ignoreFetchAbort: d = this.ignoreFetchAbort,
     allowStaleOnFetchAbort: m = this.allowStaleOnFetchAbort,
-    fetchContext: d = this.fetchContext,
+    fetchContext: f = this.fetchContext,
     forceRefresh: v = !1,
     status: g,
     signal: R
@@ -1849,14 +1849,14 @@ class Y {
       noDeleteOnFetchRejection: l,
       allowStaleOnFetchRejection: u,
       allowStaleOnFetchAbort: m,
-      ignoreFetchAbort: f,
+      ignoreFetchAbort: d,
       status: g,
       signal: R
     };
     let w = this.keyMap.get(e);
     if (w === void 0) {
       g && (g.fetch = "miss");
-      const I = this.backgroundFetch(e, w, $, d);
+      const I = this.backgroundFetch(e, w, $, f);
       return I.__returned = I;
     } else {
       const I = this.valList[w];
@@ -1867,7 +1867,7 @@ class Y {
       const x = this.isStale(w);
       if (!v && !x)
         return g && (g.fetch = "hit"), this.moveToTail(w), r && this.updateItemAge(w), this.statusTTL(g, w), I;
-      const A = this.backgroundFetch(e, w, $, d), N = A.__staleWhileFetching !== void 0, S = N && t;
+      const A = this.backgroundFetch(e, w, $, f), N = A.__staleWhileFetching !== void 0, S = N && t;
       return g && (g.fetch = N && x ? "stale" : "refresh", S && x && (g.returnedStale = !0)), S ? A.__staleWhileFetching : A.__returned = A;
     }
   }
@@ -1980,7 +1980,7 @@ class li {
       yield this.dequeue();
   }
 }
-function fi(s) {
+function di(s) {
   $s(s);
   const e = new li();
   let t = 0;
@@ -2026,7 +2026,7 @@ function fi(s) {
     },
     map: {
       async value(c, i) {
-        const l = Array.from(c, (u, f) => this(i, u, f));
+        const l = Array.from(c, (u, d) => this(i, u, d));
         return Promise.all(l);
       }
     }
@@ -2053,6 +2053,24 @@ class q {
   }
   async set(e, t) {
     return this.ableton.setProp(this.ns, this.nsid, String(e), t);
+  }
+  /**
+   * Returns readable property names discovered on the Live object via introspection.
+   */
+  async getAvailableProperties() {
+    return this.sendCommand("get_available_properties");
+  }
+  /**
+   * Returns observable property names (Live `add_<prop>_listener` APIs).
+   */
+  async getObservableProperties() {
+    return this.sendCommand("get_observable_properties");
+  }
+  /**
+   * Returns callable method names discovered on the Live object via introspection.
+   */
+  async getAvailableFunctions() {
+    return this.sendCommand("get_available_functions");
   }
   async addListener(e, t) {
     const r = this.transformers[e];
@@ -2136,7 +2154,7 @@ class ir extends q {
     super(e, "device-view", t);
   }
 }
-const di = "Looper";
+const fi = "Looper";
 class mi extends q {
   constructor(e, t) {
     super(e, "looper-device", t.id), this.raw = t, this.view = new ir(e, t.id), this.transformers = {
@@ -2250,7 +2268,7 @@ class gi extends q {
   }
 }
 function ar(s, e) {
-  return e.class_name === di ? new mi(s, e) : e.class_name === pi ? new gi(s, e) : new vi(s, e);
+  return e.class_name === fi ? new mi(s, e) : e.class_name === pi ? new gi(s, e) : new vi(s, e);
 }
 class vi extends q {
   constructor(e, t) {
@@ -3439,12 +3457,12 @@ class Wi extends Mi {
     for (let u = 0; u < 16; u++, t += 4)
       M[u] = e.getUint32(t, !1);
     for (let u = 16; u < 64; u++) {
-      const f = M[u - 15], m = M[u - 2], d = H(f, 7) ^ H(f, 18) ^ f >>> 3, v = H(m, 17) ^ H(m, 19) ^ m >>> 10;
-      M[u] = v + M[u - 7] + d + M[u - 16] | 0;
+      const d = M[u - 15], m = M[u - 2], f = H(d, 7) ^ H(d, 18) ^ d >>> 3, v = H(m, 17) ^ H(m, 19) ^ m >>> 10;
+      M[u] = v + M[u - 7] + f + M[u - 16] | 0;
     }
     let { A: r, B: n, C: a, D: o, E: h, F: c, G: i, H: l } = this;
     for (let u = 0; u < 64; u++) {
-      const f = H(h, 6) ^ H(h, 11) ^ H(h, 25), m = l + f + Gi(h, c, i) + Vi[u] + M[u] | 0, v = (H(r, 2) ^ H(r, 13) ^ H(r, 22)) + Hi(r, n, a) | 0;
+      const d = H(h, 6) ^ H(h, 11) ^ H(h, 25), m = l + d + Gi(h, c, i) + Vi[u] + M[u] | 0, v = (H(r, 2) ^ H(r, 13) ^ H(r, 22)) + Hi(r, n, a) | 0;
       l = i, i = c, c = h, h = o + m | 0, o = a, a = n, n = r, r = m + v | 0;
     }
     r = r + this.A | 0, n = n + this.B | 0, a = a + this.C | 0, o = o + this.D | 0, h = h + this.E | 0, c = c + this.F | 0, i = i + this.G | 0, l = l + this.H | 0, this.set(r, n, a, o, h, c, i, l);
@@ -3468,7 +3486,7 @@ const Yi = /* @__PURE__ */ ki(
 function Ji(s, e) {
   return Pi(ji(Yi, js(s), js(e)));
 }
-const Qi = "127.0.0.1", Zi = 39031, Ki = fi(200);
+const Qi = "127.0.0.1", Zi = 39031, Ki = di(200);
 function ea(s) {
   return s.ns === "internal" && s.name === "authenticate" ? "{ hash: *** }" : $n(JSON.stringify(s.args), { length: 100 });
 }
@@ -3793,7 +3811,7 @@ class aa extends xi {
         i && clearTimeout(i);
       }, u = () => {
         this.msgMap.delete(n), l();
-      }, f = () => {
+      }, d = () => {
         l(), i = setTimeout(() => {
           u(), r(
             new ra(
@@ -3804,15 +3822,15 @@ class aa extends xi {
         }, h);
       }, m = Date.now();
       this.msgMap.set(n, {
-        res: (d) => {
+        res: (f) => {
           const v = Date.now() - m;
           v > (this.options?.commandWarnMs ?? 2e3) && this.logger?.warn("Commands took longer than expected", {
             commands: c,
             duration: v
-          }), u(), t(d);
+          }), u(), t(f);
         },
-        rej: (d) => {
-          u(), r(d);
+        rej: (f) => {
+          u(), r(f);
         },
         clearTimeout: () => {
           u(), r(
@@ -3822,8 +3840,8 @@ class aa extends xi {
             )
           );
         }
-      }), this.sendRaw(o).then(f).catch((d) => {
-        u(), r(d);
+      }), this.sendRaw(o).then(d).catch((f) => {
+        u(), r(f);
       });
     });
   }

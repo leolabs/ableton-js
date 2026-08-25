@@ -22,8 +22,9 @@ class Midi(Interface):
                 midi_type = output.get("type")
                 if midi_type != "cc" and midi_type != "note":
                     raise ValueError("invalid midi type " + str(midi_type))
-                self.outputs.add((midi_type, output.get(
-                    "channel"), output.get("target")))
+                self.outputs.add(
+                    (midi_type, output.get("channel"), output.get("target"))
+                )
             except ValueError as e:
                 logger.error(e)
             except:

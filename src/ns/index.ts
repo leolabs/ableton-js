@@ -41,6 +41,36 @@ export class Namespace<GP, TP, SP, OP> {
     return this.ableton.setProp(this.ns, this.nsid, String(prop), value);
   }
 
+  /**
+   * Returns readable property names discovered on the Live object via introspection.
+   *
+   * This is mainly for exploring Live's API, and not all properties might be fully
+   * supported by Ableton.js yet.
+   */
+  async getAvailableProperties(): Promise<string[]> {
+    return this.sendCommand("get_available_properties");
+  }
+
+  /**
+   * Returns observable property names (Live `add_<prop>_listener` APIs).
+   *
+   * This is mainly for exploring Live's API, and not all properties might be fully
+   * supported by Ableton.js yet.
+   */
+  async getObservableProperties(): Promise<string[]> {
+    return this.sendCommand("get_observable_properties");
+  }
+
+  /**
+   * Returns callable method names discovered on the Live object via introspection.
+   *
+   * This is mainly for exploring Live's API, and not all functions might be fully
+   * supported by Ableton.js yet.
+   */
+  async getAvailableFunctions(): Promise<string[]> {
+    return this.sendCommand("get_available_functions");
+  }
+
   async addListener<T extends keyof OP>(
     prop: T,
     listener: (data: T extends keyof TP ? TP[T] : OP[T]) => any,

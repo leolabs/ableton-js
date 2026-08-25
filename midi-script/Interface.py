@@ -5,7 +5,7 @@ from .Config import DEBUG
 from .Logging import logger
 
 
-class ConnectionSubscribers(object):
+class ConnectionSubscribers:
     """Maps a WebSocket connection to its event id for one listener."""
 
     def __init__(self):
@@ -35,7 +35,7 @@ class ConnectionSubscribers(object):
             socket.send_to(conn, event_id, data)
 
 
-class Interface(object):
+class Interface:
     obj_ids = dict()
     listeners = dict()
 
@@ -96,8 +96,7 @@ class Interface(object):
             if name == "add_listener" or name == "remove_listener":
                 kwargs = dict(args)
                 kwargs.pop("connection", None)
-                result = getattr(self, name)(
-                    ns=ns, connection=connection, **kwargs)
+                result = getattr(self, name)(ns=ns, connection=connection, **kwargs)
             else:
                 result = getattr(self, name)(ns=ns, **args)
             return self.format_result(result, etag, cache)
@@ -109,13 +108,13 @@ class Interface(object):
                 result = getattr(ns, name)(*args)
             else:
                 raise Exception(
-                    "Function call failed: " + str(args) +
-                    " are invalid arguments")
+                    "Function call failed: " + str(args) + " are invalid arguments"
+                )
             return self.format_result(result, etag, cache)
 
         raise Exception(
-            "Function call failed: " + str(name) +
-            " doesn't exist or isn't callable")
+            "Function call failed: " + str(name) + " doesn't exist or isn't callable"
+        )
 
     def add_listener(self, ns, prop, eventId, connection, nsid="Default"):
         try:
@@ -127,8 +126,7 @@ class Interface(object):
         self.log_debug("Listener key: " + key)
 
         if key in self.listeners:
-            return self.listeners[key]["subscribers"].subscribe(
-                connection, eventId)
+            return self.listeners[key]["subscribers"].subscribe(connection, eventId)
 
         subscribers = ConnectionSubscribers()
         subscribers.subscribe(connection, eventId)
@@ -140,8 +138,7 @@ class Interface(object):
                 return
             entry["subscribers"].send_each(self.socket, value)
 
-        self.log_debug("Attaching listener: " +
-                       key + ", event ID: " + eventId)
+        self.log_debug("Attaching listener: " + key + ", event ID: " + eventId)
         add_fn(fn)
         self.listeners[key] = {
             "fn": fn,
@@ -167,8 +164,9 @@ class Interface(object):
             Interface._detach_listener(key)
             return True
         except Exception as e:
-            raise Exception("Listener " + str(prop) +
-                            " could not be removed: " + str(e))
+            raise Exception(
+                "Listener " + str(prop) + " could not be removed: " + str(e)
+            )
 
     @staticmethod
     def drop_connection(connection):
@@ -201,6 +199,7 @@ class Interface(object):
         try:
             get_fn = getattr(self, "get_" + prop)
         except:
+
             def get_fn(ns):
                 result = getattr(ns, prop)
                 return result
@@ -211,6 +210,50 @@ class Interface(object):
         try:
             set_fn = getattr(self, "set_" + prop)
         except:
-            def set_fn(ns, value): return setattr(ns, prop, value)
+
+            def set_fn(ns, value):
+                return setattr(ns, prop, value)
 
         return set_fn(ns, value)
+
+    def _is_listener_api(self, name):
+        if name.endswith("_has_listener"):
+            return True
+        if name.endswith("_listener") and name.startswith(("add_", "remove_")):
+            return True
+        return False
+
+    def get_observable_properties(self, ns):
+        props = []
+        for name in dir(ns):
+            if name.startswith("add_") and name.endswith("_listener"):
+                props.append(name[4:-9])  # strip add_ / _listener
+        return sorted(set(props))
+
+    def get_available_properties(self, ns):
+        props = []
+        for name in dir(ns):
+            if name.startswith("_") or self._is_listener_api(name):
+                continue
+            try:
+                attr = getattr(ns, name)
+            except:
+                continue
+            if callable(attr):
+                continue
+            props.append(name)
+        return sorted(props)
+
+    def get_available_functions(self, ns):
+        funcs = []
+        for name in dir(ns):
+            if name.startswith("_") or self._is_listener_api(name):
+                continue
+            try:
+                attr = getattr(ns, name)
+            except:
+                continue
+            if not callable(attr) or name[:1].isupper():
+                continue
+            funcs.append(name)
+        return sorted(funcs)

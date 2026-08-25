@@ -120,4 +120,20 @@ describe("Song", () => {
       expect(received).toEqual(largeArray);
     });
   });
+
+  it("should list available, observable properties and functions via introspection", async () => {
+    await withAbleton(async (ab) => {
+      const available = await ab.song.getAvailableProperties();
+      expect(available).toContain("tempo");
+
+      const observable = await ab.song.getObservableProperties();
+      expect(observable).toContain("is_playing");
+      expect(observable).toContain("tempo");
+
+      const functions = await ab.song.getAvailableFunctions();
+      expect(functions).toContain("start_playing");
+      expect(functions).not.toContain("add_tempo_listener");
+      expect(functions).not.toContain("View");
+    });
+  });
 });
