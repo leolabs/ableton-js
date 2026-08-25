@@ -11,7 +11,10 @@ const file = fs.readFileSync(internalPath);
 
 const replaced = file
   .toString()
-  .replace(/version = "(.+\..+\..+?)"$/m, `version = "${packageJson.version}"`);
+  .replace(
+    /version = "(.+\..+\..+?)"$/m,
+    `version = "${packageJson.version}"\n`,
+  );
 
 fs.writeFileSync(internalPath, replaced);
 fs.writeFileSync(
