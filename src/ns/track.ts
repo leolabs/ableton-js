@@ -1,6 +1,6 @@
 import { Ableton } from "../index.js";
 import { Namespace } from "./index.js";
-import { RawDevice, AnyDevice, wrapDevice } from "./device.js";
+import { RawDevice, wrapDevice, Device } from "./device.js";
 import { ClipSlot, RawClipSlot } from "./clip-slot.js";
 import { MixerDevice, RawMixerDevice } from "./mixer-device.js";
 import { Clip, RawClip } from "./clip.js";
@@ -92,7 +92,7 @@ export interface GettableProperties {
 
 export interface TransformedProperties {
   color: Color;
-  devices: AnyDevice[];
+  devices: Device[];
   clip_slots: ClipSlot[];
   arrangement_clips: Clip[];
   mixer_device: MixerDevice;
