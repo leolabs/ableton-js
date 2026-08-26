@@ -3,11 +3,7 @@ import { Namespace } from "./index.js";
 import { Color } from "../util/color.js";
 import { Clip, RawClip } from "./clip.js";
 
-export enum PlayingStatus {
-  Stopped = "stopped",
-  Playing = "playing",
-  Recording = "recording",
-}
+export type PlayingStatus = "stopped" | "started" | "recording";
 
 export interface GettableProperties {
   clip: RawClip | null;

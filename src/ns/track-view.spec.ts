@@ -1,6 +1,6 @@
 import { describe, it } from "vitest";
 import { withAbleton } from "../util/tests.js";
-import { DeviceInsertMode, GettableProperties } from "./track-view.js";
+import { GettableProperties } from "./track-view.js";
 
 const gettableProps: (keyof GettableProperties)[] = [
   "is_collapsed",
@@ -18,7 +18,7 @@ describe("Track View", () => {
   it("should be able to set the device insert mode", async () => {
     await withAbleton(async (ab) => {
       const tracks = await ab.song.get("tracks");
-      await tracks[0].view.set("device_insert_mode", DeviceInsertMode.SelectedLeft);
+      await tracks[0].view.set("device_insert_mode", "selected_left");
     });
   });
 

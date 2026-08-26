@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+import Live
+
 from .Clip import Clip
 from .ClipSlot import ClipSlot
 from .Device import Device
@@ -101,6 +103,14 @@ class Track(Interface):
 
     def get_clip_slots(self, ns):
         return map(ClipSlot.serialize_clip_slot, ns.clip_slots)
+
+    def get_current_monitoring_state(self, ns):
+        return str(ns.current_monitoring_state)
+
+    def set_current_monitoring_state(self, ns, value):
+        ns.current_monitoring_state = getattr(
+            Live.Track.Track.monitoring_states, str(value)
+        )
 
     def get_group_track(self, ns):
         return Track.serialize_track(ns.group_track)

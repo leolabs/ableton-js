@@ -90,12 +90,7 @@ describe("Song", () => {
       const currentQuantization = await ab.song.get(
         "clip_trigger_quantization",
       );
-      for (const quantization of Object.keys(Quantization)) {
-        await ab.song.set(
-          "clip_trigger_quantization",
-          quantization as Quantization,
-        );
-      }
+      await ab.song.set("clip_trigger_quantization", "q_eight");
       await ab.song.set("clip_trigger_quantization", currentQuantization);
     });
   });
@@ -105,12 +100,7 @@ describe("Song", () => {
       const currentQuantization = await ab.song.get(
         "midi_recording_quantization",
       );
-      for (const quantization of Object.keys(RecordingQuantization)) {
-        await ab.song.set(
-          "midi_recording_quantization",
-          quantization as RecordingQuantization,
-        );
-      }
+      await ab.song.set("midi_recording_quantization", "rec_q_quarter");
       await ab.song.set("midi_recording_quantization", currentQuantization);
     });
   });

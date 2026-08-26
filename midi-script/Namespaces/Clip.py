@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+import Live
+
 from .Envelope import Envelope
 from .Interface import Interface
 
@@ -25,6 +27,27 @@ class Clip(Interface):
 
     def __init__(self, c_instance, socket):
         super(Clip, self).__init__(c_instance, socket)
+
+    def get_available_warp_modes(self, ns):
+        return [str(Live.Clip.WarpMode(mode)) for mode in ns.available_warp_modes]
+
+    def get_launch_mode(self, ns):
+        return str(ns.launch_mode)
+
+    def set_launch_mode(self, ns, value):
+        ns.launch_mode = getattr(Live.Clip.LaunchMode, str(value))
+
+    def get_launch_quantization(self, ns):
+        return str(ns.launch_quantization)
+
+    def set_launch_quantization(self, ns, value):
+        ns.launch_quantization = getattr(Live.Clip.ClipLaunchQuantization, str(value))
+
+    def get_warp_mode(self, ns):
+        return str(ns.warp_mode)
+
+    def set_warp_mode(self, ns, value):
+        ns.warp_mode = getattr(Live.Clip.WarpMode, str(value))
 
     def get_notes(
         self, ns, from_time=0, from_pitch=0, time_span=99999999999999, pitch_span=128

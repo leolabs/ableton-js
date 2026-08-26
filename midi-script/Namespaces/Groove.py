@@ -4,15 +4,6 @@ import Live
 
 from .Interface import Interface
 
-GROOVE_BASES = {
-    "gb_four": Live.Groove.Base.gb_four,
-    "gb_eight": Live.Groove.Base.gb_eight,
-    "gb_eight_triplet": Live.Groove.Base.gb_eight_triplet,
-    "gb_sixteen": Live.Groove.Base.gb_sixteen,
-    "gb_sixteen_triplet": Live.Groove.Base.gb_sixteen_triplet,
-    "gb_thirtytwo": Live.Groove.Base.gb_thirtytwo,
-}
-
 
 class Groove(Interface):
     @staticmethod
@@ -32,7 +23,4 @@ class Groove(Interface):
         return str(ns.base)
 
     def set_base(self, ns, value):
-        if isinstance(value, (int, float)):
-            ns.base = Live.Groove.Base(int(value))
-            return
-        ns.base = GROOVE_BASES.get(str(value), Live.Groove.Base.gb_sixteen)
+        ns.base = getattr(Live.Groove.Base, str(value))

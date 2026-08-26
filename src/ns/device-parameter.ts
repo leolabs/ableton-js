@@ -35,17 +35,9 @@ export interface RawDeviceParameter {
   readonly is_quantized: boolean;
 }
 
-export enum AutomationState {
-  None = 0,
-  Playing = 1,
-  Overridden = 2,
-}
+export type AutomationState = "none" | "playing" | "overridden";
 
-export enum ParameterState {
-  Enabled = 0,
-  Disabled = 1,
-  Irrelevant = 2,
-}
+export type ParameterState = "enabled" | "irrelevant" | "disabled";
 
 export class DeviceParameter extends Namespace<
   GettableProperties,

@@ -1,5 +1,7 @@
 from __future__ import absolute_import
 
+import Live
+
 from .DeviceParameter import DeviceParameter
 from .Interface import Interface
 
@@ -15,6 +17,22 @@ class MixerDevice(Interface):
 
     def __init__(self, c_instance, socket):
         super(MixerDevice, self).__init__(c_instance, socket)
+
+    def get_crossfade_assign(self, ns):
+        return str(ns.crossfade_assign)
+
+    def set_crossfade_assign(self, ns, value):
+        ns.crossfade_assign = getattr(
+            Live.MixerDevice.MixerDevice.crossfade_assignments, str(value)
+        )
+
+    def get_panning_mode(self, ns):
+        return str(ns.panning_mode)
+
+    def set_panning_mode(self, ns, value):
+        ns.panning_mode = getattr(
+            Live.MixerDevice.MixerDevice.panning_modes, str(value)
+        )
 
     def get_crossfader(self, ns):
         return DeviceParameter.serialize_device_parameter(ns.crossfader)

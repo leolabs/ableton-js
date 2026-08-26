@@ -5,12 +5,7 @@ export type DocumentView = "Session" | "Arranger";
 export type DetailView = "Detail" | "Detail/Clip" | "Detail/DeviceChain";
 export type View = "Browser" | DocumentView | DetailView;
 
-export enum NavDirection {
-  Up,
-  Down,
-  Left,
-  Right,
-}
+export type NavDirection = "up" | "down" | "left" | "right";
 
 export interface GettableProperties {
   browse_mode: boolean;
@@ -52,8 +47,16 @@ export class ApplicationView extends Namespace<
     return this.sendCommand("is_view_visible", [view, mainWindowOnly]);
   }
 
-  async scrollView(view: View, direction: NavDirection) {
-    return this.sendCommand("scroll_view", [direction, view, true]);
+  async scrollView(
+    view: View,
+    direction: NavDirection,
+    modifierPressed?: boolean,
+  ) {
+    return this.sendCommand("scroll_view", {
+      direction,
+      view,
+      modifier_pressed: modifierPressed,
+    });
   }
 
   async showView(view: View) {
@@ -64,7 +67,15 @@ export class ApplicationView extends Namespace<
     return this.sendCommand("toggle_browse");
   }
 
-  async zoomView(view: View, direction: NavDirection) {
-    return this.sendCommand("zoom_view", [direction, view, true]);
+  async zoomView(
+    view: View,
+    direction: NavDirection,
+    modifierPressed?: boolean,
+  ) {
+    return this.sendCommand("zoom_view", {
+      direction,
+      view,
+      modifier_pressed: modifierPressed,
+    });
   }
 }

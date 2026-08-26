@@ -1,14 +1,13 @@
 import { Ableton } from "../index.js";
 import { Namespace } from "./index.js";
 
-export enum GrooveBase {
-  gb_four = "gb_four",
-  gb_eight = "gb_eight",
-  gb_eight_triplet = "gb_eight_triplet",
-  gb_sixteen = "gb_sixteen",
-  gb_sixteen_triplet = "gb_sixteen_triplet",
-  gb_thirtytwo = "gb_thirtytwo",
-}
+export type GrooveBase =
+  | "gb_four"
+  | "gb_eight"
+  | "gb_eight_triplet"
+  | "gb_sixteen"
+  | "gb_sixteen_triplet"
+  | "gb_thirtytwo";
 
 export interface GettableProperties {
   base: GrooveBase;
@@ -22,7 +21,7 @@ export interface GettableProperties {
 export interface TransformedProperties {}
 
 export interface SettableProperties {
-  base: GrooveBase | number;
+  base: GrooveBase;
   name: string;
   quantization_amount: number;
   random_amount: number;

@@ -8,32 +8,30 @@ import { Color } from "../util/color.js";
 import { TrackView } from "./track-view.js";
 import { TakeLane, RawTakeLane } from "./take-lane.js";
 
-export enum RoutingLayout {
-  Midi = "midi",
-  Mono = "mono",
-  Stereo = "stereo",
-}
+export type RoutingLayout = "midi" | "mono" | "stereo";
 
 export interface RoutingChannel {
   display_name: string;
   layout: RoutingLayout;
 }
 
-export enum RoutingCategory {
-  External = "external",
-  Rewire = "rewire",
-  Resampling = "resampling",
-  Master = "master",
-  Track = "track",
-  ParentGroupTrack = "parent_group_track",
-  None = "none",
-  Invalid = "invalid",
-}
+export type RoutingCategory =
+  | "external"
+  | "rewire"
+  | "resampling"
+  | "master"
+  | "track"
+  | "parent_group_track"
+  | "none"
+  | "invalid";
 
 export interface RoutingType {
   display_name: string;
   category: RoutingCategory;
 }
+
+/** Live's `Track.monitoring_states`. */
+export type MonitoringState = "IN" | "AUTO" | "OFF";
 
 export interface GettableProperties {
   arm: boolean;
@@ -51,7 +49,7 @@ export interface GettableProperties {
   color_index: number;
   current_input_routing: string;
   current_input_sub_routing: string;
-  current_monitoring_state: number;
+  current_monitoring_state: MonitoringState;
   current_output_routing: string;
   current_output_sub_routing: string;
   devices: RawDevice[];
@@ -111,7 +109,7 @@ export interface SettableProperties {
   color_index: number;
   current_input_routing: string;
   current_input_sub_routing: string;
-  current_monitoring_state: number;
+  current_monitoring_state: MonitoringState;
   current_output_routing: string;
   current_output_sub_routing: string;
   fold_state: boolean;
@@ -139,7 +137,7 @@ export interface ObservableProperties {
   color: number;
   current_input_routing: string;
   current_input_sub_routing: string;
-  current_monitoring_state: number;
+  current_monitoring_state: MonitoringState;
   current_output_routing: string;
   current_output_sub_routing: string;
   devices: RawDevice[];

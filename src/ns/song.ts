@@ -181,43 +181,40 @@ export interface SmpteTime {
   frames: number;
 }
 
-export enum TimeFormat {
-  MsTime = 0,
-  Smpte24 = 1,
-  Smpte25 = 2,
-  Smpte29 = 3,
-  Smpte30 = 4,
-  Smpte30Drop = 5,
-}
+export type TimeFormat =
+  | "ms_time"
+  | "smpte_24"
+  | "smpte_25"
+  | "smpte_30"
+  | "smpte_30_drop"
+  | "smpte_29";
 
-export enum Quantization {
-  q_8_bars = "q_8_bars",
-  q_4_bars = "q_4_bars",
-  q_2_bars = "q_2_bars",
-  q_bar = "q_bar",
-  q_half = "q_half",
-  q_half_triplet = "q_half_triplet",
-  q_quarter = "q_quarter",
-  q_quarter_triplet = "q_quarter_triplet",
-  q_eight = "q_eight",
-  q_eight_triplet = "q_eight_triplet",
-  q_sixtenth = "q_sixtenth",
-  q_sixtenth_triplet = "q_sixtenth_triplet",
-  q_thirtytwoth = "q_thirtytwoth",
-  q_no_q = "q_no_q",
-}
+export type Quantization =
+  | "q_8_bars"
+  | "q_4_bars"
+  | "q_2_bars"
+  | "q_bar"
+  | "q_half"
+  | "q_half_triplet"
+  | "q_quarter"
+  | "q_quarter_triplet"
+  | "q_eight"
+  | "q_eight_triplet"
+  | "q_sixtenth"
+  | "q_sixtenth_triplet"
+  | "q_thirtytwoth"
+  | "q_no_q";
 
-export enum RecordingQuantization {
-  rec_q_eight = "rec_q_eight",
-  rec_q_eight_eight_triplet = "rec_q_eight_eight_triplet",
-  rec_q_eight_triplet = "rec_q_eight_triplet",
-  rec_q_no_q = "rec_q_no_q",
-  rec_q_quarter = "rec_q_quarter",
-  rec_q_sixtenth = "rec_q_sixtenth",
-  rec_q_sixtenth_sixtenth_triplet = "rec_q_sixtenth_sixtenth_triplet",
-  rec_q_sixtenth_triplet = "rec_q_sixtenth_triplet",
-  rec_q_thirtysecond = "rec_q_thirtysecond",
-}
+export type RecordingQuantization =
+  | "rec_q_eight"
+  | "rec_q_eight_eight_triplet"
+  | "rec_q_eight_triplet"
+  | "rec_q_no_q"
+  | "rec_q_quarter"
+  | "rec_q_sixtenth"
+  | "rec_q_sixtenth_sixtenth_triplet"
+  | "rec_q_sixtenth_triplet"
+  | "rec_q_thirtysecond";
 
 export class Song extends Namespace<
   GettableProperties,

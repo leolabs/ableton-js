@@ -11,39 +11,33 @@ import {
   tupleToNote,
 } from "../util/note.js";
 
-export enum WarpMode {
-  Beats = 0,
-  Tones = 1,
-  Texture = 2,
-  Repitch = 3,
-  Complex = 4,
-  ComplexPro = 6,
-}
+export type WarpMode =
+  | "beats"
+  | "tones"
+  | "texture"
+  | "repitch"
+  | "complex"
+  | "rex"
+  | "complex_pro";
 
-export enum LaunchMode {
-  Trigger = 0,
-  Gate = 1,
-  Toggle = 2,
-  Repeat = 3,
-}
+export type LaunchMode = "trigger" | "gate" | "toggle" | "repeat";
 
-export enum LaunchQuantization {
-  QGlobal = 0,
-  QNone = 1,
-  Q8Bars = 2,
-  Q4Bars = 3,
-  Q2Bars = 4,
-  QBar = 5,
-  QHalf = 6,
-  QHalfTriplet = 7,
-  QQuarter = 8,
-  QQuarterTriplet = 9,
-  QEighth = 10,
-  QEighthTriplet = 11,
-  QSixteenth = 12,
-  QSixteenthTriplet = 13,
-  QThirtySecond = 14,
-}
+export type LaunchQuantization =
+  | "q_global"
+  | "q_none"
+  | "q_8_bars"
+  | "q_4_bars"
+  | "q_2_bars"
+  | "q_bar"
+  | "q_half"
+  | "q_half_triplet"
+  | "q_quarter"
+  | "q_quarter_triplet"
+  | "q_eighth"
+  | "q_eighth_triplet"
+  | "q_sixteenth"
+  | "q_sixteenth_triplet"
+  | "q_thirtysecond";
 
 interface WarpMarker {
   beat_time: number;

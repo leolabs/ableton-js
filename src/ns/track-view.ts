@@ -2,11 +2,7 @@ import { Ableton } from "../index.js";
 import { Namespace } from "./index.js";
 import { RawDevice, AnyDevice, wrapDevice } from "./device.js";
 
-export enum DeviceInsertMode {
-  Default = "default",
-  SelectedLeft = "selected_left",
-  SelectedRight = "selected_right",
-}
+export type DeviceInsertMode = "default" | "selected_left" | "selected_right";
 
 export interface GettableProperties {
   // device_insert_mode: DeviceInsertMode; – for some reason, Live returns a boolean here

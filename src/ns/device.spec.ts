@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { Ableton } from "../index.js";
-import { Device, DeviceType, RawDevice } from "./device.js";
+import { Device, RawDevice } from "./device.js";
 import { wrapDevice } from "./device.js";
 import { isLooperDevice, LooperDevice } from "./looper-device.js";
 import { isPluginDevice, PluginDevice } from "./plugin-device.js";
@@ -9,7 +9,7 @@ function raw(class_name: string): RawDevice {
   return {
     id: "live_1",
     name: "Test",
-    type: DeviceType.AudioEffect,
+    type: "audio_effect",
     class_name,
   };
 }

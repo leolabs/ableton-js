@@ -55,12 +55,11 @@ export interface RawDevice {
   readonly class_name: string;
 }
 
-export enum DeviceType {
-  AudioEffect = "audio_effect",
-  Instrument = "instrument",
-  MidiEffect = "midi_effect",
-  Undefined = "undefined",
-}
+export type DeviceType =
+  | "audio_effect"
+  | "instrument"
+  | "midi_effect"
+  | "undefined";
 
 export type AnyDevice = Device | LooperDevice | PluginDevice;
 
