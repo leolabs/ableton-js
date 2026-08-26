@@ -21,10 +21,6 @@ class Application(Interface):
         return ns.get_bugfix_version()
 
     def get_version(self, ns):
-        return (
-            str(ns.get_major_version())
-            + "."
-            + str(ns.get_minor_version())
-            + "."
-            + str(ns.get_bugfix_version())
-        )
+        if hasattr(ns, "get_version_string"):
+            return ns.get_version_string()
+        return f"{ns.get_major_version()}.{ns.get_minor_version()}.{ns.get_bugfix_version()}"
