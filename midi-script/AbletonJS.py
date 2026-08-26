@@ -5,7 +5,7 @@ import time
 import Live
 from _Framework.ControlSurface import ControlSurface
 
-from .Config import DEBUG
+from .Config import DEBUG, PLUGIN_NAME
 from .Logging import logger
 from .Namespaces.Application import Application
 from .Namespaces.ApplicationView import ApplicationView
@@ -44,7 +44,7 @@ class AbletonJS(ControlSurface):
     def __init__(self, c_instance):
         super(AbletonJS, self).__init__(c_instance)
 
-        logger.info(f"Starting AbletonJS {version}...")
+        logger.info(f"Starting {PLUGIN_NAME} {version}...")
 
         self.tracked_midi = set()
 
