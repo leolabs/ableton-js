@@ -1,5 +1,5 @@
 {
-  "include": ["./src/**/*", "./scripts/**/*"],
+  "include": ["./src/**/*"],
   "exclude": ["**/*.spec.ts"],
   "compilerOptions": {
     "module": "nodenext",
