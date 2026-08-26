@@ -47,11 +47,11 @@ export class PluginDevice extends Namespace<
   SettableProperties,
   ObservableProperties
 > {
-  view: DeviceView;
+  public readonly view: DeviceView;
 
   constructor(
     ableton: Ableton,
-    public raw: RawDevice,
+    public readonly raw: RawDevice,
   ) {
     super(ableton, "plugin-device", raw.id);
     this.view = new DeviceView(ableton, raw.id);

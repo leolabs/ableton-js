@@ -219,17 +219,17 @@ export class Ableton extends EventEmitter<EventMap> {
   private port: number;
 
   /** LRU cache used by cached property reads when caching is enabled. */
-  public cache?: Cache;
+  public readonly cache?: Cache;
   /** The current Live Set (tracks, scenes, tempo, playback, …). */
-  public song = new Song(this);
+  public readonly song = new Song(this);
   /** Red box / session ring control. */
-  public session = new Session(this);
+  public readonly session = new Session(this);
   /** Live application metadata and dialogs. */
-  public application = new Application(this);
+  public readonly application = new Application(this);
   /** Internal plugin helpers (ping, version, auth). */
-  public internal = new Internal(this);
+  public readonly internal = new Internal(this);
   /** Forwarded MIDI note/CC tracking. */
-  public midi = new Midi(this);
+  public readonly midi = new Midi(this);
 
   private logger: Logger | undefined;
   private clientState: "closed" | "starting" | "started" = "closed";

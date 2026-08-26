@@ -63,7 +63,7 @@ export class ClipSlot extends Namespace<
 > {
   constructor(
     ableton: Ableton,
-    public raw: RawClipSlot,
+    public readonly raw: RawClipSlot,
   ) {
     super(ableton, "clip_slot", raw.id);
 

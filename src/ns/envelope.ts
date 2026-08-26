@@ -43,7 +43,7 @@ export class Envelope extends Namespace<
 > {
   constructor(
     ableton: Ableton,
-    public raw: RawEnvelope,
+    public readonly raw: RawEnvelope,
   ) {
     super(ableton, "envelope", raw.id);
 

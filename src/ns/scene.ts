@@ -48,7 +48,7 @@ export class Scene extends Namespace<
 > {
   constructor(
     ableton: Ableton,
-    public raw: RawScene,
+    public readonly raw: RawScene,
   ) {
     super(ableton, "scene", raw.id);
 

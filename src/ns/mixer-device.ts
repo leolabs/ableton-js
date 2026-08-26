@@ -63,7 +63,7 @@ export class MixerDevice extends Namespace<
 > {
   constructor(
     ableton: Ableton,
-    public raw: RawMixerDevice,
+    public readonly raw: RawMixerDevice,
   ) {
     super(ableton, "mixer-device", raw.id);
 

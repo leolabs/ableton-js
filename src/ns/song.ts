@@ -252,6 +252,7 @@ export class Song extends Namespace<
 
   public readonly view = new SongView(this.ableton);
   public readonly groovePool = new GroovePool(this.ableton);
+
   public async beginUndoStep() {
     return this.sendCommand("begin_undo_step");
   }

@@ -45,7 +45,7 @@ export class DrumPad extends Namespace<
 > {
   constructor(
     ableton: Ableton,
-    public raw: RawDrumPad,
+    public readonly raw: RawDrumPad,
   ) {
     super(ableton, "drum-pad", raw.id);
 

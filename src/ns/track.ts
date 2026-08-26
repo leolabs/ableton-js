@@ -187,11 +187,11 @@ export class Track extends Namespace<
   SettableProperties,
   ObservableProperties
 > {
-  view: TrackView;
+  public readonly view: TrackView;
 
   constructor(
     ableton: Ableton,
-    public raw: RawTrack,
+    public readonly raw: RawTrack,
   ) {
     super(ableton, "track", raw.id);
     this.view = new TrackView(this.ableton, raw.id);

@@ -31,7 +31,7 @@ export class CuePoint extends Namespace<
 > {
   constructor(
     ableton: Ableton,
-    public raw: RawCuePoint,
+    public readonly raw: RawCuePoint,
   ) {
     super(ableton, "cue-point", raw.id);
   }

@@ -55,7 +55,7 @@ export class DeviceParameter extends Namespace<
 > {
   constructor(
     ableton: Ableton,
-    public raw: RawDeviceParameter,
+    public readonly raw: RawDeviceParameter,
   ) {
     super(ableton, "device-parameter", raw.id);
   }

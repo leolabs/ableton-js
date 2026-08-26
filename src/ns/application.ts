@@ -35,8 +35,8 @@ export class Application extends Namespace<
     super(ableton, "application");
   }
 
-  public browser = new Browser(this.ableton);
-  public view = new ApplicationView(this.ableton);
+  public readonly browser = new Browser(this.ableton);
+  public readonly view = new ApplicationView(this.ableton);
 
   public async pressCurrentDialogButton(index: number) {
     return this.sendCommand("press_current_dialog_button", [index]);

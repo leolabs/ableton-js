@@ -49,7 +49,7 @@ export class Chain extends Namespace<
 > {
   constructor(
     ableton: Ableton,
-    public raw: RawChain,
+    public readonly raw: RawChain,
   ) {
     super(ableton, "chain", raw.id);
 

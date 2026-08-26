@@ -40,7 +40,7 @@ export class BrowserItem extends Namespace<
 > {
   constructor(
     ableton: Ableton,
-    public raw: RawBrowserItem,
+    public readonly raw: RawBrowserItem,
   ) {
     super(ableton, "browser-item", raw.id);
     this.transformers = {
