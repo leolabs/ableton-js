@@ -107,14 +107,10 @@ class Interface:
             elif isinstance(args, list):
                 result = getattr(ns, name)(*args)
             else:
-                raise Exception(
-                    f"Function call failed: {args} are invalid arguments"
-                )
+                raise Exception(f"Function call failed: {args} are invalid arguments")
             return self.format_result(result, etag, cache)
 
-        raise Exception(
-            f"Function call failed: {name} doesn't exist or isn't callable"
-        )
+        raise Exception(f"Function call failed: {name} doesn't exist or isn't callable")
 
     def add_listener(self, ns, prop, eventId, connection, nsid="Default"):
         try:
@@ -251,7 +247,17 @@ class Interface:
                 attr = getattr(ns, name)
             except:
                 continue
-            if not callable(attr) or name[:1].isupper():
+            if not callable(attr):
                 continue
+            # Skip nested Live types/enums (Song.View, Track.monitoring_states)
+            if name[:1].isupper():
+                continue
+            try:
+                if isinstance(attr, type) or (
+                    getattr(attr, "__name__", None) and hasattr(attr, "__bases__")
+                ):
+                    continue
+            except:
+                pass
             funcs.append(name)
         return sorted(funcs)
