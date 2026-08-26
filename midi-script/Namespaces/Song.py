@@ -7,6 +7,7 @@ from .Device import Device
 from .Interface import Interface
 from .Scene import Scene
 from .Track import Track
+from .TuningSystem import TuningSystem
 
 PLAY_QUANTIZATIONS = {
     "q_8_bars": Live.Song.Quantization.q_8_bars,
@@ -82,6 +83,9 @@ class Song(Interface):
 
     def get_tracks(self, ns):
         return map(Track.serialize_track, ns.tracks)
+
+    def get_tuning_system(self, ns):
+        return TuningSystem.serialize_tuning_system(ns.tuning_system)
 
     def get_visible_tracks(self, ns):
         return map(Track.serialize_track, ns.visible_tracks)

@@ -20,6 +20,8 @@ from .Namespaces.DeviceParameter import DeviceParameter
 from .Namespaces.DeviceView import DeviceView
 from .Namespaces.DrumPad import DrumPad
 from .Namespaces.Envelope import Envelope
+from .Namespaces.Groove import Groove
+from .Namespaces.GroovePool import GroovePool
 from .Namespaces.Interface import Interface
 from .Namespaces.Internal import Internal
 from .Namespaces.LooperDevice import LooperDevice
@@ -32,6 +34,7 @@ from .Namespaces.Song import Song
 from .Namespaces.SongView import SongView
 from .Namespaces.Track import Track
 from .Namespaces.TrackView import TrackView
+from .Namespaces.TuningSystem import TuningSystem
 from .Socket import Socket
 from .version import version
 
@@ -63,6 +66,8 @@ class AbletonJS(ControlSurface):
             "device-view": DeviceView(c_instance, self.socket),
             "drum-pad": DrumPad(c_instance, self.socket),
             "envelope": Envelope(c_instance, self.socket),
+            "groove": Groove(c_instance, self.socket),
+            "groove-pool": GroovePool(c_instance, self.socket),
             "internal": Internal(c_instance, self.socket),
             "looper-device": LooperDevice(c_instance, self.socket),
             "midi": Midi(
@@ -78,6 +83,7 @@ class AbletonJS(ControlSurface):
             "song-view": SongView(c_instance, self.socket),
             "track": Track(c_instance, self.socket),
             "track-view": TrackView(c_instance, self.socket),
+            "tuning-system": TuningSystem(c_instance, self.socket),
             "clip_slot": ClipSlot(c_instance, self.socket),
             "clip": Clip(c_instance, self.socket),
         }

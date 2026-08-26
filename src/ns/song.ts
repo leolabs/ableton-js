@@ -5,6 +5,8 @@ import { CuePoint, RawCuePoint } from "./cue-point.js";
 import { SongView } from "./song-view.js";
 import { Scene, RawScene } from "./scene.js";
 import { RawDevice } from "./device.js";
+import { GroovePool } from "./groove-pool.js";
+import { TuningSystem, RawTuningSystem } from "./tuning-system.js";
 
 export interface GettableProperties {
   appointed_device: RawDevice;
@@ -60,7 +62,8 @@ export interface GettableProperties {
   tempo: number;
   tempo_follower_enabled: boolean;
   tracks: RawTrack[];
-  // view: never; - Not needed here
+  tuning_system: RawTuningSystem | null;
+  // groove_pool / view: exposed as song.groovePool / song.view
   visible_tracks: RawTrack[];
 }
 
@@ -69,8 +72,8 @@ export interface TransformedProperties {
   master_track: Track;
   return_tracks: Track[];
   tracks: Track[];
+  tuning_system: TuningSystem | null;
   visible_tracks: Track[];
-  //view: SongView; - Not needed here
   scenes: Scene[];
 }
 
@@ -167,6 +170,7 @@ export interface ObservableProperties {
   tempo: number;
   tempo_follower_enabled: boolean;
   tracks: RawTrack[];
+  tuning_system: RawTuningSystem | null;
   visible_tracks: RawTrack[];
 }
 
@@ -229,6 +233,8 @@ export class Song extends Namespace<
       master_track: (track) => new Track(ableton, track),
       return_tracks: (tracks) => tracks.map((t) => new Track(ableton, t)),
       tracks: (tracks) => tracks.map((t) => new Track(ableton, t)),
+      tuning_system: (system) =>
+        system ? new TuningSystem(ableton, system) : null,
       visible_tracks: (tracks) => tracks.map((t) => new Track(ableton, t)),
       scenes: (scenes) => scenes.map((s) => new Scene(ableton, s)),
     };
@@ -238,12 +244,14 @@ export class Song extends Namespace<
       master_track: true,
       return_tracks: true,
       tracks: true,
+      tuning_system: true,
       visible_tracks: true,
       scenes: true,
     };
   }
 
-  public view = new SongView(this.ableton);
+  public readonly view = new SongView(this.ableton);
+  public readonly groovePool = new GroovePool(this.ableton);
   public async beginUndoStep() {
     return this.sendCommand("begin_undo_step");
   }

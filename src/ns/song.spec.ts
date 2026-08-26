@@ -59,6 +59,7 @@ const gettableProps: (keyof GettableProperties)[] = [
   "tempo",
   "tempo_follower_enabled",
   "tracks",
+  "tuning_system",
   "visible_tracks",
 ];
 
