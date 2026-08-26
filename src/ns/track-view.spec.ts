@@ -18,7 +18,7 @@ describe("Track View", () => {
   it("should be able to set the device insert mode", async () => {
     await withAbleton(async (ab) => {
       const tracks = await ab.song.get("tracks");
-      await tracks[0].view.set("device_insert_mode", DeviceInsertMode.Left);
+      await tracks[0].view.set("device_insert_mode", DeviceInsertMode.SelectedLeft);
     });
   });
 

@@ -6,10 +6,12 @@ import { MixerDevice, RawMixerDevice } from "./mixer-device.js";
 import { Clip, RawClip } from "./clip.js";
 import { Color } from "../util/color.js";
 import { TrackView } from "./track-view.js";
+import { TakeLane, RawTakeLane } from "./take-lane.js";
 
 export enum RoutingLayout {
-  Mono = 1,
-  Stereo = 2,
+  Midi = "midi",
+  Mono = "mono",
+  Stereo = "stereo",
 }
 
 export interface RoutingChannel {
@@ -18,14 +20,14 @@ export interface RoutingChannel {
 }
 
 export enum RoutingCategory {
-  External,
-  Rewire,
-  Resampling,
-  Master,
-  Track,
-  ParentGroupTrack,
-  None,
-  Invalid,
+  External = "external",
+  Rewire = "rewire",
+  Resampling = "resampling",
+  Master = "master",
+  Track = "track",
+  ParentGroupTrack = "parent_group_track",
+  None = "none",
+  Invalid = "invalid",
 }
 
 export interface RoutingType {
@@ -33,7 +35,6 @@ export interface RoutingType {
   category: RoutingCategory;
 }
 
-// TODO: Implement commented-out properties properly
 export interface GettableProperties {
   arm: boolean;
   arrangement_clips: RawClip[];
@@ -41,6 +42,7 @@ export interface GettableProperties {
   available_input_routing_types: RoutingType[];
   available_output_routing_channels: RoutingChannel[];
   available_output_routing_types: RoutingType[];
+  back_to_arranger: boolean;
   can_be_armed: boolean;
   can_be_frozen: boolean;
   can_show_chains: boolean;
@@ -60,14 +62,14 @@ export interface GettableProperties {
   has_audio_output: boolean;
   has_midi_input: boolean;
   has_midi_output: boolean;
-  implicit_arm: number;
+  implicit_arm: boolean;
   input_meter_left: number;
   input_meter_level: number;
   input_meter_right: number;
-  // input_routing_channel: unknown;
-  // input_routing_type: unknown;
-  // input_routings: unknown;
-  // input_sub_routings: unknown;
+  input_routing_channel: RoutingChannel;
+  input_routing_type: RoutingType;
+  input_routings: string[];
+  input_sub_routings: string[];
   is_foldable: boolean;
   is_frozen: boolean;
   is_grouped: boolean;
@@ -81,13 +83,15 @@ export interface GettableProperties {
   output_meter_left: number;
   output_meter_level: number;
   output_meter_right: number;
-  // output_routing_channel: unknown;
-  // output_routing_type: unknown;
-  // output_routings: unknown;
-  // output_sub_routings: unknown;
+  output_routing_channel: RoutingChannel;
+  output_routing_type: RoutingType;
+  output_routings: string[];
+  output_sub_routings: string[];
+  performance_impact: number;
   playing_slot_index: number;
-  solo: number;
-  //view: unknown;
+  solo: boolean;
+  take_lanes: RawTakeLane[];
+  // view: exposed as track.view
 }
 
 export interface TransformedProperties {
@@ -95,11 +99,14 @@ export interface TransformedProperties {
   devices: Device[];
   clip_slots: ClipSlot[];
   arrangement_clips: Clip[];
+  group_track: Track | null;
   mixer_device: MixerDevice;
+  take_lanes: TakeLane[];
 }
 
 export interface SettableProperties {
   arm: boolean;
+  back_to_arranger: boolean;
   color: number;
   color_index: number;
   current_input_routing: string;
@@ -107,31 +114,26 @@ export interface SettableProperties {
   current_monitoring_state: number;
   current_output_routing: string;
   current_output_sub_routing: string;
-  fired_slot_index: number;
-  fold_state: number;
+  fold_state: boolean;
   implicit_arm: boolean;
-  input_routing_channel: number;
-  input_routing_type: number;
-  input_routings: number;
-  input_sub_routings: number;
-  is_showing_chains: number;
+  input_routing_channel: RoutingChannel | string;
+  input_routing_type: RoutingType | string;
+  is_showing_chains: boolean;
   mute: boolean;
   name: string;
-  output_routing_channel: number;
-  output_routing_type: number;
-  output_routings: number;
-  output_sub_routings: number;
-  playing_slot_index: number;
+  output_routing_channel: RoutingChannel | string;
+  output_routing_type: RoutingType | string;
   solo: boolean;
 }
 
 export interface ObservableProperties {
-  arm: number;
+  arm: boolean;
   arrangement_clips: RawClip[];
-  // available_input_routing_channels: number;
-  // available_input_routing_types: number;
-  // available_output_routing_channels: number;
-  // available_output_routing_types: number;
+  available_input_routing_channels: RoutingChannel[];
+  available_input_routing_types: RoutingType[];
+  available_output_routing_channels: RoutingChannel[];
+  available_output_routing_types: RoutingType[];
+  back_to_arranger: boolean;
   clip_slots: RawClipSlot[];
   color_index: number;
   color: number;
@@ -150,24 +152,26 @@ export interface ObservableProperties {
   input_meter_left: number;
   input_meter_level: number;
   input_meter_right: number;
-  // input_routing_channel: string;
-  // input_routing_type: string;
-  // input_routings: string;
-  // input_sub_routings: string;
-  is_frozen: number;
-  is_showing_chains: number;
+  input_routing_channel: RoutingChannel;
+  input_routing_type: RoutingType;
+  input_routings: string[];
+  input_sub_routings: string[];
+  is_frozen: boolean;
+  is_showing_chains: boolean;
   mute: boolean;
-  muted_via_solo: number;
+  muted_via_solo: boolean;
   name: string;
   output_meter_left: number;
   output_meter_level: number;
   output_meter_right: number;
-  // output_routing_channel: number;
-  // output_routing_type: number;
-  // output_routings: number;
-  // output_sub_routings: number;
+  output_routing_channel: RoutingChannel;
+  output_routing_type: RoutingType;
+  output_routings: string[];
+  output_sub_routings: string[];
+  performance_impact: number;
   playing_slot_index: number;
   solo: boolean;
+  take_lanes: RawTakeLane[];
 }
 
 export interface RawTrack {
@@ -203,13 +207,17 @@ export class Track extends Namespace<
       devices: (devices) => devices.map((d) => wrapDevice(ableton, d)),
       clip_slots: (clip_slots) =>
         clip_slots.map((c) => new ClipSlot(ableton, c)),
+      group_track: (t) => (t ? new Track(ableton, t) : null),
       mixer_device: (mixer_device) => new MixerDevice(ableton, mixer_device),
+      take_lanes: (lanes) => lanes.map((l) => new TakeLane(ableton, l)),
     };
 
     this.cachedProps = {
       arrangement_clips: true,
       devices: true,
       clip_slots: true,
+      group_track: true,
+      take_lanes: true,
     };
   }
 
@@ -229,7 +237,7 @@ export class Track extends Namespace<
    * Deletes the given clip from the arrangement of this track.
    * Raises a runtime error when the clip belongs to another track
    */
-  deleteClip(clipOrId: Clip | string) {
+  async deleteClip(clipOrId: Clip | string) {
     return this.sendCommand("delete_clip", {
       clip_id: typeof clipOrId === "string" ? clipOrId : clipOrId.raw.id,
     });
@@ -238,16 +246,75 @@ export class Track extends Namespace<
   /**
    * Delete a device identified by the index in the 'devices' list of current track
    */
-  deleteDevice(index: number) {
+  async deleteDevice(index: number) {
     return this.sendCommand("delete_device", [index]);
   }
 
   /**
-   * Given an absolute path to a valid audio file in a supported format, creates an audio clip that references the file in the clip slot.
-   * Throws an error if the clip slot doesn't belong to an audio track or if the track is frozen.
+   * Duplicates the device at `index` in this track's device chain.
    */
-  createAudioClip(filePath: string, position: number) {
-    return this.sendCommand("create_audio_clip", [filePath, position]);
+  async duplicateDevice(index: number) {
+    return this.sendCommand("duplicate_device", { index });
+  }
+
+  /**
+   * Duplicates the clip slot at `index` into the next free slot.
+   * Returns the destination slot index (creates a scene if needed).
+   */
+  async duplicateClipSlot(index: number): Promise<number> {
+    return this.sendCommand("duplicate_clip_slot", { index });
+  }
+
+  /**
+   * Creates a take lane for this track (Arrangement View comping).
+   */
+  async createTakeLane() {
+    const raw = await this.sendCommand("create_take_lane");
+    return new TakeLane(this.ableton, raw);
+  }
+
+  /**
+   * Inserts a native Live device by UI name at `targetIndex` (-1 = end).
+   * Available since Live 12.3.
+   */
+  async insertDevice(deviceName: string, targetIndex = -1) {
+    const raw = await this.sendCommand("insert_device", {
+      device_name: deviceName,
+      target_index: targetIndex,
+    });
+    return wrapDevice(this.ableton, raw);
+  }
+
+  /**
+   * Jumps forward/backward in the currently running Session clip by `beats`.
+   */
+  async jumpInRunningSessionClip(beats: number) {
+    return this.sendCommand("jump_in_running_session_clip", { beats });
+  }
+
+  /** Stops playing all fired clips on this track. */
+  async stopAllClips(quantized = true) {
+    return this.sendCommand("stop_all_clips", { quantized });
+  }
+
+  async getData(key: string) {
+    return this.sendCachedCommand("get_data", { key });
+  }
+
+  async setData(key: string, value: unknown) {
+    return this.sendCommand("set_data", { key, value });
+  }
+
+  /**
+   * Creates an audio clip referencing `filePath` and inserts it into the
+   * arrangement at `position`. Only works on audio tracks.
+   */
+  async createAudioClip(filePath: string, position: number) {
+    const rawClip = await this.sendCommand("create_audio_clip", {
+      file_path: filePath,
+      position,
+    });
+    return new Clip(this.ableton, rawClip);
   }
 
   /**

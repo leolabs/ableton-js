@@ -4,8 +4,8 @@ import { RawDevice, AnyDevice, wrapDevice } from "./device.js";
 
 export enum DeviceInsertMode {
   Default = "default",
-  Left = "left",
-  Right = "right",
+  SelectedLeft = "selected_left",
+  SelectedRight = "selected_right",
 }
 
 export interface GettableProperties {

@@ -32,6 +32,7 @@ from .Namespaces.Scene import Scene
 from .Namespaces.Session import Session
 from .Namespaces.Song import Song
 from .Namespaces.SongView import SongView
+from .Namespaces.TakeLane import TakeLane
 from .Namespaces.Track import Track
 from .Namespaces.TrackView import TrackView
 from .Namespaces.TuningSystem import TuningSystem
@@ -81,6 +82,7 @@ class AbletonJS(ControlSurface):
             "scene": Scene(c_instance, self.socket),
             "song": Song(c_instance, self.socket),
             "song-view": SongView(c_instance, self.socket),
+            "take-lane": TakeLane(c_instance, self.socket),
             "track": Track(c_instance, self.socket),
             "track-view": TrackView(c_instance, self.socket),
             "tuning-system": TuningSystem(c_instance, self.socket),
