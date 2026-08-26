@@ -25,6 +25,7 @@ interface Command {
   name: string;
   etag?: string;
   cache?: boolean;
+  timeout?: number;
   args?: { [k: string]: any };
 }
 
@@ -731,8 +732,14 @@ export class Ableton extends EventEmitter<EventMap> {
         commands,
       };
       const msg = JSON.stringify(payload);
-      const timeout = this.options?.commandTimeoutMs ?? 3000;
       const summary = summarizeCommands(commands);
+
+      const timeout = commands
+        .filter((c) => c.timeout)
+        .reduce(
+          (acc, cur) => Math.max(acc, cur.timeout ?? 0),
+          this.options?.commandTimeoutMs ?? 3000,
+        );
 
       let timeoutId: ReturnType<typeof setTimeout> | null = null;
 
