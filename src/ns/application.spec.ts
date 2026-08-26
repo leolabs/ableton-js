@@ -3,13 +3,20 @@ import { withAbleton } from "../util/tests.js";
 import { GettableProperties } from "./application.js";
 
 const gettableProps: (keyof GettableProperties)[] = [
+  "average_process_usage",
+  "bugfix_version",
+  "build_id",
+  "control_surfaces",
+  "current_dialog_button_count",
+  "current_dialog_message",
   "major_version",
   "minor_version",
-  "bugfix_version",
-  "version",
+  "number_of_push_apps_running",
   "open_dialog_count",
-  "current_dialog_message",
-  "current_dialog_button_count",
+  "peak_process_usage",
+  "unavailable_features",
+  "variant",
+  "version",
 ];
 
 describe("Application", () => {

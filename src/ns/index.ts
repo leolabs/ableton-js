@@ -95,13 +95,19 @@ export class Namespace<GP, TP, SP, OP> {
    * Sends a raw function invocation to Ableton.
    * This should be used with caution.
    */
-  async sendCommand(name: string, args?: { [k: string]: any }, etag?: string) {
+  async sendCommand(
+    name: string,
+    args?: { [k: string]: any },
+    etag?: string,
+    timeout?: number,
+  ) {
     return this.ableton.sendCommand({
       ns: this.ns,
       nsid: this.nsid,
       name,
       args,
       etag,
+      timeout,
     });
   }
 
