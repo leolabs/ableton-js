@@ -6,7 +6,6 @@ const gettableProps: (keyof GettableProperties)[] = [
   "average_process_usage",
   "bugfix_version",
   "build_id",
-  "control_surfaces",
   "current_dialog_button_count",
   "current_dialog_message",
   "major_version",

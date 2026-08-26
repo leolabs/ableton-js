@@ -13,13 +13,6 @@ class Application(Interface):
     def get_ns(self, nsid=None):
         return self.application
 
-    @staticmethod
-    def serialize_control_surface(surface):
-        if surface is None:
-            return None
-        else:
-            return {"type_name": surface.type_name}
-
     def get_major_version(self, ns):
         return ns.get_major_version()
 
@@ -40,11 +33,10 @@ class Application(Interface):
             return ns.get_version_string()
         return f"{ns.get_major_version()}.{ns.get_minor_version()}.{ns.get_bugfix_version()}"
 
-    def get_control_surfaces(self, ns):
-        return [
-            Application.serialize_control_surface(surface)
-            for surface in ns.control_surfaces
-        ]
+    # control_surfaces is not wrapped: slots are mostly in-process remote scripts
+    # (_Framework.ControlSurface) whose attributes are internal framework state,
+    # not useful client data. ControlSurfaceProxy (e.g. Push) is the exception,
+    # but typical setups don't expose anything actionable here.
 
     def get_unavailable_features(self, ns):
         return [str(feature) for feature in ns.unavailable_features]

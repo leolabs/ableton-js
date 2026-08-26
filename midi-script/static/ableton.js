@@ -3180,7 +3180,6 @@ class Ai extends $ {
 class xi extends $ {
   constructor(e) {
     super(e, "application"), this.cachedProps = {
-      control_surfaces: !0,
       unavailable_features: !0
     };
   }

@@ -30,15 +30,11 @@ export type ApplicationVariant =
 /** Live's `Application.UnavailableFeature`. */
 export type UnavailableFeature = "note_velocity_ranges_and_probabilities";
 
-export interface RawControlSurface {
-  readonly type_name: string;
-}
-
 export interface GettableProperties {
   average_process_usage: number;
   bugfix_version: number;
   build_id: string;
-  control_surfaces: (RawControlSurface | null)[];
+  // control_surfaces omitted: does not return useful client information
   current_dialog_button_count: number;
   current_dialog_message: string;
   major_version: number;
@@ -58,7 +54,6 @@ export interface SettableProperties {}
 
 export interface ObservableProperties {
   average_process_usage: number;
-  control_surfaces: (RawControlSurface | null)[];
   open_dialog_count: number;
   peak_process_usage: number;
   unavailable_features: UnavailableFeature[];
@@ -82,7 +77,6 @@ export class Application extends Namespace<
     super(ableton, "application");
 
     this.cachedProps = {
-      control_surfaces: true,
       unavailable_features: true,
     };
   }
