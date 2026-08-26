@@ -1,3 +1,3 @@
 # ruff.toml
 [lint]
-ignore = ["UP010", "N999", "UP008", "E722", "EXE002", "S110"]
+ignore = ["UP010", "N999", "UP008", "E722", "EXE002", "S110", "S112", "TRY002"]
