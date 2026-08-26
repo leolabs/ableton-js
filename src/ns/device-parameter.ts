@@ -3,7 +3,7 @@ import { Namespace } from "./index.js";
 
 export interface GettableProperties {
   automation_state: AutomationState;
-  default_value: string;
+  default_value: number;
   is_enabled: boolean;
   is_quantized: boolean;
   max: number;
