@@ -19,6 +19,8 @@ test.ts
 test-script.ts
 test-udp.ts
 
+midi-script/Live
+
 ### Node ###
 # Logs
 logs
