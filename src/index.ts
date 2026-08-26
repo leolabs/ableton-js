@@ -409,10 +409,9 @@ export class Ableton extends EventEmitter<EventMap> {
     this.internal
       .get("version")
       .then((v) => {
-        const jsVersion = packageVersion;
-        if (semver.lt(v, jsVersion)) {
+        if (v !== packageVersion) {
           this.logger?.warn(
-            `The installed version of your AbletonJS plugin (${v}) is lower than the JS library (${jsVersion}).`,
+            `The installed version of your AbletonJS plugin (${v}) is different from the JS library (${packageVersion}).`,
             "Please update your AbletonJS plugin to the latest version: https://git.io/JvaOu",
           );
         }
