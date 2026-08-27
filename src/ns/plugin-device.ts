@@ -72,7 +72,7 @@ export class PluginDevice extends Namespace<
   }
 
   /**
-   * Get the range of plugin parameter names, bound by begin and end.
+   * Gets the range of plugin parameter names, bound by begin and end.
    * If end is smaller than 0 it is interpreted as the parameter count.
    */
   getParameterNames(begin = 0, end = -1): Promise<string[]> {
@@ -87,7 +87,7 @@ export class PluginDevice extends Namespace<
     return this.sendCommand("save_preset_to_compare_ab_slot");
   }
 
-  /** Set the selected bank in the device for persistency. */
+  /** Sets the selected bank in the device for persistency. */
   storeChosenBank(argument: number, bank: number) {
     return this.sendCommand("store_chosen_bank", [argument, bank]);
   }

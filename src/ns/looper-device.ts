@@ -81,49 +81,49 @@ export class LooperDevice extends Namespace<
     };
   }
 
-  /** Erase Looper's recorded content. */
+  /** Erases Looper's recorded content. */
   clear() {
     return this.sendCommand("clear");
   }
 
-  /** Double the length of Looper's buffer. */
+  /** Doubles the length of Looper's buffer. */
   doubleLength() {
     return this.sendCommand("double_length");
   }
 
-  /** Double the speed of Looper's playback. */
+  /** Doubles the speed of Looper's playback. */
   doubleSpeed() {
     return this.sendCommand("double_speed");
   }
 
-  /** Export Looper's content to a Session Clip Slot. */
+  /** Exports Looper's content to a Session Clip Slot. */
   exportToClipSlot(slot: ClipSlot) {
     return this.sendCommand("export_to_clip_slot", {
       slot_id: slot.raw.id,
     });
   }
 
-  /** Halve the length of Looper's buffer. */
+  /** Halves the length of Looper's buffer. */
   halfLength() {
     return this.sendCommand("half_length");
   }
 
-  /** Halve the speed of Looper's playback. */
+  /** Halves the speed of Looper's playback. */
   halfSpeed() {
     return this.sendCommand("half_speed");
   }
 
-  /** Play back while adding additional layers of incoming audio. */
+  /** Plays back while adding additional layers of incoming audio. */
   overdub() {
     return this.sendCommand("overdub");
   }
 
-  /** Play back without overdubbing. */
+  /** Plays back without overdubbing. */
   play() {
     return this.sendCommand("play");
   }
 
-  /** Record incoming audio. */
+  /** Records incoming audio. */
   record() {
     return this.sendCommand("record");
   }
@@ -136,18 +136,18 @@ export class LooperDevice extends Namespace<
     return this.sendCommand("save_preset_to_compare_ab_slot");
   }
 
-  /** Stop Looper's playback. */
+  /** Stops Looper's playback. */
   stop() {
     return this.sendCommand("stop");
   }
 
-  /** Set the selected bank in the device for persistency. */
+  /** Sets the selected bank in the device for persistency. */
   storeChosenBank(argument: number, bank: number) {
     return this.sendCommand("store_chosen_bank", [argument, bank]);
   }
 
   /**
-   * Erase everything that was recorded since the last time Overdub was enabled.
+   * Erases everything that was recorded since the last time Overdub was enabled.
    * Calling a second time will restore the material erased by the previous undo
    * operation.
    */

@@ -94,15 +94,15 @@ export class ClipSlot extends Namespace<
   }
 
   /**
-   * Fire a Clip if this Clipslot owns one,
-   * else trigger the stop button, if we have one.
+   * Fires a Clip if this Clipslot owns one,
+   * else triggers the stop button, if we have one.
    */
   fire() {
     return this.sendCommand("fire");
   }
 
   /**
-   * Set the ClipSlot's fire button state directly.
+   * Sets the ClipSlot's fire button state directly.
    * Supports all launch modes.
    */
   setFireButtonState(state: boolean) {
@@ -110,7 +110,7 @@ export class ClipSlot extends Namespace<
   }
 
   /**
-   * Stop playing the contained Clip,
+   * Stops playing the contained Clip,
    * if there is a Clip and its currently playing.
    */
   stop() {

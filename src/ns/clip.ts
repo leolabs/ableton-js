@@ -343,8 +343,8 @@ export class Clip extends Namespace<
   }
 
   /**
-   * Jump forward or backward by the specified relative amount in beats.
-   * Will do nothing if the clip is not playing.
+   * Jumps forward or backward by the specified relative amount in beats.
+   * Does nothing if the clip is not playing.
    */
   movePlayingPos(amount: number): Promise<void> {
     return this.sendCommand("move_playing_pos", [amount]);
@@ -401,7 +401,7 @@ export class Clip extends Namespace<
   }
 
   /**
-   * Remove notes by given note ids.
+   * Removes notes by given note ids.
    * Available since Live 11.0.
    */
   removeNotesById(ids: number[]) {
@@ -453,7 +453,7 @@ export class Clip extends Namespace<
   }
 
   /**
-   * Set the clip's fire button state directly.
+   * Sets the clip's fire button state directly.
    * Supports all launch modes.
    */
   setFireButtonState(state: boolean): Promise<void> {
@@ -468,7 +468,7 @@ export class Clip extends Namespace<
   }
 
   /**
-   * Stop playig this clip.
+   * Stops playing this clip.
    */
   stop(): Promise<void> {
     return this.sendCommand("stop");

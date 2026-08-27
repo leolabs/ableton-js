@@ -90,19 +90,19 @@ export class Chain extends Namespace<
   }
 
   /**
-   * Delete a device identified by its index in this chain's `devices` list.
+   * Deletes a device identified by its index in this chain's `devices` list.
    */
   deleteDevice(index: number) {
     return this.sendCommand("delete_device", { index });
   }
 
-  /** Duplicate the device at `index` in this chain. */
+  /** Duplicates the device at `index` in this chain. */
   duplicateDevice(index: number) {
     return this.sendCommand("duplicate_device", { index });
   }
 
   /**
-   * Insert a native Live device by UI name at `deviceIndex` (-1 = end).
+   * Inserts a native Live device by UI name at `deviceIndex` (-1 = end).
    * Available since Live 12.3.
    */
   async insertDevice(deviceName: string, deviceIndex = -1) {

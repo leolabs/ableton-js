@@ -172,7 +172,7 @@ export class RackDevice extends Namespace<
     return this.sendCommand("save_preset_to_compare_ab_slot");
   }
 
-  /** Set the selected bank in the device for persistency. */
+  /** Sets the selected bank in the device for persistency. */
   storeChosenBank(argument: number, bank: number) {
     return this.sendCommand("store_chosen_bank", [argument, bank]);
   }

@@ -242,7 +242,7 @@ export class Track extends Namespace<
   }
 
   /**
-   * Delete a device identified by the index in the 'devices' list of current track
+   * Deletes a device identified by the index in the 'devices' list of current track.
    */
   async deleteDevice(index: number) {
     return this.sendCommand("delete_device", [index]);
