@@ -15,7 +15,8 @@ export class Namespace<GP, TP, SP, OP> {
     protected nsid?: string,
   ) {}
 
-  async get<T extends keyof GP>(
+  /** Returns the value of a gettable property on this Live object. */
+  public async get<T extends keyof GP>(
     prop: T,
     useCache?: boolean,
   ): Promise<T extends keyof TP ? TP[T] : GP[T]> {
@@ -37,7 +38,8 @@ export class Namespace<GP, TP, SP, OP> {
     }
   }
 
-  async set<T extends keyof SP>(prop: T, value: SP[T]): Promise<null> {
+  /** Sets a settable property on this Live object. */
+  public async set<T extends keyof SP>(prop: T, value: SP[T]): Promise<null> {
     return this.ableton.setProp(this.ns, this.nsid, String(prop), value);
   }
 
@@ -47,7 +49,7 @@ export class Namespace<GP, TP, SP, OP> {
    * This is mainly for exploring Live's API, and not all properties might be fully
    * supported by Ableton.js yet.
    */
-  async getAvailableProperties(): Promise<string[]> {
+  public async getAvailableProperties(): Promise<string[]> {
     return this.sendCommand("get_available_properties");
   }
 
@@ -57,7 +59,7 @@ export class Namespace<GP, TP, SP, OP> {
    * This is mainly for exploring Live's API, and not all properties might be fully
    * supported by Ableton.js yet.
    */
-  async getObservableProperties(): Promise<string[]> {
+  public async getObservableProperties(): Promise<string[]> {
     return this.sendCommand("get_observable_properties");
   }
 
@@ -67,11 +69,15 @@ export class Namespace<GP, TP, SP, OP> {
    * This is mainly for exploring Live's API, and not all functions might be fully
    * supported by Ableton.js yet.
    */
-  async getAvailableFunctions(): Promise<string[]> {
+  public async getAvailableFunctions(): Promise<string[]> {
     return this.sendCommand("get_available_functions");
   }
 
-  async addListener<T extends keyof OP>(
+  /**
+   * Subscribes to changes of an observable property on this Live object.
+   * Returns an unsubscribe function.
+   */
+  public async addListener<T extends keyof OP>(
     prop: T,
     listener: (data: T extends keyof TP ? TP[T] : OP[T]) => any,
   ) {
@@ -95,7 +101,7 @@ export class Namespace<GP, TP, SP, OP> {
    * Sends a raw function invocation to Ableton.
    * This should be used with caution.
    */
-  async sendCommand(
+  public async sendCommand(
     name: string,
     args?: { [k: string]: any },
     etag?: string,

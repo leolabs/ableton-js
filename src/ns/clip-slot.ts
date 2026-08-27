@@ -77,7 +77,7 @@ export class ClipSlot extends Namespace<
    * Creates an empty clip with the given length in the slot.
    * Throws an error when called on non-empty slots or slots in non-MIDI tracks.
    */
-  createClip(length: number) {
+  public async createClip(length: number) {
     return this.sendCommand("create_clip", [length]);
   }
 
@@ -85,19 +85,26 @@ export class ClipSlot extends Namespace<
    * Removes the clip contained in the slot.
    * Raises an exception if the slot was empty.
    */
-  deleteClip() {
+  public async deleteClip() {
     return this.sendCommand("delete_clip");
   }
 
-  duplicateClipTo(slot: ClipSlot) {
-    return this.sendCommand("duplicate_clip_to", { slot_id: slot.raw.id });
+  /**
+   * Duplicates the slot's clip to the target slot, replacing any clip there.
+   * Raises if the source is empty, types differ (audio vs MIDI), or either
+   * slot is a group slot.
+   */
+  public async duplicateClipTo(slotOrId: ClipSlot | string) {
+    return this.sendCommand("duplicate_clip_to", {
+      slot_id: typeof slotOrId === "string" ? slotOrId : slotOrId.raw.id,
+    });
   }
 
   /**
    * Fires a Clip if this Clipslot owns one,
    * else triggers the stop button, if we have one.
    */
-  fire() {
+  public async fire() {
     return this.sendCommand("fire");
   }
 
@@ -105,7 +112,7 @@ export class ClipSlot extends Namespace<
    * Sets the ClipSlot's fire button state directly.
    * Supports all launch modes.
    */
-  setFireButtonState(state: boolean) {
+  public async setFireButtonState(state: boolean) {
     return this.sendCommand("set_fire_button_state", [state]);
   }
 
@@ -113,7 +120,7 @@ export class ClipSlot extends Namespace<
    * Stops playing the contained Clip,
    * if there is a Clip and its currently playing.
    */
-  stop() {
+  public async stop() {
     return this.sendCommand("stop");
   }
 }

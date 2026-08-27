@@ -226,7 +226,7 @@ export class Track extends Namespace<
    * Duplicates the given clip into the arrangement of this track at the provided destination time and returns it.
    * When the type of the clip and the type of the track are incompatible, a runtime error is raised.
    */
-  async duplicateClipToArrangement(clipOrId: Clip | string, time: number) {
+  public async duplicateClipToArrangement(clipOrId: Clip | string, time: number) {
     const rawClip = await this.sendCommand("duplicate_clip_to_arrangement", {
       clip_id: typeof clipOrId === "string" ? clipOrId : clipOrId.raw.id,
       time: time,
@@ -238,7 +238,7 @@ export class Track extends Namespace<
    * Deletes the given clip from the arrangement of this track.
    * Raises a runtime error when the clip belongs to another track
    */
-  async deleteClip(clipOrId: Clip | string) {
+  public async deleteClip(clipOrId: Clip | string) {
     return this.sendCommand("delete_clip", {
       clip_id: typeof clipOrId === "string" ? clipOrId : clipOrId.raw.id,
     });
@@ -247,14 +247,14 @@ export class Track extends Namespace<
   /**
    * Deletes a device identified by the index in the 'devices' list of current track.
    */
-  async deleteDevice(index: number) {
+  public async deleteDevice(index: number) {
     return this.sendCommand("delete_device", [index]);
   }
 
   /**
    * Duplicates the device at `index` in this track's device chain.
    */
-  async duplicateDevice(index: number) {
+  public async duplicateDevice(index: number) {
     return this.sendCommand("duplicate_device", { index });
   }
 
@@ -262,14 +262,14 @@ export class Track extends Namespace<
    * Duplicates the clip slot at `index` into the next free slot.
    * Returns the destination slot index (creates a scene if needed).
    */
-  async duplicateClipSlot(index: number): Promise<number> {
+  public async duplicateClipSlot(index: number): Promise<number> {
     return this.sendCommand("duplicate_clip_slot", { index });
   }
 
   /**
    * Creates a take lane for this track (Arrangement View comping).
    */
-  async createTakeLane() {
+  public async createTakeLane() {
     const raw = await this.sendCommand("create_take_lane");
     return new TakeLane(this.ableton, raw);
   }
@@ -278,7 +278,7 @@ export class Track extends Namespace<
    * Inserts a native Live device by UI name at `targetIndex` (-1 = end).
    * Available since Live 12.3.
    */
-  async insertDevice(deviceName: string, targetIndex = -1) {
+  public async insertDevice(deviceName: string, targetIndex = -1) {
     const raw = await this.sendCommand("insert_device", {
       device_name: deviceName,
       target_index: targetIndex,
@@ -289,20 +289,22 @@ export class Track extends Namespace<
   /**
    * Jumps forward/backward in the currently running Session clip by `beats`.
    */
-  async jumpInRunningSessionClip(beats: number) {
+  public async jumpInRunningSessionClip(beats: number) {
     return this.sendCommand("jump_in_running_session_clip", { beats });
   }
 
   /** Stops playing all fired clips on this track. */
-  async stopAllClips(quantized = true) {
+  public async stopAllClips(quantized = true) {
     return this.sendCommand("stop_all_clips", { quantized });
   }
 
-  async getData(key: string) {
+  /** Returns data previously stored on this track with {@link setData}. */
+  public async getData(key: string) {
     return this.sendCachedCommand("get_data", { key });
   }
 
-  async setData(key: string, value: unknown) {
+  /** Stores persistent data on this track for the given key. */
+  public async setData(key: string, value: unknown) {
     return this.sendCommand("set_data", { key, value });
   }
 
@@ -310,7 +312,7 @@ export class Track extends Namespace<
    * Creates an audio clip referencing `filePath` and inserts it into the
    * arrangement at `position`. Only works on audio tracks.
    */
-  async createAudioClip(filePath: string, position: number) {
+  public async createAudioClip(filePath: string, position: number) {
     const rawClip = await this.sendCommand("create_audio_clip", {
       file_path: filePath,
       position,
@@ -326,7 +328,7 @@ export class Track extends Namespace<
    *
    * Available since Live 12.2
    */
-  async createMidiClip(startTime: number, length: number) {
+  public async createMidiClip(startTime: number, length: number) {
     const rawClip = await this.sendCommand("create_midi_clip", {
       start_time: startTime,
       length: length,

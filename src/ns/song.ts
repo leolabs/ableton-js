@@ -250,146 +250,190 @@ export class Song extends Namespace<
   public readonly view = new SongView(this.ableton);
   public readonly groovePool = new GroovePool(this.ableton);
 
+  /** Begins a grouped undo step for subsequent song edits. */
   public async beginUndoStep() {
     return this.sendCommand("begin_undo_step");
   }
 
+  /** Continues playing the song from the current position. */
   public async continuePlaying() {
     return this.sendCommand("continue_playing");
   }
 
+  /**
+   * Creates a new audio track at the given index and returns it.
+   * When `index` is `-1`, appends the track at the end.
+   */
   public async createAudioTrack(index = -1) {
     const result = await this.sendCommand("create_audio_track", { index });
     return new Track(this.ableton, result);
   }
 
+  /**
+   * Creates a new MIDI track at the given index and returns it.
+   * When `index` is `-1`, appends the track at the end.
+   */
   public async createMidiTrack(index = -1) {
     const result = await this.sendCommand("create_midi_track", { index });
     return new Track(this.ableton, result);
   }
 
+  /** Creates a new return track at the end and returns it. */
   public async createReturnTrack() {
     const result = await this.sendCommand("create_return_track");
     return new Track(this.ableton, result);
   }
 
+  /**
+   * Creates a new scene at the given index and returns it.
+   * When `index` is `-1`, appends the scene at the end.
+   */
   public async createScene(index = -1) {
     const result = await this.sendCommand("create_scene", { index });
     return new Scene(this.ableton, result);
   }
 
+  /** Deletes the return track at the given index. */
   public async deleteReturnTrack(index: number) {
     return this.sendCommand("delete_return_track", [index]);
   }
 
+  /** Deletes the scene at the given index. */
   public async deleteScene(index: number) {
     return this.sendCommand("delete_scene", [index]);
   }
 
+  /** Deletes the track at the given index. */
   public async deleteTrack(index: number) {
     return this.sendCommand("delete_track", [index]);
   }
 
+  /** Duplicates the scene at the given index and selects the new scene. */
   public async duplicateScene(index: number) {
     return this.sendCommand("duplicate_scene", [index]);
   }
 
+  /** Duplicates the track at the given index and selects the new track. */
   public async duplicateTrack(index: number) {
     return this.sendCommand("duplicate_track", [index]);
   }
 
+  /** Ends the current grouped undo step. */
   public async endUndoStep() {
     return this.sendCommand("end_undo_step");
   }
 
+  /** Returns data previously stored on the song with {@link setData}. */
   public async getData(key: string) {
     return this.sendCachedCommand("get_data", { key });
   }
 
+  /**
+   * Returns the song's current playing position in the given SMPTE format.
+   */
   public async getCurrentSmpteSongTime(
     timeFormat: TimeFormat,
   ): Promise<SmpteTime> {
     return this.sendCommand("get_current_smpte_song_time", { timeFormat });
   }
 
+  /** Returns true when the global play position is currently on a cue point. */
   public async isCuePointSelected() {
     return this.sendCommand("is_cue_point_selected");
   }
 
+  /** Moves the play position by the given amount relative to the current position. */
   public async jumpBy(amount: number) {
     return this.sendCommand("jump_by", [amount]);
   }
 
+  /** Jumps to the next cue (marker) when possible. */
   public async jumpToNextCue() {
     return this.sendCommand("jump_to_next_cue");
   }
 
+  /** Jumps to the previous cue (marker) when possible. */
   public async jumpToPrevCue() {
     return this.sendCommand("jump_to_prev_cue");
   }
 
+  /** Starts playing the current selection, or does nothing when none is set. */
   public async playSelection() {
     return this.sendCommand("play_selection");
   }
 
+  /** Discards overrides of automated parameters. */
   public async reEnableAutomation() {
     return this.sendCommand("re_enable_automation");
   }
 
+  /** Redoes the last undone action. */
   public async redo() {
     return this.sendCommand("redo");
   }
 
+  /**
+   * Moves the play position by the given amount without stopping playback
+   * (same as {@link jumpBy}, but keeps playing).
+   */
   public async scrubBy(amount: number) {
     return this.sendCommand("scrub_by", [amount]);
   }
 
+  /** Stores persistent data on the song for the given key. */
   public async setData(key: string, value: any) {
     return this.sendCommand("set_data", [key, value]);
   }
 
+  /**
+   * Deletes the selected cue when one is selected; otherwise creates a cue at
+   * the current song time.
+   */
   public async setOrDeleteCue() {
     return this.sendCommand("set_or_delete_cue");
   }
 
+  /** Starts playing from the start marker. */
   public async startPlaying() {
     return this.sendCommand("start_playing");
   }
 
+  /** Stops all playing clips while continuing song playback. */
   public async stopAllClips() {
     return this.sendCommand("stop_all_clips");
   }
 
+  /** Stops playing the song. */
   public async stopPlaying() {
     return this.sendCommand("stop_playing");
   }
 
   /**
-   * Only starts playing when Live is currently not playing
-   * to prevent Live from jumping back to the start when it's
-   * already playing.
+   * Starts playing only when Live is currently not playing, so Live does not
+   * jump back to the start when already playing.
    *
-   * @returns a boolean indicating whether the command was executed
+   * @returns whether the command was executed
    */
   public async safeStartPlaying(): Promise<boolean> {
     return this.sendCommand("safe_start_playing");
   }
 
   /**
-   * Only stops playback when Live is currently playing to prevent
-   * Live jumping back to the beginning of the arrangement when it's
-   * already stopped.
+   * Stops playback only when Live is currently playing, so Live does not jump
+   * back to the arrangement start when already stopped.
    *
-   * @returns a boolean indicating whether the command was executed
+   * @returns whether the command was executed
    */
   public async safeStopPlaying(): Promise<boolean> {
     return this.sendCommand("safe_stop_playing");
   }
 
+  /** Triggers Live's tap-tempo function. */
   public async tapTempo() {
     return this.sendCommand("tap_tempo");
   }
 
+  /** Undoes the last action. */
   public async undo() {
     return this.sendCommand("undo");
   }

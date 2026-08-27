@@ -70,7 +70,8 @@ export class SongView extends Namespace<
     };
   }
 
-  async selectDevice(device: { raw: { id: string } }) {
+  /** Selects the given device in Live. */
+  public async selectDevice(device: { raw: { id: string } }) {
     return this.ableton.sendCommand({
       ns: this.ns,
       name: "select_device",

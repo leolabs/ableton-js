@@ -115,12 +115,12 @@ export class Device extends Namespace<
    * Saves the current state of the device to the compare AB slot.
    * Only relevant if `can_compare_ab`, otherwise throws.
    */
-  savePresetToCompareAbSlot() {
+  public async savePresetToCompareAbSlot() {
     return this.sendCommand("save_preset_to_compare_ab_slot");
   }
 
   /** Sets the selected bank in the device for persistency. */
-  storeChosenBank(argument: number, bank: number) {
-    return this.sendCommand("store_chosen_bank", [argument, bank]);
+  public async storeChosenBank(scriptIndex: number, bankIndex: number) {
+    return this.sendCommand("store_chosen_bank", [scriptIndex, bankIndex]);
   }
 }

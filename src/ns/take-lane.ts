@@ -47,7 +47,7 @@ export class TakeLane extends Namespace<
   }
 
   /** Creates an audio clip in this take lane's arrangement at `startTime`. */
-  async createAudioClip(filePath: string, startTime: number) {
+  public async createAudioClip(filePath: string, startTime: number) {
     const rawClip = await this.sendCommand("create_audio_clip", {
       file_path: filePath,
       start_time: startTime,
@@ -56,7 +56,7 @@ export class TakeLane extends Namespace<
   }
 
   /** Creates an empty MIDI clip in this take lane's arrangement. */
-  async createMidiClip(startTime: number, length: number) {
+  public async createMidiClip(startTime: number, length: number) {
     const rawClip = await this.sendCommand("create_midi_clip", {
       start_time: startTime,
       length: length,

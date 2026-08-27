@@ -85,12 +85,12 @@ export class Application extends Namespace<
   public readonly view = new ApplicationView(this.ableton);
 
   /** Returns true if the given entry exists in Options.txt. */
-  async hasOption(optionName: string): Promise<boolean> {
+  public async hasOption(optionName: string): Promise<boolean> {
     return this.sendCommand("has_option", [optionName]);
   }
 
   /** Presses a button, by index, on the current message box. */
-  async pressCurrentDialogButton(index: number) {
+  public async pressCurrentDialogButton(index: number) {
     return this.sendCommand("press_current_dialog_button", [index]);
   }
 
@@ -104,7 +104,7 @@ export class Application extends Namespace<
    * 60000ms. Increase the timeout if you expect the user to take longer to close
    * the dialog.
    */
-  async showOnTheFlyMessage(
+  public async showOnTheFlyMessage(
     message: string,
     options: ShowOnTheFlyMessageOptions = {},
   ) {

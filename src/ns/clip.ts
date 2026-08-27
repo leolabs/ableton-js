@@ -181,14 +181,14 @@ export class Clip extends Namespace<
    * Converts the given beat time to sample time.
    * Raises an error if the sample is not warped.
    */
-  beatToSampleTime(beats: number): Promise<number> {
+  public async beatToSampleTime(beats: number): Promise<number> {
     return this.sendCommand("beat_to_sample_time", [beats]);
   }
 
   /**
    * Clears all envelopes for this clip.
    */
-  clearAllEnvelopes(): Promise<void> {
+  public async clearAllEnvelopes(): Promise<void> {
     return this.sendCommand("clear_all_envelopes");
   }
 
@@ -196,7 +196,7 @@ export class Clip extends Namespace<
    * Returns the envelope for the given parameter, or `null` if it does not
    * exist. Arrangement clips and parameters from another track always return `null`.
    */
-  async automationEnvelope(
+  public async automationEnvelope(
     parameter: DeviceParameter,
   ): Promise<Envelope | null> {
     const raw = await this.sendCommand("automation_envelope", {
@@ -208,7 +208,7 @@ export class Clip extends Namespace<
   /**
    * Clears the envelope of this clip's given parameter.
    */
-  clearEnvelope(parameter: DeviceParameter): Promise<void> {
+  public async clearEnvelope(parameter: DeviceParameter): Promise<void> {
     return this.sendCommand("clear_envelope", {
       parameter_id: parameter.raw.id,
     });
@@ -219,7 +219,7 @@ export class Clip extends Namespace<
    * This should only be used if the envelope doesn't exist.
    * Raises an error if the envelope can't be created.
    */
-  async createAutomationEnvelope(
+  public async createAutomationEnvelope(
     parameter: DeviceParameter,
   ): Promise<Envelope> {
     const raw = await this.sendCommand("create_automation_envelope", {
@@ -234,14 +234,14 @@ export class Clip extends Namespace<
    * the loop is removed. If not looped, the region outside
    * the start and end markers is removed.
    */
-  crop(): Promise<void> {
+  public async crop(): Promise<void> {
     return this.sendCommand("crop");
   }
 
   /**
    * Deselects all notes present in the clip.
    */
-  deselectAllNotes(): Promise<void> {
+  public async deselectAllNotes(): Promise<void> {
     return this.sendCommand("deselect_all_notes");
   }
 
@@ -249,7 +249,7 @@ export class Clip extends Namespace<
    * Makes the loop twice as long and duplicates notes and envelopes.
    * Duplicates the clip start/end range if the clip is not looped.
    */
-  duplicateLoop(): Promise<void> {
+  public async duplicateLoop(): Promise<void> {
     return this.sendCommand("duplicate_loop");
   }
 
@@ -260,7 +260,7 @@ export class Clip extends Namespace<
    * transposed by the transposition_amount of semitones.
    * Raises an error on audio clips.
    */
-  duplicateRegion(
+  public async duplicateRegion(
     start: number,
     length: number,
     destinationTime: number,
@@ -279,14 +279,14 @@ export class Clip extends Namespace<
   /**
    * Starts playing this clip.
    */
-  fire(): Promise<void> {
+  public async fire(): Promise<void> {
     return this.sendCommand("fire");
   }
 
   /**
    * Returns all notes that match the given range.
    */
-  async getNotes(
+  public async getNotes(
     fromTime: number,
     fromPitch: number,
     timeSpan: number,
@@ -306,7 +306,7 @@ export class Clip extends Namespace<
    * Returns all notes matching the given range with extended properties.
    * Compared to getNotes, this method returns additional note information.
    */
-  async getNotesExtended(
+  public async getNotesExtended(
     fromTime: number,
     fromPitch: number,
     timeSpan: number,
@@ -323,7 +323,7 @@ export class Clip extends Namespace<
   /**
    * Returns the clip's currently selected notes.
    */
-  async getSelectedNotes(): Promise<Note[]> {
+  public async getSelectedNotes(): Promise<Note[]> {
     const notes: NoteTuple[] = await this.sendCommand("get_selected_notes");
     return notes.map(tupleToNote);
   }
@@ -331,14 +331,14 @@ export class Clip extends Namespace<
   /**
    * Returns the clip's currently selected notes with extended properties.
    */
-  async getSelectedNotesExtended(): Promise<NoteExtended[]> {
+  public async getSelectedNotesExtended(): Promise<NoteExtended[]> {
     return this.sendCommand("get_selected_notes_extended");
   }
 
   /**
    *  Available since Live 11.0. Replaces modifying notes with remove_notes followed by set_notes.
    */
-  applyNoteModifications(notes: NoteExtended[]) {
+  public async applyNoteModifications(notes: NoteExtended[]) {
     return this.sendCommand("apply_note_modifications", { notes });
   }
 
@@ -346,21 +346,21 @@ export class Clip extends Namespace<
    * Jumps forward or backward by the specified relative amount in beats.
    * Does nothing if the clip is not playing.
    */
-  movePlayingPos(amount: number): Promise<void> {
+  public async movePlayingPos(amount: number): Promise<void> {
     return this.sendCommand("move_playing_pos", [amount]);
   }
 
   /**
    * Quantizes all notes in a clip or aligns warp markers.
    */
-  quantize(grid: number, amount: number): Promise<void> {
+  public async quantize(grid: number, amount: number): Promise<void> {
     return this.sendCommand("quantize", [grid, amount]);
   }
 
   /**
    * Quantizes all the notes of a given pitch.
    */
-  quantizePitch(pitch: number, grid: number, amount: number): Promise<void> {
+  public async quantizePitch(pitch: number, grid: number, amount: number): Promise<void> {
     return this.sendCommand("quantize_pitch", [pitch, grid, amount]);
   }
 
@@ -369,7 +369,7 @@ export class Clip extends Namespace<
    *
    * @deprecated starting with Live 11, use `removeNotesExtended` instead
    */
-  removeNotes(
+  public async removeNotes(
     fromTime: number,
     fromPitch: number,
     timeSpan: number,
@@ -386,7 +386,7 @@ export class Clip extends Namespace<
   /**
    * Deletes all notes that start in the given area.
    */
-  removeNotesExtended(
+  public async removeNotesExtended(
     fromTime: number,
     fromPitch: number,
     timeSpan: number,
@@ -404,14 +404,14 @@ export class Clip extends Namespace<
    * Removes notes by given note ids.
    * Available since Live 11.0.
    */
-  removeNotesById(ids: number[]) {
+  public async removeNotesById(ids: number[]) {
     return this.sendCommand("remove_notes_by_id", [ids]);
   }
 
   /**
    * Replaces selected notes with an array of new notes.
    */
-  replaceSelectedNotes(notes: Note[]) {
+  public async replaceSelectedNotes(notes: Note[]) {
     return this.sendCommand("replace_selected_notes", {
       notes: notes.map(noteToTuple),
     });
@@ -422,7 +422,7 @@ export class Clip extends Namespace<
    * Converts the given sample time to beat time.
    * Raises an error if the sample is not warped.
    */
-  sampleToBeatTime(sampleTime: number): Promise<number> {
+  public async sampleToBeatTime(sampleTime: number): Promise<number> {
     return this.sendCommand("sample_to_beat_time", [sampleTime]);
   }
 
@@ -432,7 +432,7 @@ export class Clip extends Namespace<
    * The scrub will continue until `stop_scrub` is called.
    * Global quantization applies to the scrub's position and length.
    */
-  scrub(position: number): Promise<void> {
+  public async scrub(position: number): Promise<void> {
     return this.sendCommand("scrub", [position]);
   }
 
@@ -441,14 +441,14 @@ export class Clip extends Namespace<
    * Converts the given seconds to sample time.
    * Raises an error if the sample is warped.
    */
-  secondsToSampleTime(seconds: number): Promise<number> {
+  public async secondsToSampleTime(seconds: number): Promise<number> {
     return this.sendCommand("seconds_to_sample_time", [seconds]);
   }
 
   /**
    * Selects all notes present in the clip.
    */
-  selectAllNotes(): Promise<void> {
+  public async selectAllNotes(): Promise<void> {
     return this.sendCommand("select_all_notes");
   }
 
@@ -456,28 +456,28 @@ export class Clip extends Namespace<
    * Sets the clip's fire button state directly.
    * Supports all launch modes.
    */
-  setFireButtonState(state: boolean): Promise<void> {
+  public async setFireButtonState(state: boolean): Promise<void> {
     return this.sendCommand("set_fire_button_state", [state]);
   }
 
   /**
    * Adds the given notes to the clip.
    */
-  setNotes(notes: Note[]): Promise<void> {
+  public async setNotes(notes: Note[]): Promise<void> {
     return this.sendCommand("set_notes", { notes: notes.map(noteToTuple) });
   }
 
   /**
    * Stops playing this clip.
    */
-  stop(): Promise<void> {
+  public async stop(): Promise<void> {
     return this.sendCommand("stop");
   }
 
   /**
    * Stops the current scrub.
    */
-  stopScrub(): Promise<void> {
+  public async stopScrub(): Promise<void> {
     return this.sendCommand("stop_scrub");
   }
 }

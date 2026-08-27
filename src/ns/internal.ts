@@ -24,7 +24,7 @@ export class Internal extends Namespace<
   }
 
   /** Returns whether the MIDI Remote Script version satisfies this client. */
-  async isPluginUpToDate() {
+  public async isPluginUpToDate() {
     const pluginVersion = await this.get("version");
     return pluginVersion === packageVersion;
   }

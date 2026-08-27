@@ -75,7 +75,7 @@ export class PluginDevice extends Namespace<
    * Gets the range of plugin parameter names, bound by begin and end.
    * If end is smaller than 0 it is interpreted as the parameter count.
    */
-  getParameterNames(begin = 0, end = -1): Promise<string[]> {
+  public async getParameterNames(begin = 0, end = -1): Promise<string[]> {
     return this.sendCommand("get_parameter_names", { begin, end });
   }
 
@@ -83,16 +83,17 @@ export class PluginDevice extends Namespace<
    * Saves the current state of the device to the compare AB slot.
    * Only relevant if `can_compare_ab`, otherwise throws.
    */
-  savePresetToCompareAbSlot() {
+  public async savePresetToCompareAbSlot() {
     return this.sendCommand("save_preset_to_compare_ab_slot");
   }
 
   /** Sets the selected bank in the device for persistency. */
-  storeChosenBank(argument: number, bank: number) {
-    return this.sendCommand("store_chosen_bank", [argument, bank]);
+  public async storeChosenBank(scriptIndex: number, bankIndex: number) {
+    return this.sendCommand("store_chosen_bank", [scriptIndex, bankIndex]);
   }
 }
 
+/** Returns whether the device is a {@link PluginDevice}. */
 export function isPluginDevice(device: AnyDevice): device is PluginDevice {
   return device instanceof PluginDevice;
 }

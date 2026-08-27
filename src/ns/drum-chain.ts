@@ -73,12 +73,12 @@ export class DrumChain extends Namespace<
   /**
    * Deletes a device identified by its index in this chain's `devices` list.
    */
-  deleteDevice(index: number) {
+  public async deleteDevice(index: number) {
     return this.sendCommand("delete_device", { index });
   }
 
   /** Duplicates the device at `index` in this chain. */
-  duplicateDevice(index: number) {
+  public async duplicateDevice(index: number) {
     return this.sendCommand("duplicate_device", { index });
   }
 
@@ -86,7 +86,7 @@ export class DrumChain extends Namespace<
    * Inserts a native Live device by UI name at `deviceIndex` (-1 = end).
    * Available since Live 12.3.
    */
-  async insertDevice(deviceName: string, deviceIndex = -1) {
+  public async insertDevice(deviceName: string, deviceIndex = -1) {
     const raw = await this.sendCommand("insert_device", {
       device_name: deviceName,
       device_index: deviceIndex,
@@ -106,6 +106,7 @@ export function wrapChain(ableton: Ableton, raw: RawChain): AnyChain {
   return new Chain(ableton, raw);
 }
 
+/** Returns whether the chain is a {@link DrumChain}. */
 export function isDrumChain(chain: AnyChain): chain is DrumChain {
   return chain instanceof DrumChain;
 }

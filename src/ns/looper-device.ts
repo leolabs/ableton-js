@@ -82,49 +82,49 @@ export class LooperDevice extends Namespace<
   }
 
   /** Erases Looper's recorded content. */
-  clear() {
+  public async clear() {
     return this.sendCommand("clear");
   }
 
   /** Doubles the length of Looper's buffer. */
-  doubleLength() {
+  public async doubleLength() {
     return this.sendCommand("double_length");
   }
 
   /** Doubles the speed of Looper's playback. */
-  doubleSpeed() {
+  public async doubleSpeed() {
     return this.sendCommand("double_speed");
   }
 
   /** Exports Looper's content to a Session Clip Slot. */
-  exportToClipSlot(slot: ClipSlot) {
+  public async exportToClipSlot(slot: ClipSlot) {
     return this.sendCommand("export_to_clip_slot", {
       slot_id: slot.raw.id,
     });
   }
 
   /** Halves the length of Looper's buffer. */
-  halfLength() {
+  public async halfLength() {
     return this.sendCommand("half_length");
   }
 
   /** Halves the speed of Looper's playback. */
-  halfSpeed() {
+  public async halfSpeed() {
     return this.sendCommand("half_speed");
   }
 
   /** Plays back while adding additional layers of incoming audio. */
-  overdub() {
+  public async overdub() {
     return this.sendCommand("overdub");
   }
 
   /** Plays back without overdubbing. */
-  play() {
+  public async play() {
     return this.sendCommand("play");
   }
 
   /** Records incoming audio. */
-  record() {
+  public async record() {
     return this.sendCommand("record");
   }
 
@@ -132,18 +132,18 @@ export class LooperDevice extends Namespace<
    * Saves the current state of the device to the compare AB slot.
    * Only relevant if `can_compare_ab`, otherwise throws.
    */
-  savePresetToCompareAbSlot() {
+  public async savePresetToCompareAbSlot() {
     return this.sendCommand("save_preset_to_compare_ab_slot");
   }
 
   /** Stops Looper's playback. */
-  stop() {
+  public async stop() {
     return this.sendCommand("stop");
   }
 
   /** Sets the selected bank in the device for persistency. */
-  storeChosenBank(argument: number, bank: number) {
-    return this.sendCommand("store_chosen_bank", [argument, bank]);
+  public async storeChosenBank(scriptIndex: number, bankIndex: number) {
+    return this.sendCommand("store_chosen_bank", [scriptIndex, bankIndex]);
   }
 
   /**
@@ -151,11 +151,12 @@ export class LooperDevice extends Namespace<
    * Calling a second time will restore the material erased by the previous undo
    * operation.
    */
-  undo() {
+  public async undo() {
     return this.sendCommand("undo");
   }
 }
 
+/** Returns whether the device is a {@link LooperDevice}. */
 export function isLooperDevice(device: AnyDevice): device is LooperDevice {
   return device instanceof LooperDevice;
 }

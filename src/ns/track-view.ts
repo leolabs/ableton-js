@@ -46,7 +46,7 @@ export class TrackView extends Namespace<
   /**
    * Selects the track's instrument if it has one.
    */
-  async selectInstrument() {
+  public async selectInstrument() {
     return this.sendCommand("select_instrument");
   }
 }

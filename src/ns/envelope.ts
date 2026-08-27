@@ -60,7 +60,7 @@ export class Envelope extends Namespace<
    * Creates a new event at the specified time with the given value and,
    * optionally, control coefficients.
    */
-  createEvent(
+  public async createEvent(
     time: number,
     value: number,
     controlCoefficients?: EnvelopeEventControlCoefficients,
@@ -75,7 +75,7 @@ export class Envelope extends Namespace<
   /**
    * Deletes the events in the specified time range.
    */
-  deleteEventsInRange(fromTime: number, toTime: number): Promise<void> {
+  public async deleteEventsInRange(fromTime: number, toTime: number): Promise<void> {
     return this.sendCommand("delete_events_in_range", {
       from_time: fromTime,
       to_time: toTime,
@@ -85,7 +85,7 @@ export class Envelope extends Namespace<
   /**
    * Returns the events in the specified time range.
    */
-  eventsInRange(fromTime: number, toTime: number): Promise<EnvelopeEvent[]> {
+  public async eventsInRange(fromTime: number, toTime: number): Promise<EnvelopeEvent[]> {
     return this.sendCommand("events_in_range", {
       from_time: fromTime,
       to_time: toTime,
@@ -95,7 +95,7 @@ export class Envelope extends Namespace<
   /**
    * Given a start time, a step length and a value, creates a step in the envelope.
    */
-  insertStep(startTime: number, length: number, value: number): Promise<void> {
+  public async insertStep(startTime: number, length: number, value: number): Promise<void> {
     return this.sendCommand("insert_step", {
       start_time: startTime,
       length,
@@ -106,7 +106,7 @@ export class Envelope extends Namespace<
   /**
    * Returns the parameter value at the specified time.
    */
-  valueAtTime(time: number): Promise<number> {
+  public async valueAtTime(time: number): Promise<number> {
     return this.sendCommand("value_at_time", { time });
   }
 }

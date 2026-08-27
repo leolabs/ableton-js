@@ -67,7 +67,7 @@ export class Scene extends Namespace<
    * Fires the scene directly. Fires all clip slots
    * that this scene owns and selects the scene itself.
    */
-  async fire() {
+  public async fire() {
     return this.sendCommand("fire");
   }
 }

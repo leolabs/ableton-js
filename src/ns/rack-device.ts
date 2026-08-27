@@ -114,7 +114,7 @@ export class RackDevice extends Namespace<
   }
 
   /** Increases the number of visible macro controls in the rack. */
-  addMacro() {
+  public async addMacro() {
     return this.sendCommand("add_macro");
   }
 
@@ -123,7 +123,7 @@ export class RackDevice extends Namespace<
    * Indices are note numbers (0–127). Throws if the source pad is empty or
    * indices are out of range.
    */
-  copyPad(sourceIndex: number, destinationIndex: number) {
+  public async copyPad(sourceIndex: number, destinationIndex: number) {
     return this.sendCommand("copy_pad", {
       source_index: sourceIndex,
       destination_index: destinationIndex,
@@ -131,7 +131,7 @@ export class RackDevice extends Namespace<
   }
 
   /** Deletes the currently selected macro variation. */
-  deleteSelectedVariation() {
+  public async deleteSelectedVariation() {
     return this.sendCommand("delete_selected_variation");
   }
 
@@ -139,28 +139,28 @@ export class RackDevice extends Namespace<
    * Inserts a new chain at `index`, or at the end when `index` is `-1`
    * (default).
    */
-  async insertChain(index = -1) {
+  public async insertChain(index = -1) {
     const result = await this.sendCommand("insert_chain", { index });
     return wrapChain(this.ableton, result);
   }
 
   /** Randomizes values for all macro controls not excluded from randomization. */
-  randomizeMacros() {
+  public async randomizeMacros() {
     return this.sendCommand("randomize_macros");
   }
 
   /** Recalls the macro variation that was recalled most recently. */
-  recallLastUsedVariation() {
+  public async recallLastUsedVariation() {
     return this.sendCommand("recall_last_used_variation");
   }
 
   /** Recalls the currently selected macro variation. */
-  recallSelectedVariation() {
+  public async recallSelectedVariation() {
     return this.sendCommand("recall_selected_variation");
   }
 
   /** Decreases the number of visible macro controls in the rack. */
-  removeMacro() {
+  public async removeMacro() {
     return this.sendCommand("remove_macro");
   }
 
@@ -168,25 +168,27 @@ export class RackDevice extends Namespace<
    * Saves the current state of the device to the compare AB slot.
    * Only relevant if `can_compare_ab`, otherwise throws.
    */
-  savePresetToCompareAbSlot() {
+  public async savePresetToCompareAbSlot() {
     return this.sendCommand("save_preset_to_compare_ab_slot");
   }
 
   /** Sets the selected bank in the device for persistency. */
-  storeChosenBank(argument: number, bank: number) {
-    return this.sendCommand("store_chosen_bank", [argument, bank]);
+  public async storeChosenBank(scriptIndex: number, bankIndex: number) {
+    return this.sendCommand("store_chosen_bank", [scriptIndex, bankIndex]);
   }
 
   /** Stores a new variation of the values of all currently mapped macros. */
-  storeVariation() {
+  public async storeVariation() {
     return this.sendCommand("store_variation");
   }
 }
 
+/** Returns whether the device is a {@link RackDevice}. */
 export function isRackDevice(device: AnyDevice): device is RackDevice {
   return device instanceof RackDevice;
 }
 
+/** Returns whether the class name is a Live rack device class. */
 export function isRackClassName(className: string): className is RackClassName {
   return (RACK_CLASS_NAMES as readonly string[]).includes(className);
 }
