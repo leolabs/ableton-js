@@ -11,12 +11,14 @@ from .Namespaces.ApplicationView import ApplicationView
 from .Namespaces.Browser import Browser
 from .Namespaces.BrowserItem import BrowserItem
 from .Namespaces.Chain import Chain
+from .Namespaces.ChainMixerDevice import ChainMixerDevice
 from .Namespaces.Clip import Clip
 from .Namespaces.ClipSlot import ClipSlot
 from .Namespaces.CuePoint import CuePoint
 from .Namespaces.Device import Device
 from .Namespaces.DeviceParameter import DeviceParameter
 from .Namespaces.DeviceView import DeviceView
+from .Namespaces.DrumChain import DrumChain
 from .Namespaces.DrumPad import DrumPad
 from .Namespaces.Envelope import Envelope
 from .Namespaces.Groove import Groove
@@ -62,10 +64,12 @@ class AbletonJS(ControlSurface):
             "browser": Browser(c_instance, self.socket, self.application()),
             "browser-item": BrowserItem(c_instance, self.socket),
             "chain": Chain(c_instance, self.socket),
+            "chain-mixer-device": ChainMixerDevice(c_instance, self.socket),
             "cue-point": CuePoint(c_instance, self.socket),
             "device": Device(c_instance, self.socket),
             "device-parameter": DeviceParameter(c_instance, self.socket),
             "device-view": DeviceView(c_instance, self.socket),
+            "drum-chain": DrumChain(c_instance, self.socket),
             "drum-pad": DrumPad(c_instance, self.socket),
             "envelope": Envelope(c_instance, self.socket),
             "groove": Groove(c_instance, self.socket),

@@ -1,6 +1,7 @@
 import { Ableton } from "../index.js";
 import { Namespace } from "./index.js";
 import { Chain, RawChain } from "./chain.js";
+import { wrapChain } from "./drum-chain.js";
 import { DrumPad, RawDrumPad } from "./drum-pad.js";
 
 export interface GettableProperties {
@@ -49,7 +50,7 @@ export class RackDeviceView extends Namespace<
     super(ableton, "rack-device-view", nsid);
 
     this.transformers = {
-      selected_chain: (chain) => (chain ? new Chain(ableton, chain) : null),
+      selected_chain: (chain) => (chain ? wrapChain(ableton, chain) : null),
       selected_drum_pad: (pad) => (pad ? new DrumPad(ableton, pad) : null),
     };
 

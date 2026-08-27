@@ -1,6 +1,7 @@
 import { Ableton } from "../index.js";
 import { Namespace } from "./index.js";
 import { Chain } from "./chain.js";
+import { AnyChain, wrapChain } from "./drum-chain.js";
 import {
   AnyDevice,
   GettableProperties as DeviceGettableProperties,
@@ -51,6 +52,8 @@ export interface GettableProperties extends DeviceGettableProperties {
 
 export interface TransformedProperties extends DeviceTransformedProperties {
   chain_selector: DeviceParameter | null;
+  chains: AnyChain[];
+  return_chains: Chain[];
   visible_drum_pads: DrumPad[];
 }
 
@@ -93,7 +96,7 @@ export class RackDevice extends Namespace<
 
     this.transformers = {
       chain_selector: (p) => (p ? new DeviceParameter(ableton, p) : null),
-      chains: (chains) => chains.map((c) => new Chain(ableton, c)),
+      chains: (chains) => chains.map((c) => wrapChain(ableton, c)),
       drum_pads: (pads) => pads.map((p) => new DrumPad(ableton, p)),
       parameters: (ps) => ps.map((p) => new DeviceParameter(ableton, p)),
       return_chains: (chains) => chains.map((c) => new Chain(ableton, c)),
@@ -138,7 +141,7 @@ export class RackDevice extends Namespace<
    */
   async insertChain(index = -1) {
     const result = await this.sendCommand("insert_chain", { index });
-    return new Chain(this.ableton, result);
+    return wrapChain(this.ableton, result);
   }
 
   /** Randomizes values for all macro controls not excluded from randomization. */
