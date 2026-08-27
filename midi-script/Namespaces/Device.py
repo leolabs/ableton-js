@@ -47,5 +47,5 @@ class Device(Interface):
 
         try:
             return [DrumPad.serialize_drum_pad(p) for p in ns.drum_pads]
-        except AttributeError:
+        except (AttributeError, RuntimeError):
             return []

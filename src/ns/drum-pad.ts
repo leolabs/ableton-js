@@ -20,6 +20,7 @@ export interface SettableProperties {
 }
 
 export interface ObservableProperties {
+  chains: RawChain[];
   mute: boolean;
   name: string;
   solo: boolean;
@@ -56,5 +57,10 @@ export class DrumPad extends Namespace<
     this.cachedProps = {
       chains: true,
     };
+  }
+
+  /** Deletes all chains on this pad (same as clearing a drum rack pad in Live). */
+  deleteAllChains() {
+    return this.sendCommand("delete_all_chains");
   }
 }

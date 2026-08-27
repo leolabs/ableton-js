@@ -6,6 +6,7 @@ import { DrumPad, RawDrumPad } from "./drum-pad.js";
 import { DeviceView } from "./device-view.js";
 import { LOOPER_CLASS_NAME, LooperDevice } from "./looper-device.js";
 import { PLUGIN_CLASS_NAME, PluginDevice } from "./plugin-device.js";
+import { isRackClassName, RackDevice } from "./rack-device.js";
 
 export interface GettableProperties {
   can_have_chains: boolean;
@@ -61,7 +62,7 @@ export type DeviceType =
   | "midi_effect"
   | "undefined";
 
-export type AnyDevice = Device | LooperDevice | PluginDevice;
+export type AnyDevice = Device | LooperDevice | PluginDevice | RackDevice;
 
 /**
  * Wraps a serialized device as a subclass when Live's `class_name` matches,
@@ -73,6 +74,9 @@ export function wrapDevice(ableton: Ableton, raw: RawDevice): AnyDevice {
   }
   if (raw.class_name === PLUGIN_CLASS_NAME) {
     return new PluginDevice(ableton, raw);
+  }
+  if (isRackClassName(raw.class_name)) {
+    return new RackDevice(ableton, raw);
   }
   return new Device(ableton, raw);
 }

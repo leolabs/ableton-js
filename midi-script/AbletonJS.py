@@ -27,6 +27,8 @@ from .Namespaces.LooperDevice import LooperDevice
 from .Namespaces.Midi import Midi
 from .Namespaces.MixerDevice import MixerDevice
 from .Namespaces.PluginDevice import PluginDevice
+from .Namespaces.RackDevice import RackDevice
+from .Namespaces.RackDeviceView import RackDeviceView
 from .Namespaces.Scene import Scene
 from .Namespaces.Session import Session
 from .Namespaces.Song import Song
@@ -78,6 +80,8 @@ class AbletonJS(ControlSurface):
             ),
             "mixer-device": MixerDevice(c_instance, self.socket),
             "plugin-device": PluginDevice(c_instance, self.socket),
+            "rack-device": RackDevice(c_instance, self.socket),
+            "rack-device-view": RackDeviceView(c_instance, self.socket),
             "scene": Scene(c_instance, self.socket),
             "song": Song(c_instance, self.socket),
             "song-view": SongView(c_instance, self.socket),

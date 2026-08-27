@@ -36,6 +36,9 @@ class ConnectionSubscribers:
 
 
 class Interface:
+    listeners = {}  # noqa: RUF012
+    obj_ids = {}  # noqa: RUF012
+
     @staticmethod
     def save_obj(obj):
         try:
@@ -56,8 +59,6 @@ class Interface:
     def __init__(self, c_instance, socket):
         self.ableton = c_instance
         self.socket = socket
-        self.listeners = {}
-        self.obj_ids = {}
 
     def log_debug(self, message):
         if DEBUG:
