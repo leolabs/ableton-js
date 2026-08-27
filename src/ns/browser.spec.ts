@@ -1,5 +1,5 @@
 import { describe, it } from "vitest";
-import { gettablePropKeys, withAbleton } from "../util/tests.js";
+import { gettablePropKeys, createAbleton } from "../util/tests.js";
 import { GettableProperties } from "./browser.js";
 
 const gettableProps = gettablePropKeys<GettableProperties>({
@@ -24,10 +24,8 @@ const gettableProps = gettablePropKeys<GettableProperties>({
 
 describe("Browser", () => {
   it("should be able to read all properties without erroring", async () => {
-    await withAbleton(async (ab) => {
-      await Promise.all(
-        gettableProps.map((p) => ab.application.browser.get(p)),
-      );
-    });
+    await using ab = await createAbleton();
+
+    await Promise.all(gettableProps.map((p) => ab.application.browser.get(p)));
   });
 });

@@ -1,5 +1,5 @@
 import { describe, it } from "vitest";
-import { gettablePropKeys, withAbleton, withTrack } from "../util/tests.js";
+import { gettablePropKeys, createAbleton, createTrack } from "../util/tests.js";
 import { GettableProperties } from "./mixer-device.js";
 
 const gettableProps = gettablePropKeys<GettableProperties>({
@@ -22,26 +22,26 @@ const mainTrackOnly = ["crossfader", "cue_volume", "song_tempo"] as Array<
 
 describe("Mixer Device", () => {
   it("should be able to read all properties without erroring", async () => {
-    await withAbleton(async (ab) => {
-      const masterTrack = await ab.song.get("master_track");
-      const masterMixer = await masterTrack.get("mixer_device");
+    await using ab = await createAbleton();
 
-      await Promise.all(
-        gettableProps
-          // crossfade_assign is not applicable to the main track
-          .filter((p) => p !== "crossfade_assign")
-          .map((p) => masterMixer.get(p)),
-      );
+    const masterTrack = await ab.song.get("master_track");
+    const masterMixer = await masterTrack.get("mixer_device");
 
-      await withTrack(ab, "audio", async (track) => {
-        const audioMixer = await track.get("mixer_device");
+    await Promise.all(
+      gettableProps
+        // crossfade_assign is not applicable to the main track
+        .filter((p) => p !== "crossfade_assign")
+        .map((p) => masterMixer.get(p)),
+    );
 
-        await Promise.all(
-          gettableProps
-            .filter((p) => !mainTrackOnly.includes(p))
-            .map((p) => audioMixer.get(p)),
-        );
-      });
-    });
+    await using track = await createTrack(ab, "audio");
+
+    const audioMixer = await track.get("mixer_device");
+
+    await Promise.all(
+      gettableProps
+        .filter((p) => !mainTrackOnly.includes(p))
+        .map((p) => audioMixer.get(p)),
+    );
   });
 });

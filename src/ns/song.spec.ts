@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { gettablePropKeys, withAbleton } from "../util/tests.js";
+import { gettablePropKeys, createAbleton } from "../util/tests.js";
 import { GettableProperties } from "./song.js";
 
 const gettableProps = gettablePropKeys<GettableProperties>({
@@ -62,73 +62,71 @@ const gettableProps = gettablePropKeys<GettableProperties>({
 
 describe("Song", () => {
   it("should be able to read all properties without erroring", async () => {
-    await withAbleton(async (ab) => {
-      await Promise.all(gettableProps.map((p) => ab.song.get(p)));
-    });
+    await using ab = await createAbleton();
+
+    await Promise.all(gettableProps.map((p) => ab.song.get(p)));
   });
 
   it("should return the proper types for properties", async () => {
-    await withAbleton(async (ab) => {
-      const songTime = await ab.song.get("current_song_time");
-      expect(songTime).toBeTypeOf("number");
+    await using ab = await createAbleton();
 
-      const clipTriggerQuantization = await ab.song.get(
-        "clip_trigger_quantization",
-      );
-      expect(clipTriggerQuantization).toBeTypeOf("string");
+    const songTime = await ab.song.get("current_song_time");
+    expect(songTime).toBeTypeOf("number");
 
-      const isPlaying = await ab.song.get("is_playing");
-      expect(isPlaying).toBeTypeOf("boolean");
-    });
+    const clipTriggerQuantization = await ab.song.get(
+      "clip_trigger_quantization",
+    );
+    expect(clipTriggerQuantization).toBeTypeOf("string");
+
+    const isPlaying = await ab.song.get("is_playing");
+    expect(isPlaying).toBeTypeOf("boolean");
   });
 
   it("should be able to change the playback quantization", async () => {
-    await withAbleton(async (ab) => {
-      const currentQuantization = await ab.song.get(
-        "clip_trigger_quantization",
-      );
-      await ab.song.set("clip_trigger_quantization", "q_eight");
-      await ab.song.set("clip_trigger_quantization", currentQuantization);
-    });
+    await using ab = await createAbleton();
+
+    const currentQuantization = await ab.song.get("clip_trigger_quantization");
+    await ab.song.set("clip_trigger_quantization", "q_eight");
+    await ab.song.set("clip_trigger_quantization", currentQuantization);
   });
 
   it("should be able to change the recording quantization", async () => {
-    await withAbleton(async (ab) => {
-      const currentQuantization = await ab.song.get(
-        "midi_recording_quantization",
-      );
-      await ab.song.set("midi_recording_quantization", "rec_q_quarter");
-      await ab.song.set("midi_recording_quantization", currentQuantization);
-    });
+    await using ab = await createAbleton();
+
+    const currentQuantization = await ab.song.get(
+      "midi_recording_quantization",
+    );
+    await ab.song.set("midi_recording_quantization", "rec_q_quarter");
+    await ab.song.set("midi_recording_quantization", currentQuantization);
   });
 
   it("should be able to write and read large objects from the project", async () => {
-    await withAbleton(async (ab) => {
-      const largeArray: number[] = [];
+    await using ab = await createAbleton();
 
-      for (let i = 0; i < 1000000; i++) {
-        largeArray.push(i);
-      }
+    const largeArray: number[] = [];
 
-      await ab.song.setData("abletonjs_test", largeArray);
-      const received = await ab.song.getData("abletonjs_test");
-      expect(received).toEqual(largeArray);
-    });
+    for (let i = 0; i < 1000000; i++) {
+      largeArray.push(i);
+    }
+
+    await ab.song.setData("abletonjs_test", largeArray);
+    const received = await ab.song.getData("abletonjs_test");
+    expect(received).toEqual(largeArray);
   });
 
   it("should list available, observable properties and functions via introspection", async () => {
-    await withAbleton(async (ab) => {
-      const available = await ab.song.getAvailableProperties();
-      expect(available).toContain("tempo");
+    await using ab = await createAbleton();
 
-      const observable = await ab.song.getObservableProperties();
-      expect(observable).toContain("is_playing");
-      expect(observable).toContain("tempo");
+    const available = await ab.song.getAvailableProperties();
+    expect(available).toContain("tempo");
 
-      const functions = await ab.song.getAvailableFunctions();
-      expect(functions).toContain("start_playing");
-      expect(functions).not.toContain("add_tempo_listener");
-      expect(functions).not.toContain("View");
-    });
+    const observable = await ab.song.getObservableProperties();
+    expect(observable).toContain("is_playing");
+    expect(observable).toContain("tempo");
+
+    const functions = await ab.song.getAvailableFunctions();
+    expect(functions).toContain("start_playing");
+    expect(functions).not.toContain("add_tempo_listener");
+    expect(functions).not.toContain("View");
   });
 });
