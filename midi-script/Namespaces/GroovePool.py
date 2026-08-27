@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 from .Groove import Groove
 from .Interface import Interface

@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 from .DeviceParameter import DeviceParameter
 from .Interface import Interface

@@ -1,4 +1,5 @@
-from __future__ import absolute_import
+# This is needed to import the Unsupported class in Live 10
+from __future__ import absolute_import  # noqa: UP010
 
 import sys
 

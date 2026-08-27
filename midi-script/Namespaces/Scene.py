@@ -1,4 +1,3 @@
-from __future__ import absolute_import
 
 from .ClipSlot import ClipSlot
 from .Interface import Interface
