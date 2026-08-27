@@ -247,7 +247,7 @@ describe("Track", () => {
     expect(await audio.get("has_midi_input")).toBe(false);
   });
 
-  it.only("sets raw.type for audio, midi, return, and main tracks", async () => {
+  it("sets raw.type for audio, midi, return, and main tracks", async () => {
     await using ab = await createAbleton();
 
     await using midi = await createTrack(ab, "midi");
