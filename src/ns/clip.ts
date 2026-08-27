@@ -197,10 +197,13 @@ export class Clip extends Namespace<
    * exist. Arrangement clips and parameters from another track always return `null`.
    */
   public async automationEnvelope(
-    parameter: DeviceParameter,
+    parameterOrId: DeviceParameter | string,
   ): Promise<Envelope | null> {
     const raw = await this.sendCommand("automation_envelope", {
-      parameter_id: parameter.raw.id,
+      parameter_id:
+        typeof parameterOrId === "string"
+          ? parameterOrId
+          : parameterOrId.raw.id,
     });
     return raw ? new Envelope(this.ableton, raw) : null;
   }
@@ -208,9 +211,14 @@ export class Clip extends Namespace<
   /**
    * Clears the envelope of this clip's given parameter.
    */
-  public async clearEnvelope(parameter: DeviceParameter): Promise<void> {
+  public async clearEnvelope(
+    parameterOrId: DeviceParameter | string,
+  ): Promise<void> {
     return this.sendCommand("clear_envelope", {
-      parameter_id: parameter.raw.id,
+      parameter_id:
+        typeof parameterOrId === "string"
+          ? parameterOrId
+          : parameterOrId.raw.id,
     });
   }
 
@@ -220,10 +228,13 @@ export class Clip extends Namespace<
    * Raises an error if the envelope can't be created.
    */
   public async createAutomationEnvelope(
-    parameter: DeviceParameter,
+    parameterOrId: DeviceParameter | string,
   ): Promise<Envelope> {
     const raw = await this.sendCommand("create_automation_envelope", {
-      parameter_id: parameter.raw.id,
+      parameter_id:
+        typeof parameterOrId === "string"
+          ? parameterOrId
+          : parameterOrId.raw.id,
     });
     return new Envelope(this.ableton, raw);
   }
@@ -360,7 +371,11 @@ export class Clip extends Namespace<
   /**
    * Quantizes all the notes of a given pitch.
    */
-  public async quantizePitch(pitch: number, grid: number, amount: number): Promise<void> {
+  public async quantizePitch(
+    pitch: number,
+    grid: number,
+    amount: number,
+  ): Promise<void> {
     return this.sendCommand("quantize_pitch", [pitch, grid, amount]);
   }
 

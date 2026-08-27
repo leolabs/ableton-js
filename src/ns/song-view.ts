@@ -5,6 +5,7 @@ import { ClipSlot, RawClipSlot } from "./clip-slot.js";
 import { DeviceParameter, RawDeviceParameter } from "./device-parameter.js";
 import { RawScene, Scene } from "./scene.js";
 import { RawTrack, Track } from "./track.js";
+import { Device } from "./device.js";
 
 export interface GettableProperties {
   detail_clip: RawClip;
@@ -71,11 +72,14 @@ export class SongView extends Namespace<
   }
 
   /** Selects the given device in Live. */
-  public async selectDevice(device: { raw: { id: string } }) {
+  public async selectDevice(deviceOrId: Device | string) {
     return this.ableton.sendCommand({
       ns: this.ns,
       name: "select_device",
-      args: { device_id: device.raw.id },
+      args: {
+        device_id:
+          typeof deviceOrId === "string" ? deviceOrId : deviceOrId.raw.id,
+      },
     });
   }
 }

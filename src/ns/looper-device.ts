@@ -97,9 +97,9 @@ export class LooperDevice extends Namespace<
   }
 
   /** Exports Looper's content to a Session Clip Slot. */
-  public async exportToClipSlot(slot: ClipSlot) {
+  public async exportToClipSlot(slotOrId: ClipSlot | string) {
     return this.sendCommand("export_to_clip_slot", {
-      slot_id: slot.raw.id,
+      slot_id: typeof slotOrId === "string" ? slotOrId : slotOrId.raw.id,
     });
   }
 

@@ -125,18 +125,26 @@ export class Browser extends Namespace<
   }
 
   /** Loads the provided browser item. */
-  public async loadItem(item: BrowserItem) {
-    return this.sendCommand("load_item", { id: item.raw.id });
+  public async loadItem(itemOrId: BrowserItem | string) {
+    return this.sendCommand("load_item", {
+      id: typeof itemOrId === "string" ? itemOrId : itemOrId.raw.id,
+    });
   }
 
   /** Previews the provided browser item. */
-  public async previewItem(item: BrowserItem) {
-    return this.sendCommand("preview_item", { id: item.raw.id });
+  public async previewItem(itemOrId: BrowserItem | string) {
+    return this.sendCommand("preview_item", {
+      id: typeof itemOrId === "string" ? itemOrId : itemOrId.raw.id,
+    });
   }
 
   /** Returns the relation between the given browser item and the current hotswap target. */
-  public async relationToHotswapTarget(item: BrowserItem): Promise<BrowserRelation> {
-    return this.sendCommand("relation_to_hotswap_target", { id: item.raw.id });
+  public async relationToHotswapTarget(
+    itemOrId: BrowserItem | string,
+  ): Promise<BrowserRelation> {
+    return this.sendCommand("relation_to_hotswap_target", {
+      id: typeof itemOrId === "string" ? itemOrId : itemOrId.raw.id,
+    });
   }
 
   /** Stops the current preview. */
