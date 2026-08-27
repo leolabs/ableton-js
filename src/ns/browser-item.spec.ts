@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { withAbleton } from "../util/tests.js";
+import { gettablePropKeys, withAbleton } from "../util/tests.js";
 import { BrowserItem, GettableProperties } from "./browser-item.js";
 
-const gettableProps = Object.keys({
+const gettableProps = gettablePropKeys<GettableProperties>({
   children: true,
   is_device: true,
   is_folder: true,
@@ -11,7 +11,7 @@ const gettableProps = Object.keys({
   name: true,
   source: true,
   uri: true,
-} satisfies Record<keyof GettableProperties, true>) as (keyof GettableProperties)[];
+});
 
 describe("BrowserItem", () => {
   it("should be able to read all properties without erroring", async () => {

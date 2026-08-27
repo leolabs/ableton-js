@@ -1,11 +1,11 @@
 import { describe, it } from "vitest";
-import { withAbleton } from "../util/tests.js";
+import { gettablePropKeys, withAbleton } from "../util/tests.js";
 import { GettableProperties } from "./track-view.js";
 
-const gettableProps: (keyof GettableProperties)[] = [
-  "is_collapsed",
-  "selected_device",
-];
+const gettableProps = gettablePropKeys<GettableProperties>({
+  is_collapsed: true,
+  selected_device: true,
+});
 
 describe("Track View", () => {
   it("should be able to read all properties without erroring", async () => {

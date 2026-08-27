@@ -1,26 +1,26 @@
 import { describe, it } from "vitest";
-import { withAbleton } from "../util/tests.js";
+import { gettablePropKeys, withAbleton } from "../util/tests.js";
 import { GettableProperties } from "./browser.js";
 
-const gettableProps: (keyof GettableProperties)[] = [
-  "audio_effects",
-  "clips",
-  "colors",
-  "current_project",
-  "drums",
-  "filter_type",
-  "instruments",
-  "legacy_libraries",
-  "max_for_live",
-  "midi_effects",
-  "packs",
-  "plugins",
-  "samples",
-  "sounds",
-  "user_folders",
-  "user_library",
-  "hotswap_target",
-];
+const gettableProps = gettablePropKeys<GettableProperties>({
+  audio_effects: true,
+  clips: true,
+  colors: true,
+  current_project: true,
+  drums: true,
+  filter_type: true,
+  hotswap_target: true,
+  instruments: true,
+  legacy_libraries: true,
+  max_for_live: true,
+  midi_effects: true,
+  packs: true,
+  plugins: true,
+  samples: true,
+  sounds: true,
+  user_folders: true,
+  user_library: true,
+});
 
 describe("Browser", () => {
   it("should be able to read all properties without erroring", async () => {
