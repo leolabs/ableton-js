@@ -23,4 +23,5 @@ class BrowserItem(Interface):
         super().__init__(c_instance, socket)
 
     def get_children(self, ns):
+        # Live also exposes `iter_children` (same descendants as an iterator).
         return map(BrowserItem.serialize_browser_item, ns.children)

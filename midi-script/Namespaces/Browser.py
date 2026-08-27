@@ -1,4 +1,7 @@
 
+import Live
+
+from ..Utils import enum_name
 from .BrowserItem import BrowserItem
 from .Interface import Interface
 
@@ -26,8 +29,21 @@ class Browser(Interface):
     def get_drums(self, ns):
         return map(BrowserItem.serialize_browser_item, ns.drums.children)
 
+    def get_filter_type(self, ns):
+        return enum_name(Live.Browser.FilterType, ns.filter_type)
+
+    def set_filter_type(self, ns, value):
+        ns.filter_type = getattr(Live.Browser.FilterType, str(value))
+
+    def get_full_refresh(self, ns):
+        # Bang-only listener; no readable property on Live's Browser.
+        return None
+
     def get_instruments(self, ns):
         return map(BrowserItem.serialize_browser_item, ns.instruments.children)
+
+    def get_legacy_libraries(self, ns):
+        return map(BrowserItem.serialize_browser_item, ns.legacy_libraries)
 
     def get_max_for_live(self, ns):
         return map(BrowserItem.serialize_browser_item, ns.max_for_live.children)
@@ -61,6 +77,11 @@ class Browser(Interface):
 
     def preview_item(self, ns, id):
         return ns.preview_item(self.get_obj(id))
+
+    def relation_to_hotswap_target(self, ns, id):
+        return enum_name(
+            Live.Browser.Relation, ns.relation_to_hotswap_target(self.get_obj(id))
+        )
 
     def stop_preview(self, ns):
         return ns.stop_preview()

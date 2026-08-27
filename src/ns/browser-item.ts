@@ -2,6 +2,7 @@ import { Ableton } from "../index.js";
 import { Namespace } from "./index.js";
 
 export interface GettableProperties {
+  /** Same descendants as Live's `iter_children`. */
   children: RawBrowserItem[];
   is_device: boolean;
   is_folder: boolean;
@@ -43,6 +44,7 @@ export class BrowserItem extends Namespace<
     public readonly raw: RawBrowserItem,
   ) {
     super(ableton, "browser-item", raw.id);
+
     this.transformers = {
       children: (children) => children.map((c) => new BrowserItem(ableton, c)),
     };
