@@ -246,4 +246,22 @@ describe("Track", () => {
     expect(await audio.get("has_audio_input")).toBe(true);
     expect(await audio.get("has_midi_input")).toBe(false);
   });
+
+  it.only("sets raw.type for audio, midi, return, and main tracks", async () => {
+    await using ab = await createAbleton();
+
+    await using midi = await createTrack(ab, "midi");
+    expect(midi.raw.type).toBe("midi");
+
+    await using audio = await createTrack(ab, "audio");
+    expect(audio.raw.type).toBe("audio");
+
+    const master = await ab.song.get("master_track");
+    expect(master.raw.type).toBe("main");
+
+    const returns = await ab.song.get("return_tracks");
+    for (const track of returns) {
+      expect(track.raw.type).toBe("return");
+    }
+  });
 });

@@ -1,4 +1,3 @@
-
 import Live
 
 from .Clip import Clip
@@ -10,6 +9,26 @@ from .TakeLane import TakeLane
 
 
 class Track(Interface):
+    @staticmethod
+    def track_type(track):
+        """Classify a Live Track as audio, midi, return, main, or group."""
+        if track.is_foldable:
+            return "group"
+
+        if track.has_midi_input:
+            return "midi"
+
+        # Return/main are never freezable.
+        if track.can_be_frozen:
+            return "audio"
+
+        # Return has mute; main does not.
+        try:
+            _mute = track.mute
+            return "return"
+        except:
+            return "main"
+
     @staticmethod
     def serialize_track(track):
         if track is None:
@@ -37,8 +56,8 @@ class Track(Interface):
             "mute": mute,
             "color": track.color,
             "color_index": track.color_index,
-            "is_foldable": track.is_foldable,
             "is_grouped": track.is_grouped,
+            "type": Track.track_type(track),
         }
 
     @staticmethod

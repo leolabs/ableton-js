@@ -172,15 +172,18 @@ export interface ObservableProperties {
   take_lanes: RawTakeLane[];
 }
 
+/** Live track kind derived at serialization time. */
+export type TrackType = "audio" | "midi" | "return" | "main" | "group";
+
 export interface RawTrack {
   readonly id: string;
   readonly name: string;
   readonly color: number;
   readonly color_index: number;
-  readonly is_foldable: boolean;
   readonly is_grouped: boolean;
   readonly mute: boolean;
   readonly solo: boolean;
+  readonly type: TrackType;
 }
 
 export class Track extends Namespace<
