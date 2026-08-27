@@ -16,7 +16,7 @@ class TakeLane(Interface):
         }
 
     def __init__(self, c_instance, socket):
-        super(TakeLane, self).__init__(c_instance, socket)
+        super().__init__(c_instance, socket)
 
     def get_arrangement_clips(self, ns):
         return [Clip.serialize_clip(clip) for clip in ns.arrangement_clips]

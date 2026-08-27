@@ -7,7 +7,7 @@ from .Interface import Interface
 
 class Application(Interface):
     def __init__(self, c_instance, socket, application):
-        super(Application, self).__init__(c_instance, socket)
+        super().__init__(c_instance, socket)
         self.application = application
 
     def get_ns(self, nsid=None):

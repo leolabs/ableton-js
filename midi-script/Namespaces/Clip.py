@@ -26,7 +26,7 @@ class Clip(Interface):
         }
 
     def __init__(self, c_instance, socket):
-        super(Clip, self).__init__(c_instance, socket)
+        super().__init__(c_instance, socket)
 
     def get_available_warp_modes(self, ns):
         return [str(Live.Clip.WarpMode(mode)) for mode in ns.available_warp_modes]

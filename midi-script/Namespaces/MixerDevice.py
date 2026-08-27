@@ -16,7 +16,7 @@ class MixerDevice(Interface):
         return {"id": device_id, "volume": mixer_device.volume}
 
     def __init__(self, c_instance, socket):
-        super(MixerDevice, self).__init__(c_instance, socket)
+        super().__init__(c_instance, socket)
 
     def get_crossfade_assign(self, ns):
         return str(ns.crossfade_assign)

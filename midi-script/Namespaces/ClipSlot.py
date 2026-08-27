@@ -21,7 +21,7 @@ class ClipSlot(Interface):
         }
 
     def __init__(self, c_instance, socket):
-        super(ClipSlot, self).__init__(c_instance, socket)
+        super().__init__(c_instance, socket)
 
     def get_clip(self, ns):
         return Clip.serialize_clip(ns.clip)

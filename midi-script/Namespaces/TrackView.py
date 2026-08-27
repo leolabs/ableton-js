@@ -8,7 +8,7 @@ from .Interface import Interface
 
 class TrackView(Interface):
     def __init__(self, c_instance, socket):
-        super(TrackView, self).__init__(c_instance, socket)
+        super().__init__(c_instance, socket)
 
     def get_ns(self, nsid):
         return Interface.get_obj(nsid).view

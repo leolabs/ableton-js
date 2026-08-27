@@ -17,7 +17,7 @@ class Groove(Interface):
         }
 
     def __init__(self, c_instance, socket):
-        super(Groove, self).__init__(c_instance, socket)
+        super().__init__(c_instance, socket)
 
     def get_base(self, ns):
         return str(ns.base)

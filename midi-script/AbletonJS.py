@@ -42,7 +42,7 @@ from .version import version
 
 class AbletonJS(ControlSurface):
     def __init__(self, c_instance):
-        super(AbletonJS, self).__init__(c_instance)
+        super().__init__(c_instance)
 
         logger.info(f"Starting {PLUGIN_NAME} {version}...")
 
@@ -140,7 +140,7 @@ class AbletonJS(ControlSurface):
         self.socket.shutdown()
         Interface.listeners.clear()
         Interface.obj_ids.clear()
-        super(AbletonJS, self).disconnect()
+        super().disconnect()
 
     def command_handler(self, payload, connection):
         uuid = payload.get("uuid")

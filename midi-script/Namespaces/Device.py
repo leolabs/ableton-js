@@ -19,7 +19,7 @@ class Device(Interface):
         }
 
     def __init__(self, c_instance, socket):
-        super(Device, self).__init__(c_instance, socket)
+        super().__init__(c_instance, socket)
 
     def get_parameters(self, ns):
         return map(DeviceParameter.serialize_device_parameter, ns.parameters)

@@ -79,7 +79,7 @@ class Track(Interface):
         raise Exception("Routing type not found: " + str(value))
 
     def __init__(self, c_instance, socket):
-        super(Track, self).__init__(c_instance, socket)
+        super().__init__(c_instance, socket)
 
     def get_arrangement_clips(self, ns):
         return map(Clip.serialize_clip, ns.arrangement_clips)

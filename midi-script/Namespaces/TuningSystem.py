@@ -51,7 +51,7 @@ class TuningSystem(Interface):
         }
 
     def __init__(self, c_instance, socket):
-        super(TuningSystem, self).__init__(c_instance, socket)
+        super().__init__(c_instance, socket)
 
     def get_lowest_note(self, ns):
         return serialize_pitch_class_and_octave(ns.lowest_note)

@@ -13,4 +13,4 @@ class CuePoint(Interface):
         return {"id": cue_point_id, "name": cue_point.name, "time": cue_point.time}
 
     def __init__(self, c_instance, socket):
-        super(CuePoint, self).__init__(c_instance, socket)
+        super().__init__(c_instance, socket)

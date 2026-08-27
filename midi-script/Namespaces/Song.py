@@ -12,7 +12,7 @@ from .TuningSystem import TuningSystem
 
 class Song(Interface):
     def __init__(self, c_instance, socket):
-        super(Song, self).__init__(c_instance, socket)
+        super().__init__(c_instance, socket)
         self.song = self.ableton.song()
 
     def get_ns(self, nsid):

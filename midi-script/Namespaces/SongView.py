@@ -10,7 +10,7 @@ from .Track import Track
 
 class SongView(Interface):
     def __init__(self, c_instance, socket):
-        super(SongView, self).__init__(c_instance, socket)
+        super().__init__(c_instance, socket)
 
     def get_ns(self, nsid):
         return self.ableton.song().view

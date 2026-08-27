@@ -35,7 +35,7 @@ class Chain(Interface):
         }
 
     def __init__(self, c_instance, socket):
-        super(Chain, self).__init__(c_instance, socket)
+        super().__init__(c_instance, socket)
 
     def get_devices(self, ns):
         from .Device import Device

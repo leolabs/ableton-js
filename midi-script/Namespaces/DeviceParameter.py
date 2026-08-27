@@ -29,7 +29,7 @@ class DeviceParameter(Interface):
         return str(value)
 
     def __init__(self, c_instance, socket):
-        super(DeviceParameter, self).__init__(c_instance, socket)
+        super().__init__(c_instance, socket)
 
     def get_automation_state(self, ns):
         return DeviceParameter._enum_name(

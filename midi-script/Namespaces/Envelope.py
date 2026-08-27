@@ -33,7 +33,7 @@ class Envelope(Interface):
         }
 
     def __init__(self, c_instance, socket):
-        super(Envelope, self).__init__(c_instance, socket)
+        super().__init__(c_instance, socket)
 
     def get_parameter(self, ns):
         return DeviceParameter.serialize_device_parameter(ns.parameter)

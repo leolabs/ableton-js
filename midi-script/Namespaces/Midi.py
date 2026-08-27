@@ -6,7 +6,7 @@ from .Interface import ConnectionSubscribers, Interface
 
 class Midi(Interface):
     def __init__(self, c_instance, socket, tracked_midi, update_midi_callback):
-        super(Midi, self).__init__(c_instance, socket)
+        super().__init__(c_instance, socket)
         self.outputs = set()
         self.tracked_midi = tracked_midi
         self.update_midi = update_midi_callback

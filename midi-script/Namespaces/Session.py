@@ -8,7 +8,7 @@ from .Interface import Interface
 
 class Session(Interface):
     def __init__(self, c_instance, socket, controlSurface):
-        super(Session, self).__init__(c_instance, socket)
+        super().__init__(c_instance, socket)
 
         self.controlSurface = controlSurface
         self.sessionComponent = SessionComponent
