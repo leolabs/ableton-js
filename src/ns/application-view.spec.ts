@@ -1,16 +1,16 @@
 import { describe, it } from "vitest";
-import { withAbleton } from "../util/tests.js";
+import { gettablePropKeys, createAbleton } from "../util/tests.js";
 import { GettableProperties } from "./application-view.js";
 
-const gettableProps: (keyof GettableProperties)[] = [
-  "browse_mode",
-  "focused_document_view",
-];
+const gettableProps = gettablePropKeys<GettableProperties>({
+  browse_mode: true,
+  focused_document_view: true,
+});
 
-describe("Application", () => {
+describe("Application View", () => {
   it("should be able to read all properties without erroring", async () => {
-    await withAbleton(async (ab) => {
-      await Promise.all(gettableProps.map((p) => ab.application.view.get(p)));
-    });
+    await using ab = await createAbleton();
+
+    await Promise.all(gettableProps.map((p) => ab.application.view.get(p)));
   });
 });

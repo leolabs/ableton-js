@@ -2,16 +2,9 @@ import { Ableton } from "../index.js";
 import { Namespace } from "./index.js";
 import { DeviceParameter, RawDeviceParameter } from "./device-parameter.js";
 
-export enum PanningMode {
-  Stereo,
-  StereoSplit,
-}
+export type PanningMode = "stereo" | "stereo_split";
 
-export enum CrossfadeAssignment {
-  A,
-  None,
-  B,
-}
+export type CrossfadeAssignment = "A" | "NONE" | "B";
 
 export interface GettableProperties {
   crossfade_assign: CrossfadeAssignment;
@@ -41,12 +34,12 @@ export interface TransformedProperties {
 
 export interface SettableProperties {
   crossfade_assign: CrossfadeAssignment;
-  panning_mode: string;
+  panning_mode: PanningMode;
 }
 
 export interface ObservableProperties {
   crossfade_assign: CrossfadeAssignment;
-  panning_mode: string;
+  panning_mode: PanningMode;
   sends: RawDeviceParameter[];
 }
 
@@ -63,7 +56,7 @@ export class MixerDevice extends Namespace<
 > {
   constructor(
     ableton: Ableton,
-    public raw: RawMixerDevice,
+    public readonly raw: RawMixerDevice,
   ) {
     super(ableton, "mixer-device", raw.id);
 

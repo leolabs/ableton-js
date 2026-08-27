@@ -2,12 +2,12 @@
 
 [![Current Version](https://img.shields.io/npm/v/ableton-js.svg)](https://www.npmjs.com/package/ableton-js/)
 
-Ableton.js lets you control your instance or instances of Ableton using Node.js.
-It tries to cover as many functions as possible.
+Ableton.js lets you control Ableton 11 or later using Node.js, Deno, or a
+browser. It tries to cover as many functions as possible.
 
 This package is still a work-in-progress. My goal is to expose all of
-[Ableton's MIDI Remote Script](https://nsuspray.github.io/Live_API_Doc/11.0.0.xml)
-functions to TypeScript. If you'd like to contribute, please feel free to do so.
+[Ableton's MIDI Remote Script](https://ableton-live-docs.vercel.app/) functions
+to TypeScript. If you'd like to contribute, please feel free to open a PR.
 
 ## Sponsored Message
 
@@ -16,9 +16,11 @@ I've used Ableton.js to build a setlist manager called
 your Ableton setlists from any device, re-order songs and add notes to them, and
 get an overview of the current state of your set.
 
-[![AbleSet Header](https://public-files.gumroad.com/variants/oplxt68bsgq1hu61t8bydfkgppr5/baaca0eb0e33dc4f9d45910b8c86623f0144cea0fe0c2093c546d17d535752eb)](https://ableset.app/?utm_campaign=ableton-js)
+[![AbleSet Header](https://ableset.com/images/ableton-js-banner.png)](https://ableset.com/?utm_campaign=ableton-js)
 
 ## Prerequisites
+
+Ableton.js requires **Ableton Live 11 or later**.
 
 To use this library, you'll need to install and activate the MIDI Remote Script
 in Ableton.js. To do that, copy the `midi-script` folder of this repo to
@@ -30,8 +32,20 @@ After starting Ableton Live, add the script to your list of control surfaces:
 
 ![Ableton Live Settings](https://i.imgur.com/a34zJca.png)
 
+The Remote Script opens a WebSocket server on `127.0.0.1:39031` by default. You
+can change the bind address and port in `midi-script/Config.py`
+(`WEBSOCKET_HOST` / `WEBSOCKET_PORT`). The JS client must use the same port
+(`new Ableton({ port })`).
+
+To require a password, set `PASSWORD` in `Config.py` to a string and pass the
+same value to `new Ableton({ password })`. Auth is off when `PASSWORD` is `None`
+or empty. When enabled, the plugin sends a per-connection salt and the client
+authenticates with HMAC-SHA256 so the password itself is not sent in plaintext.
+The WebSocket is still unencrypted (`ws://`) after login, so I'd prefer binding
+to loopback if possible.
+
 If you've forked this project on macOS, you can also use yarn to do that for
-you. Running `yarn ableton10:start` or `yarn ableton11:start` (depending on your
+you. Running `yarn ableton11:start` or `yarn ableton12:start` (depending on your
 app version) will copy the `midi-script` folder, open Ableton and show a stream
 of log messages until you kill it.
 
@@ -63,10 +77,21 @@ const test = async () => {
 
   // Set the tempo
   await ableton.song.set("tempo", 85);
+
+  // Commands started in the same tick are sent together
+  const tracks = await ableton.song.get("tracks");
+  await Promise.all(
+    tracks.map((t) => t.addListener("name", (n) => console.log(t.raw.id, n))),
+  );
 };
 
 test();
 ```
+
+Ableton.js also serves files located in `midi-script/static` on the same port as
+the WebSocket, so you can host your own web app from within Live. By default,
+this folder contains a bundled version of Ableton.js and a simple `index.html`
+file that allows you to use the browser's console to try out the API.
 
 ## Events
 
@@ -92,29 +117,21 @@ ab.on("ping", (ping) => console.log("Ping:", ping, "ms"));
 
 ## Protocol
 
-Ableton.js uses UDP to communicate with the MIDI Script. Each message is a JSON
-object containing required data and a UUID so request and response can be
-associated with each other.
+Ableton.js uses a WebSocket (`ws://127.0.0.1:39031` by default) to talk to the
+MIDI Remote Script. Each message is a JSON text frame containing required data
+and a UUID so request and response can be associated with each other.
 
-### Used Ports
-
-Both the client and the server bind to a random available port and store that
-port in a local file so the other side knows which port to send messages to.
-
-### Compression and Chunking
-
-To allow sending large JSON payloads, requests to and responses from the MIDI
-Script are compressed using gzip and chunked to fit into the maximum allowed
-package size. The first byte of every message chunk contains the chunk index
-(0x00-0xFF) followed by the gzipped chunk. The last chunk always has the index
-0xFF. This indicates to the JS library that the previous received messages
-should be stiched together, unzipped, and processed.
+The Remote Script is the server and supports connections from multiple clients.
+Command replies (`result` / `error`) and property listener updates are sent only
+to the client that issued the command or subscribed. Removing a listener, or
+disconnecting, drops that client's subscriptions only. Live still uses a single
+listener per property until the last subscriber leaves.
 
 ### Caching
 
-Certain props are cached on the client to reduce the bandwidth over UDP. To do
-this, the Ableton plugin generates an MD5 hash of the prop, called ETag, and
-sends it to the client along with the data.
+Certain props are cached on the client to reduce repeated payloads. To do this,
+the Ableton plugin generates an MD5 hash of the prop, called ETag, and sends it
+to the client along with the data.
 
 The client stores both the ETag and the data in an LRU cache and sends the
 latest stored ETag to the plugin the next time the same prop is requested. If
@@ -123,64 +140,83 @@ and the client returns the cached data.
 
 ### Commands
 
-A command payload consists of the following properties:
+Every request is an envelope with one or more commands. Commands started in the
+same JavaScript tick (for example via `Promise.all`) are automatically combined
+into a single WebSocket round-trip.
 
 ```js
 {
-  "uuid": "a20f25a0-83e2-11e9-bbe1-bd3a580ef903", // A unique command id
-  "ns": "song", // The command namespace
-  "nsid": null, // The namespace id, for example to address a specific track or device
-  "name": "get_prop", // Command name
-  "args": { "prop": "current_song_time" }, // Command arguments
-  "etag": "4e0794e44c7eb58bdbbbf7268e8237b4", // MD5 hash of the data if it might be cached locally
-  "cache": true // If this is true, the plugin will calculate an etag and return a placeholder if it matches the provided one
+  "uuid": "1", // Envelope id
+  "commands": [
+    {
+      "ns": "song", // The command namespace
+      "nsid": null, // The namespace id, for example to address a specific track or device
+      "name": "get_prop", // Command name
+      "args": { "prop": "current_song_time" }, // Command arguments
+      "etag": "4e0794e44c7eb58bdbbbf7268e8237b4", // MD5 hash of the data if it might be cached locally
+      "cache": true // If this is true, the plugin will calculate an etag and return a placeholder if it matches the provided one
+    }
+  ]
 }
 ```
 
-The MIDI Script answers with a JSON object looking like this:
+The MIDI Script answers with a JSON object looking like this. `data` is always
+an array with one result per command:
 
 ```js
 {
-  "data": 0.0, // The command's return value, can be of any JSON-compatible type
+  "data": [{ "ok": true, "data": 0.0 }], // Per-command results
   "event": "result", // This can be 'result' or 'error'
-  "uuid": "a20f25a0-83e2-11e9-bbe1-bd3a580ef903" // The same UUID that was used to send the command
+  "uuid": "1" // The same UUID that was used to send the envelope
 }
 ```
 
-If you're getting a cached prop, the JSON object could look like this:
+A failed command looks like `{ "ok": false, "error": "..." }` in its slot. Other
+commands in the same envelope still run. A top-level `event: "error"` means the
+whole envelope failed (for example auth or a malformed payload).
+
+If you're getting a cached prop, the per-command `data` could look like this:
 
 ```js
 {
-  "data": { "data": 0.0, "etag": "4e0794e44c7eb58bdbbbf7268e8237b4" },
-  "event": "result", // This can be 'result' or 'error'
-  "uuid": "a20f25a0-83e2-11e9-bbe1-bd3a580ef903" // The same UUID that was used to send the command
+  "data": [
+    {
+      "ok": true,
+      "data": { "data": 0.0, "etag": "4e0794e44c7eb58bdbbbf7268e8237b4" }
+    }
+  ],
+  "event": "result",
+  "uuid": "1"
 }
 ```
 
-Or, if the data hasn't changed, it looks like this:
+Or, if the data hasn't changed, the per-command `data` looks like this:
 
 ```js
 {
-  "data": { "__cached": true },
-  "event": "result", // This can be 'result' or 'error'
-  "uuid": "a20f25a0-83e2-11e9-bbe1-bd3a580ef903" // The same UUID that was used to send the command
+  "data": [{ "ok": true, "data": { "__cached": true } }],
+  "event": "result",
+  "uuid": "1"
 }
 ```
 
 ### Events
 
-To attach an event listener to a specific property, the client sends a command
-object:
+To attach an event listener to a specific property, the client sends a command:
 
 ```js
 {
-  "uuid": "922d54d0-83e3-11e9-ba7c-917478f8b91b", // A unique command id
-  "ns": "song", // The command namespace
-  "name": "add_listener", // The command to add an event listener
-  "args": {
-    "prop": "current_song_time", // The property that should be watched
-    "eventId": "922d2dc0-83e3-11e9-ba7c-917478f8b91b" // A unique event id
-  }
+  "uuid": "1", // Envelope id
+  "commands": [
+    {
+      "ns": "song",
+      "name": "add_listener",
+      "args": {
+        "prop": "current_song_time",
+        "eventId": "2"
+      }
+    }
+  ]
 }
 ```
 
@@ -189,19 +225,19 @@ listener has been attached:
 
 ```js
 {
-  "data": "922d2dc0-83e3-11e9-ba7c-917478f8b91b", // The unique event id
-  "event": "result", // Should be result, is error when something goes wrong
-  "uuid": "922d54d0-83e3-11e9-ba7c-917478f8b91b" // The unique command id
+  "data": [{ "ok": true, "data": "2" }],
+  "event": "result",
+  "uuid": "1"
 }
 ```
 
 From now on, when the observed property changes, the MIDI Script sends an event
-object:
+object (not wrapped in a commands envelope):
 
 ```js
 {
   "data": 68.0, // The new value, can be any JSON-compatible type
-  "event": "922d2dc0-83e3-11e9-ba7c-917478f8b91b", // The event id
+  "event": "2", // The event id
   "uuid": null // Is always null and may be removed in future versions
 }
 ```
@@ -216,11 +252,13 @@ like this:
 
 ```js
 {
-  "data": null, // Is always null
+  "data": { "port": 39031 },
   "event": "connect", // Can be connect or disconnect
-  "uuid": null // Is always null and may be removed in future versions
+  "uuid": null
 }
 ```
+
+`disconnect` still sends `"data": null`.
 
 When you open a new Project in Ableton, the script will shut down and start
 again.

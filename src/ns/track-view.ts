@@ -1,16 +1,8 @@
 import { Ableton } from "../index.js";
 import { Namespace } from "./index.js";
-import { Device, RawDevice } from "./device.js";
-import { Track, RawTrack } from "./track.js";
-import { Scene, RawScene } from "./scene.js";
-import { RawDeviceParameter, DeviceParameter } from "./device-parameter.js";
-import { ClipSlot, RawClipSlot } from "./clip-slot.js";
+import { RawDevice, AnyDevice, wrapDevice } from "./device.js";
 
-export enum DeviceInsertMode {
-  Default = "default",
-  Left = "left",
-  Right = "right",
-}
+export type DeviceInsertMode = "default" | "selected_left" | "selected_right";
 
 export interface GettableProperties {
   // device_insert_mode: DeviceInsertMode; – for some reason, Live returns a boolean here
@@ -19,7 +11,7 @@ export interface GettableProperties {
 }
 
 export interface TransformedProperties {
-  selected_device: Device;
+  selected_device: AnyDevice;
 }
 
 export interface SettableProperties {
@@ -43,7 +35,7 @@ export class TrackView extends Namespace<
     super(ableton, "track-view", nsid);
 
     this.transformers = {
-      selected_device: (device) => new Device(ableton, device),
+      selected_device: (device) => wrapDevice(ableton, device),
     };
 
     this.cachedProps = {
@@ -54,7 +46,7 @@ export class TrackView extends Namespace<
   /**
    * Selects the track's instrument if it has one.
    */
-  async selectInstrument() {
+  public async selectInstrument() {
     return this.sendCommand("select_instrument");
   }
 }

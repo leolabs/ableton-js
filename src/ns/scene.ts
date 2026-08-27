@@ -48,7 +48,7 @@ export class Scene extends Namespace<
 > {
   constructor(
     ableton: Ableton,
-    public raw: RawScene,
+    public readonly raw: RawScene,
   ) {
     super(ableton, "scene", raw.id);
 
@@ -64,10 +64,10 @@ export class Scene extends Namespace<
   }
 
   /**
-   * Fire the scene directly. Will fire all clip slots
-   * that this scene owns and select the scene itself.
+   * Fires the scene directly. Fires all clip slots
+   * that this scene owns and selects the scene itself.
    */
-  async fire() {
+  public async fire() {
     return this.sendCommand("fire");
   }
 }

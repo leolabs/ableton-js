@@ -68,6 +68,7 @@ export class MidiMessage {
     this.command = raw.bytes[0];
   }
 
+  /** Returns this message as a control-change payload, or throws if it is not CC. */
   toCC(): MidiCC {
     if (this.command !== MidiCommand.ControlChange) {
       throw "not a midi CC message";
@@ -79,6 +80,7 @@ export class MidiMessage {
     };
   }
 
+  /** Returns this message as a note payload, or throws if it is not note on/off. */
   toNote(): MidiNote {
     if (
       this.command !== MidiCommand.NoteOn &&

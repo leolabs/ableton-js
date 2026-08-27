@@ -3,7 +3,7 @@ import { Namespace } from "./index.js";
 
 export interface GettableProperties {
   automation_state: AutomationState;
-  default_value: string;
+  default_value: number;
   is_enabled: boolean;
   is_quantized: boolean;
   max: number;
@@ -35,17 +35,9 @@ export interface RawDeviceParameter {
   readonly is_quantized: boolean;
 }
 
-export enum AutomationState {
-  None = 0,
-  Playing = 1,
-  Overridden = 2,
-}
+export type AutomationState = "none" | "playing" | "overridden";
 
-export enum ParameterState {
-  Enabled = 0,
-  Disabled = 1,
-  Irrelevant = 2,
-}
+export type ParameterState = "enabled" | "irrelevant" | "disabled";
 
 export class DeviceParameter extends Namespace<
   GettableProperties,
@@ -55,7 +47,7 @@ export class DeviceParameter extends Namespace<
 > {
   constructor(
     ableton: Ableton,
-    public raw: RawDeviceParameter,
+    public readonly raw: RawDeviceParameter,
   ) {
     super(ableton, "device-parameter", raw.id);
   }

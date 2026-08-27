@@ -6,15 +6,20 @@ build/
 
 # Built files
 *.js
+*.js.map
 *.d.ts
 /ns/
 !/hooks/**/*
+!midi-script/static/ableton.js
+!midi-script/static/ableton.js.map
 
 .vscode/settings.json
 
 test.ts
 test-script.ts
 test-udp.ts
+
+midi-script/Live
 
 ### Node ###
 # Logs

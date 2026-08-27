@@ -1,9 +1,9 @@
 import { Ableton } from "../index.js";
 import { Namespace } from "./index.js";
-import { Chain, RawChain } from "./chain.js";
+import { DrumChain, RawDrumChain } from "./drum-chain.js";
 
 export interface GettableProperties {
-  chains: RawChain[];
+  chains: RawDrumChain[];
   mute: boolean;
   name: string;
   note: number | null;
@@ -11,7 +11,7 @@ export interface GettableProperties {
 }
 
 export interface TransformedProperties {
-  chains: Chain[];
+  chains: DrumChain[];
 }
 
 export interface SettableProperties {
@@ -20,6 +20,7 @@ export interface SettableProperties {
 }
 
 export interface ObservableProperties {
+  chains: RawDrumChain[];
   mute: boolean;
   name: string;
   solo: boolean;
@@ -45,16 +46,21 @@ export class DrumPad extends Namespace<
 > {
   constructor(
     ableton: Ableton,
-    public raw: RawDrumPad,
+    public readonly raw: RawDrumPad,
   ) {
     super(ableton, "drum-pad", raw.id);
 
     this.transformers = {
-      chains: (chains) => chains.map((c) => new Chain(ableton, c)),
+      chains: (chains) => chains.map((c) => new DrumChain(ableton, c)),
     };
 
     this.cachedProps = {
       chains: true,
     };
+  }
+
+  /** Deletes all chains on this pad (same as clearing a drum rack pad in Live). */
+  public async deleteAllChains() {
+    return this.sendCommand("delete_all_chains");
   }
 }

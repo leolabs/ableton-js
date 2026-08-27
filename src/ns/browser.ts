@@ -2,13 +2,30 @@ import { Ableton } from "../index.js";
 import { Namespace } from "./index.js";
 import { BrowserItem, RawBrowserItem } from "./browser-item.js";
 
+/** Live's `Browser.FilterType`. */
+export type BrowserFilterType =
+  | "disabled"
+  | "hotswap_off"
+  | "instrument_hotswap"
+  | "audio_effect_hotswap"
+  | "midi_effect_hotswap"
+  | "drum_pad_hotswap"
+  | "midi_track_devices"
+  | "samples"
+  | "count";
+
+/** Live's `Browser.Relation`. */
+export type BrowserRelation = "ancestor" | "equal" | "descendant" | "none";
+
 export interface GettableProperties {
   audio_effects: RawBrowserItem[];
   clips: RawBrowserItem[];
   colors: RawBrowserItem[];
   current_project: RawBrowserItem[];
   drums: RawBrowserItem[];
+  filter_type: BrowserFilterType;
   instruments: RawBrowserItem[];
+  legacy_libraries: RawBrowserItem[];
   max_for_live: RawBrowserItem[];
   midi_effects: RawBrowserItem[];
   packs: RawBrowserItem[];
@@ -27,6 +44,7 @@ export interface TransformedProperties {
   current_project: BrowserItem[];
   drums: BrowserItem[];
   instruments: BrowserItem[];
+  legacy_libraries: BrowserItem[];
   max_for_live: BrowserItem[];
   midi_effects: BrowserItem[];
   packs: BrowserItem[];
@@ -38,10 +56,14 @@ export interface TransformedProperties {
   hotswap_target: BrowserItem;
 }
 
-export interface SettableProperties {}
+export interface SettableProperties {
+  filter_type: BrowserFilterType;
+}
 
 export interface ObservableProperties {
-  filter_type: never;
+  filter_type: BrowserFilterType;
+  /** Bang-only; fires when the browser finishes a full refresh. */
+  full_refresh: never;
   // remote script stalls when hotswap is activated, so we only get a bang when deactivated
   hotswap_target: BrowserItem;
 }
@@ -69,6 +91,7 @@ export class Browser extends Namespace<
       current_project: makeBrowserItems,
       drums: makeBrowserItems,
       instruments: makeBrowserItems,
+      legacy_libraries: makeBrowserItems,
       max_for_live: makeBrowserItems,
       midi_effects: makeBrowserItems,
       packs: makeBrowserItems,
@@ -86,7 +109,9 @@ export class Browser extends Namespace<
       colors: true,
       current_project: true,
       drums: true,
+      filter_type: false,
       instruments: true,
+      legacy_libraries: true,
       max_for_live: true,
       midi_effects: true,
       packs: true,
@@ -100,13 +125,26 @@ export class Browser extends Namespace<
   }
 
   /** Loads the provided browser item. */
-  public async loadItem(item: BrowserItem) {
-    return this.sendCommand("load_item", { id: item.raw.id });
+  public async loadItem(itemOrId: BrowserItem | string) {
+    return this.sendCommand("load_item", {
+      id: typeof itemOrId === "string" ? itemOrId : itemOrId.raw.id,
+    });
   }
 
   /** Previews the provided browser item. */
-  public async previewItem(item: BrowserItem) {
-    return this.sendCommand("preview_item", { id: item.raw.id });
+  public async previewItem(itemOrId: BrowserItem | string) {
+    return this.sendCommand("preview_item", {
+      id: typeof itemOrId === "string" ? itemOrId : itemOrId.raw.id,
+    });
+  }
+
+  /** Returns the relation between the given browser item and the current hotswap target. */
+  public async relationToHotswapTarget(
+    itemOrId: BrowserItem | string,
+  ): Promise<BrowserRelation> {
+    return this.sendCommand("relation_to_hotswap_target", {
+      id: typeof itemOrId === "string" ? itemOrId : itemOrId.raw.id,
+    });
   }
 
   /** Stops the current preview. */

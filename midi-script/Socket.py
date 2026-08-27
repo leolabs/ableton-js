@@ -1,292 +1,438 @@
-import socket
+
+import binascii
+import hashlib
+import hmac
 import json
-import struct
-import zlib
 import os
-import tempfile
-import sys
+import queue
+import socket
+import threading
+import time
 
+from .Config import PASSWORD, PLUGIN_NAME, WEBSOCKET_HOST, WEBSOCKET_PORT
 from .Logging import logger
+from .StaticServer import serve_static
+from .WebSocket import (
+    OPCODE_CLOSE,
+    OPCODE_CONTINUATION,
+    OPCODE_PING,
+    OPCODE_PONG,
+    OPCODE_TEXT,
+    complete_websocket_handshake,
+    encode_close_frame,
+    encode_pong_frame,
+    encode_text_frame,
+    is_websocket_upgrade,
+    read_http_request,
+    to_bytes,
+    to_text,
+    try_read_frame,
+)
 
-import Live
+# Send small frames on the caller thread (usually Live's MIDI thread). A
+# dedicated send thread adds ~10ms wake-up on macOS; keep it only for large
+# payloads or when a previous send is still queued.
+DIRECT_SEND_MAX_BYTES = 65536
+EAGAIN_ERRNOS = (11, 35, 10035)
 
 
-def split_by_n(seq, n):
-    '''A generator to divide a sequence into chunks of n units.'''
-    while seq:
-        yield seq[:n]
-        seq = seq[n:]
+def _auth_enabled():
+    return bool(PASSWORD)
 
 
-server_port_file = "ableton-js-server.port"
-client_port_file = "ableton-js-client.port"
+def _random_salt():
+    raw = binascii.hexlify(os.urandom(16))
+    if isinstance(raw, bytes):
+        return raw.decode("ascii")
+    return raw
 
-server_port_path = os.path.join(tempfile.gettempdir(), server_port_file)
-client_port_path = os.path.join(tempfile.gettempdir(), client_port_file)
+
+def _auth_hash(salt):
+    return hmac.new(to_bytes(PASSWORD), to_bytes(salt), hashlib.sha256).hexdigest()
 
 
-class Socket(object):
+class ClientConnection:
+    """Socket with optional send thread for large or potentially blocking writes."""
+
+    def __init__(self, sock):
+        self.sock = sock
+        self.out_queue = queue.Queue()
+        self._send_lock = threading.Lock()
+        self._closed = False
+        self.authenticated = not _auth_enabled()
+        self.auth_salt = None
+        thread = threading.Thread(target=self._send_loop, daemon=True)
+        thread.start()
+
+    def send_or_enqueue(self, frame):
+        if self._closed:
+            return False
+
+        if (
+            self.out_queue.empty()
+            and len(frame) <= DIRECT_SEND_MAX_BYTES
+            and self._send_lock.acquire(False)
+        ):
+            try:
+                if self._closed:
+                    return False
+                self.sock.sendall(frame)
+                return True
+            except OSError as e:
+                errno = getattr(e, "errno", None)
+                if errno not in EAGAIN_ERRNOS:
+                    return False
+            finally:
+                self._send_lock.release()
+        return self.enqueue(frame)
+
+    def enqueue(self, frame):
+        if self._closed:
+            return False
+        self.out_queue.put_nowait(frame)
+        return True
+
+    def close(self):
+        if self._closed:
+            return
+        self._closed = True
+        try:
+            self.out_queue.put_nowait(None)
+        except:
+            pass
+        try:
+            self.sock.close()
+        except:
+            pass
+
+    def _send_loop(self):
+        while True:
+            frame = self.out_queue.get()
+            if frame is None:
+                break
+            try:
+                self._send_lock.acquire()
+                try:
+                    if self._closed:
+                        break
+                    self.sock.sendall(frame)
+                finally:
+                    self._send_lock.release()
+            except:
+                break
+        try:
+            self.sock.close()
+        except:
+            pass
+
+
+class Socket:
     @staticmethod
     def set_message(func):
         Socket.show_message = func
 
-    def __init__(self, handler):
+    def __init__(self, handler, disconnect_handler=None):
         self.input_handler = handler
-        self._server_addr = ("127.0.0.1", 0)
-        self._client_addr = ("127.0.0.1", 39031)
-        self._last_error = ""
+        self.disconnect_handler = disconnect_handler
+        self._queue = queue.Queue()
+        self._connections = []
+        self._lock = threading.Lock()
         self._socket = None
-        self._chunk_limit = None
-        self._send_buffer = []
-        self._message_id = 0
-        self._receive_buffer = bytearray()
-        # Dictionary to store chunks per message: {message_id: {chunk_index: chunk_data}}
-        self._chunks = {}
+        self._running = True
+        self._last_error = ""
+        self._host = WEBSOCKET_HOST
+        self._port = int(WEBSOCKET_PORT)
 
-        self.read_remote_port()
-        self.init_socket()
+        self._thread = threading.Thread(target=self._serve, daemon=True)
+        self._thread.start()
 
     def log_error_once(self, msg):
         if self._last_error != msg:
             self._last_error = msg
             logger.error(msg)
 
-    def set_client_port(self, port):
-        logger.info("Setting client port: " + str(port))
-        self.show_message("Client connected on port " + str(port))
-        self._client_addr = ("127.0.0.1", int(port))
+    def send_to(self, connection, name, obj=None, uuid=None):
+        self._send_json(name, obj, uuid, connection)
 
-    def read_remote_port(self):
-        '''Reads the port our client is listening on'''
+    def broadcast(self, name, obj=None, uuid=None):
+        self._send_json(name, obj, uuid, None)
 
-        try:
-            os.stat(client_port_path)
-        except Exception as e:
-            self.log_error_once("Couldn't stat remote port file:")
-            return
-
-        try:
-            old_port = self._client_addr[1]
-
-            with open(client_port_path) as file:
-                port = int(file.read())
-
-                if port != old_port:
-                    logger.info("[" + str(id(self)) + "] Client port changed from " +
-                                str(old_port) + " to " + str(port))
-                    self._client_addr = ("127.0.0.1", port)
-
-                    if self._socket:
-                        self.send(
-                            "connect", {"port": self._server_addr[1]}, immediate=True)
-        except Exception as e:
-            self.log_error_once(
-                "Couldn't read remote port file: " + str(e.args))
-
-    def shutdown(self):
-        logger.info("Shutting down...")
-        send_buffer_length = len(self._send_buffer)
-
-        for i, packet in enumerate(self._send_buffer):
-            logger.info("Sending remaining packet " + str(i) +
-                        " of " + str(send_buffer_length))
-            self._socket.sendto(packet, self._client_addr)
-
-        self._send_buffer.clear()
-        self._socket.close()
-        self._socket = None
-
-    def init_socket(self):
-        logger.info("Initializing socket")
-
-        try:
-            self._server_addr = ("127.0.0.1", 0)
-
-            self._socket = socket.socket(
-                socket.AF_INET, socket.SOCK_DGRAM)
-            self._socket.setblocking(0)
-            self._socket.bind(self._server_addr)
-            port = self._socket.getsockname()[1]
-
-            # Get the chunk limit of the socket, minus 100 for some headroom
-            self._chunk_limit = self._socket.getsockopt(
-                socket.SOL_SOCKET, socket.SO_SNDBUF) - 100
-
-            logger.info("Chunk limit: " + str(self._chunk_limit))
-
-            # Write the chosen port to a file
-            try:
-                with open(server_port_path, "w") as file:
-                    file.write(str(port))
-            except Exception as e:
-                self.log_error_once(
-                    "Couldn't save port in file: " + str(e.args))
-                raise e
-
-            try:
-                self.send("connect", {"port": port}, immediate=True)
-            except Exception as e:
-                logger.error("Couldn't send connect to " +
-                             str(self._client_addr) + ":")
-                logger.exception(e)
-
-            self.show_message("Started server on port " + str(port))
-
-            logger.info('Started server on: ' + str(self._socket.getsockname()) +
-                        ', client addr: ' + str(self._client_addr))
-        except Exception as e:
-            msg = 'ERROR: Cannot bind to ' + \
-                str(self._server_addr) + ': ' + \
-                str(e.args) + ', trying again. ' + \
-                'If this keeps happening, try restarting your computer.'
-            self.log_error_once(
-                msg + " (Client address: " + str(self._client_addr) + ")")
-            self.show_message(msg)
-            t = Live.Base.Timer(
-                callback=self.init_socket, interval=5000, repeat=False)
-            t.start()
-
-    def _sendto(self, msg, immediate):
-        '''Send a raw message to the client, compressed and chunked, if necessary'''
-        compressed = zlib.compress(msg.encode("utf8")) + b'\n'
-
-        if self._socket == None or self._chunk_limit == None:
-            return
-
-        self._message_id = (self._message_id + 1) % 256
-        message_id_byte = struct.pack("B", self._message_id)
-
-        if len(compressed) < self._chunk_limit:
-            packet = message_id_byte + b'\x00\x01' + compressed
-
-            if immediate:
-                self._socket.sendto(packet, self._client_addr)
-            else:
-                self._send_buffer.append(packet)
-        else:
-            chunks = list(split_by_n(compressed, self._chunk_limit))
-            count = len(chunks)
-            count_byte = struct.pack("B", count)
-            for i, chunk in enumerate(chunks):
-                packet_byte = struct.pack("B", i)
-                self._send_buffer.append(
-                    message_id_byte + packet_byte + count_byte + chunk)
-
-    def send(self, name, obj=None, uuid=None, immediate=False):
+    def _send_json(self, name, obj, uuid, connection):
         def jsonReplace(o):
             try:
                 return list(o)
             except:
                 pass
-
             return str(o)
-
-        data = None
 
         try:
             data = json.dumps(
-                {"event": name, "data": obj, "uuid": uuid}, default=jsonReplace, ensure_ascii=False)
-            self._sendto(data, immediate)
-        except socket.error as e:
-            logger.error("Socket error:")
-            logger.exception(e)
-            logger.error("Server: " + str(self._server_addr) + ", client: " +
-                         str(self._client_addr) + ", socket: " + str(self._socket))
-            logger.error("Data:" + data)
+                {"event": name, "data": obj, "uuid": uuid},
+                default=jsonReplace,
+                ensure_ascii=False,
+            )
+            frame = encode_text_frame(to_bytes(data))
+            if connection is None:
+                self._broadcast_frame(frame)
+            else:
+                self._send_frame(frame, connection)
         except Exception as e:
-            logger.error("Error " + name + "(" + str(uuid) + "):")
+            logger.error(f"Error {name}({uuid}):")
             logger.exception(e)
+
+    def _send_frame(self, frame, connection):
+        self._deliver_frame(frame, [connection])
+
+    def _broadcast_frame(self, frame):
+        with self._lock:
+            targets = list(self._connections)
+        self._deliver_frame(frame, targets)
+
+    def _deliver_frame(self, frame, targets):
+        stale = []
+        for conn in targets:
+            if not conn.send_or_enqueue(frame):
+                stale.append(conn)
+
+        if stale:
+            with self._lock:
+                for conn in stale:
+                    self._drop_connection(conn)
+
+    def _drop_connection(self, conn):
+        try:
+            self._connections.remove(conn)
+        except:
+            pass
+        conn.close()
+        # Live listener teardown must run on the main thread via process().
+        try:
+            self._queue.put((conn, None))
+        except:
+            pass
+
+    def shutdown(self):
+        logger.info("Shutting down...")
+        self._running = False
+        with self._lock:
+            clients = list(self._connections)
+            self._connections = []
+        for conn in clients:
+            conn.enqueue(encode_close_frame())
+            conn.close()
+        if self._socket:
+            try:
+                self._socket.close()
+            except:
+                pass
+            self._socket = None
 
     def process(self):
+        while True:
+            try:
+                connection, payload = self._queue.get_nowait()
+            except queue.Empty:
+                return
+            try:
+                if payload is None:
+                    if self.disconnect_handler:
+                        self.disconnect_handler(connection)
+                elif self.input_handler:
+                    self.input_handler(payload, connection)
+            except Exception as e:
+                logger.error("Error processing request:")
+                logger.exception(e)
+
+    def _serve(self):
+        while self._running:
+            try:
+                self._bind_and_listen()
+                self._accept_loop()
+            except Exception as e:
+                if not self._running:
+                    return
+                msg = (
+                    f"ERROR: Cannot bind to {self._host}:{self._port}: {e.args}, trying again. If this keeps happening, try restarting your computer."
+                )
+                self.log_error_once(msg)
+                self.show_message(msg)
+                if self._socket:
+                    try:
+                        self._socket.close()
+                    except:
+                        pass
+                    self._socket = None
+                time.sleep(5)
+
+    def _bind_and_listen(self):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         try:
-            while 1:
+            sock.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+        except:
+            pass
+        sock.bind((self._host, self._port))
+        sock.listen(16)
+        self._socket = sock
+        self._last_error = ""
+        logger.info(f"WebSocket server listening on {self._host}:{self._port}")
+        self.show_message(f"Started {PLUGIN_NAME} on {self._host}:{self._port}")
+
+    def _accept_loop(self):
+        while self._running and self._socket:
+            try:
+                conn, addr = self._socket.accept()
+            except OSError:
+                if not self._running:
+                    return
+                continue
+            try:
+                conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            except:
+                pass
+            logger.info(f"Client connected: {addr}")
+            thread = threading.Thread(
+                target=self._handle_connection, args=(conn,), daemon=True
+            )
+            thread.start()
+
+    def _handle_connection(self, conn):
+        parsed = read_http_request(conn)
+        if parsed is None:
+            try:
+                conn.close()
+            except:
+                pass
+            return
+
+        method, path, headers, leftover = parsed
+
+        if is_websocket_upgrade(headers):
+            if not complete_websocket_handshake(conn, headers):
                 try:
-                    # Send 30 UDP packets at a time, to avoid
-                    # Node's receive buffer from overflowing
-                    for i in range(30):
-                        self._socket.sendto(
-                            self._send_buffer.pop(0), self._client_addr)
+                    conn.close()
                 except:
                     pass
+                return
+            self._handle_websocket(conn, leftover)
+            return
 
-                data = self._socket.recv(65536)
-                if len(data) and self.input_handler:
-                    # Parse packet format: [messageId][chunkIndex][totalChunks][chunkData]
-                    if len(data) < 3:
-                        # Packet too short, skip it
+        try:
+            serve_static(conn, method, path)
+        except Exception as e:
+            logger.error("Static file error:")
+            logger.exception(e)
+        finally:
+            try:
+                conn.close()
+            except:
+                pass
+
+    def _handle_websocket(self, conn, leftover):
+        client = ClientConnection(conn)
+        with self._lock:
+            self._connections.append(client)
+
+        connect_data = {"port": self._port}
+        if _auth_enabled():
+            client.auth_salt = _random_salt()
+            connect_data["requiresAuth"] = True
+            connect_data["salt"] = client.auth_salt
+        self.send_to(client, "connect", connect_data)
+
+        buffer = bytearray(to_bytes(leftover))
+        fragments = bytearray()
+        fragment_opcode = None
+
+        try:
+            while self._running:
+                try:
+                    data = conn.recv(65536)
+                except OSError:
+                    break
+                if not data:
+                    break
+                buffer.extend(bytearray(to_bytes(data)))
+
+                while True:
+                    frame = try_read_frame(buffer)
+                    if frame is None:
+                        break
+                    opcode, fin, payload = frame
+
+                    if opcode == OPCODE_CLOSE:
+                        client.enqueue(encode_close_frame())
+                        return
+                    if opcode == OPCODE_PING:
+                        self._send_frame(encode_pong_frame(payload), client)
+                        continue
+                    if opcode == OPCODE_PONG:
                         continue
 
-                    # Get message ID, chunk index, and total chunks from first 3 bytes
-                    message_id = data[0]
-                    chunk_index = data[1]
-                    total_chunks = data[2]
+                    if opcode == OPCODE_CONTINUATION:
+                        if fragment_opcode is None:
+                            continue
+                        fragments.extend(payload)
+                        if fin:
+                            self._handle_payload(fragment_opcode, fragments, client)
+                            fragments = bytearray()
+                            fragment_opcode = None
+                        continue
 
-                    # Handle Python 2/3 compatibility
-                    if isinstance(message_id, bytes):
-                        message_id = ord(message_id)
-                    if isinstance(chunk_index, bytes):
-                        chunk_index = ord(chunk_index)
-                    if isinstance(total_chunks, bytes):
-                        total_chunks = ord(total_chunks)
+                    if not fin:
+                        fragment_opcode = opcode
+                        fragments = bytearray(payload)
+                        continue
 
-                    chunk_data = data[3:]
-
-                    # Initialize message tracking if this is the first chunk for this message
-                    if message_id not in self._chunks:
-                        self._chunks[message_id] = {}
-
-                    # Store the chunk
-                    self._chunks[message_id][chunk_index] = chunk_data
-
-                    # Check if we have all chunks for this message
-                    if len(self._chunks[message_id]) == total_chunks:
-                        # We have all chunks! Reassemble in order
-                        packet_parts = []
-                        for i in range(total_chunks):
-                            if i in self._chunks[message_id]:
-                                packet_parts.append(
-                                    self._chunks[message_id][i])
-                            else:
-                                # Missing chunk - this shouldn't happen if total_chunks is correct
-                                logger.error(
-                                    "Missing chunk %d for message %d" % (i, message_id))
-                                break
-                        else:
-                            # All chunks present, reassemble
-                            packet = b''.join(packet_parts)
-
-                            # Remove this message from tracking
-                            del self._chunks[message_id]
-
-                            # Handle Python 2/3 compatibility for zlib.decompress
-                            if sys.version_info[0] < 3:
-                                packet = str(packet)
-
-                            try:
-                                unzipped = zlib.decompress(packet)
-
-                                # Handle bytes to string conversion for Python 3
-                                if sys.version_info[0] >= 3 and isinstance(unzipped, bytes):
-                                    unzipped = unzipped.decode('utf-8')
-
-                                payload = json.loads(unzipped)
-                            except Exception as e:
-                                logger.error("Error processing request:")
-                                logger.exception(e)
-                                self._chunks.pop(message_id, None)
-                                continue
-
-                            try:
-                                self.input_handler(payload)
-                            except Exception as e:
-                                logger.error("Error processing request:")
-                                logger.exception(e)
-
-        except socket.error as e:
-            if (e.errno != 35 and e.errno != 10035 and e.errno != 10054 and e.errno != 10022):
-                logger.error("Socket error:")
-                logger.exception(e)
-            return
+                    self._handle_payload(opcode, payload, client)
         except Exception as e:
-            logger.error("Error processing request:")
+            logger.error("Connection error:")
             logger.exception(e)
+        finally:
+            with self._lock:
+                self._drop_connection(client)
+            logger.info("Client disconnected")
+
+    def _handle_payload(self, opcode, payload, client):
+        if opcode != OPCODE_TEXT:
+            return
+        try:
+            text = to_text(bytes(payload))
+            parsed = json.loads(text)
+        except Exception as e:
+            logger.error("Error decoding request:")
+            logger.exception(e)
+            return
+
+        if self._gate_auth(client, parsed):
+            return
+
+        self._queue.put((client, parsed))
+
+    def _gate_auth(self, client, parsed):
+        """Return True if the message was consumed and should not be queued."""
+        if not _auth_enabled() or client.authenticated:
+            return False
+
+        uuid = parsed.get("uuid")
+        commands = parsed.get("commands")
+        if not isinstance(commands, list) or len(commands) == 0:
+            self.send_to(client, "error", "Unauthorized", uuid)
+            return True
+
+        first = commands[0] or {}
+        if first.get("ns") != "internal" or first.get("name") != "authenticate":
+            self.send_to(client, "error", "Unauthorized", uuid)
+            return True
+
+        args = first.get("args") or {}
+        if client.auth_salt and args.get("hash") == _auth_hash(client.auth_salt):
+            client.authenticated = True
+            logger.info("Client authenticated")
+            return False
+
+        logger.info("Client authentication failed")
+        self.send_to(client, "error", "Invalid password", uuid)
+        with self._lock:
+            self._drop_connection(client)
+        return True

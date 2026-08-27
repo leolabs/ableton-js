@@ -2,10 +2,10 @@ import { Namespace } from "./index.js";
 import { Ableton } from "../index.js";
 import { Clip, RawClip } from "./clip.js";
 import { ClipSlot, RawClipSlot } from "./clip-slot.js";
-import { Device } from "./device.js";
 import { DeviceParameter, RawDeviceParameter } from "./device-parameter.js";
 import { RawScene, Scene } from "./scene.js";
 import { RawTrack, Track } from "./track.js";
+import { Device } from "./device.js";
 
 export interface GettableProperties {
   detail_clip: RawClip;
@@ -39,7 +39,6 @@ export interface ObservableProperties {
   detail_clip: RawClip | null;
   draw_mode: any;
   follow_song: any;
-  highlighted_clip_slot: any;
   selected_chain: any;
   selected_parameter: any;
   selected_scene: RawScene | null;
@@ -72,11 +71,15 @@ export class SongView extends Namespace<
     };
   }
 
-  async selectDevice(device: Device) {
+  /** Selects the given device in Live. */
+  public async selectDevice(deviceOrId: Device | string) {
     return this.ableton.sendCommand({
       ns: this.ns,
       name: "select_device",
-      args: { device_id: device.raw.id },
+      args: {
+        device_id:
+          typeof deviceOrId === "string" ? deviceOrId : deviceOrId.raw.id,
+      },
     });
   }
 }

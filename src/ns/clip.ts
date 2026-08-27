@@ -2,6 +2,7 @@ import { Ableton } from "../index.js";
 import { Namespace } from "./index.js";
 import { Color } from "../util/color.js";
 import { DeviceParameter } from "./device-parameter.js";
+import { Envelope } from "./envelope.js";
 import {
   Note,
   NoteExtended,
@@ -10,39 +11,33 @@ import {
   tupleToNote,
 } from "../util/note.js";
 
-export enum WarpMode {
-  Beats = 0,
-  Tones = 1,
-  Texture = 2,
-  Repitch = 3,
-  Complex = 4,
-  ComplexPro = 6,
-}
+export type WarpMode =
+  | "beats"
+  | "tones"
+  | "texture"
+  | "repitch"
+  | "complex"
+  | "rex"
+  | "complex_pro";
 
-export enum LaunchMode {
-  Trigger = 0,
-  Gate = 1,
-  Toggle = 2,
-  Repeat = 3,
-}
+export type LaunchMode = "trigger" | "gate" | "toggle" | "repeat";
 
-export enum LaunchQuantization {
-  QGlobal = 0,
-  QNone = 1,
-  Q8Bars = 2,
-  Q4Bars = 3,
-  Q2Bars = 4,
-  QBar = 5,
-  QHalf = 6,
-  QHalfTriplet = 7,
-  QQuarter = 8,
-  QQuarterTriplet = 9,
-  QEighth = 10,
-  QEighthTriplet = 11,
-  QSixteenth = 12,
-  QSixteenthTriplet = 13,
-  QThirtySecond = 14,
-}
+export type LaunchQuantization =
+  | "q_global"
+  | "q_none"
+  | "q_8_bars"
+  | "q_4_bars"
+  | "q_2_bars"
+  | "q_bar"
+  | "q_half"
+  | "q_half_triplet"
+  | "q_quarter"
+  | "q_quarter_triplet"
+  | "q_eighth"
+  | "q_eighth_triplet"
+  | "q_sixteenth"
+  | "q_sixteenth_triplet"
+  | "q_thirtysecond";
 
 interface WarpMarker {
   beat_time: number;
@@ -80,7 +75,6 @@ export interface GettableProperties {
   position: number;
   ram_mode: boolean;
   sample_length: number;
-  selected_notes: NoteTuple[];
   signature_denominator: number;
   signature_numerator: number;
   start_marker: number;
@@ -96,7 +90,6 @@ export interface GettableProperties {
 export interface TransformedProperties {
   color: Color;
   notes: Note[];
-  selected_notes: Note[];
 }
 
 export interface SettableProperties {
@@ -173,14 +166,13 @@ export class Clip extends Namespace<
 > {
   constructor(
     ableton: Ableton,
-    public raw: RawClip,
+    public readonly raw: RawClip,
   ) {
     super(ableton, "clip", raw.id);
 
     this.transformers = {
       color: (c) => new Color(c),
       notes: (n) => (n as NoteTuple[]).map(tupleToNote),
-      selected_notes: (n) => n.map(tupleToNote),
     };
   }
 
@@ -189,30 +181,63 @@ export class Clip extends Namespace<
    * Converts the given beat time to sample time.
    * Raises an error if the sample is not warped.
    */
-  beatToSampleTime(beats: number): Promise<number> {
+  public async beatToSampleTime(beats: number): Promise<number> {
     return this.sendCommand("beat_to_sample_time", [beats]);
   }
 
   /**
    * Clears all envelopes for this clip.
    */
-  clearAllEnvelopes(): Promise<void> {
+  public async clearAllEnvelopes(): Promise<void> {
     return this.sendCommand("clear_all_envelopes");
+  }
+
+  /**
+   * Returns the envelope for the given parameter, or `null` if it does not
+   * exist. Arrangement clips and parameters from another track always return `null`.
+   */
+  public async automationEnvelope(
+    parameterOrId: DeviceParameter | string,
+  ): Promise<Envelope | null> {
+    const raw = await this.sendCommand("automation_envelope", {
+      parameter_id:
+        typeof parameterOrId === "string"
+          ? parameterOrId
+          : parameterOrId.raw.id,
+    });
+    return raw ? new Envelope(this.ableton, raw) : null;
   }
 
   /**
    * Clears the envelope of this clip's given parameter.
    */
-  clearEnvelope(parameter: DeviceParameter): Promise<void> {
-    return this.sendCommand("clear_envelope", { parameter });
+  public async clearEnvelope(
+    parameterOrId: DeviceParameter | string,
+  ): Promise<void> {
+    return this.sendCommand("clear_envelope", {
+      parameter_id:
+        typeof parameterOrId === "string"
+          ? parameterOrId
+          : parameterOrId.raw.id,
+    });
   }
 
   /**
    * Creates an envelope for a given parameter and returns it.
    * This should only be used if the envelope doesn't exist.
-   * Raises an error if the the envelope can't be created.
+   * Raises an error if the envelope can't be created.
    */
-  private createAutomationEnvelope() {}
+  public async createAutomationEnvelope(
+    parameterOrId: DeviceParameter | string,
+  ): Promise<Envelope> {
+    const raw = await this.sendCommand("create_automation_envelope", {
+      parameter_id:
+        typeof parameterOrId === "string"
+          ? parameterOrId
+          : parameterOrId.raw.id,
+    });
+    return new Envelope(this.ableton, raw);
+  }
 
   /**
    * Crops the clip. The region that is cropped depends on whether
@@ -220,14 +245,14 @@ export class Clip extends Namespace<
    * the loop is removed. If not looped, the region outside
    * the start and end markers is removed.
    */
-  crop(): Promise<void> {
+  public async crop(): Promise<void> {
     return this.sendCommand("crop");
   }
 
   /**
    * Deselects all notes present in the clip.
    */
-  deselectAllNotes(): Promise<void> {
+  public async deselectAllNotes(): Promise<void> {
     return this.sendCommand("deselect_all_notes");
   }
 
@@ -235,7 +260,7 @@ export class Clip extends Namespace<
    * Makes the loop twice as long and duplicates notes and envelopes.
    * Duplicates the clip start/end range if the clip is not looped.
    */
-  duplicateLoop(): Promise<void> {
+  public async duplicateLoop(): Promise<void> {
     return this.sendCommand("duplicate_loop");
   }
 
@@ -246,7 +271,7 @@ export class Clip extends Namespace<
    * transposed by the transposition_amount of semitones.
    * Raises an error on audio clips.
    */
-  duplicateRegion(
+  public async duplicateRegion(
     start: number,
     length: number,
     destinationTime: number,
@@ -265,15 +290,14 @@ export class Clip extends Namespace<
   /**
    * Starts playing this clip.
    */
-  fire(): Promise<void> {
+  public async fire(): Promise<void> {
     return this.sendCommand("fire");
   }
 
   /**
    * Returns all notes that match the given range.
-   * @deprecated starting with Live 11, use `getNotesExtended` instead
    */
-  async getNotes(
+  public async getNotes(
     fromTime: number,
     fromPitch: number,
     timeSpan: number,
@@ -293,7 +317,7 @@ export class Clip extends Namespace<
    * Returns all notes matching the given range with extended properties.
    * Compared to getNotes, this method returns additional note information.
    */
-  async getNotesExtended(
+  public async getNotesExtended(
     fromTime: number,
     fromPitch: number,
     timeSpan: number,
@@ -308,31 +332,50 @@ export class Clip extends Namespace<
   }
 
   /**
+   * Returns the clip's currently selected notes.
+   */
+  public async getSelectedNotes(): Promise<Note[]> {
+    const notes: NoteTuple[] = await this.sendCommand("get_selected_notes");
+    return notes.map(tupleToNote);
+  }
+
+  /**
+   * Returns the clip's currently selected notes with extended properties.
+   */
+  public async getSelectedNotesExtended(): Promise<NoteExtended[]> {
+    return this.sendCommand("get_selected_notes_extended");
+  }
+
+  /**
    *  Available since Live 11.0. Replaces modifying notes with remove_notes followed by set_notes.
    */
-  applyNoteModifications(notes: NoteExtended[]) {
+  public async applyNoteModifications(notes: NoteExtended[]) {
     return this.sendCommand("apply_note_modifications", { notes });
   }
 
   /**
-   * Jump forward or backward by the specified relative amount in beats.
-   * Will do nothing if the clip is not playing.
+   * Jumps forward or backward by the specified relative amount in beats.
+   * Does nothing if the clip is not playing.
    */
-  movePlayingPos(amount: number): Promise<void> {
+  public async movePlayingPos(amount: number): Promise<void> {
     return this.sendCommand("move_playing_pos", [amount]);
   }
 
   /**
    * Quantizes all notes in a clip or aligns warp markers.
    */
-  quantize(grid: number, amount: number): Promise<void> {
+  public async quantize(grid: number, amount: number): Promise<void> {
     return this.sendCommand("quantize", [grid, amount]);
   }
 
   /**
    * Quantizes all the notes of a given pitch.
    */
-  quantizePitch(pitch: number, grid: number, amount: number): Promise<void> {
+  public async quantizePitch(
+    pitch: number,
+    grid: number,
+    amount: number,
+  ): Promise<void> {
     return this.sendCommand("quantize_pitch", [pitch, grid, amount]);
   }
 
@@ -341,7 +384,7 @@ export class Clip extends Namespace<
    *
    * @deprecated starting with Live 11, use `removeNotesExtended` instead
    */
-  removeNotes(
+  public async removeNotes(
     fromTime: number,
     fromPitch: number,
     timeSpan: number,
@@ -358,7 +401,7 @@ export class Clip extends Namespace<
   /**
    * Deletes all notes that start in the given area.
    */
-  removeNotesExtended(
+  public async removeNotesExtended(
     fromTime: number,
     fromPitch: number,
     timeSpan: number,
@@ -373,17 +416,17 @@ export class Clip extends Namespace<
   }
 
   /**
-   * Remove notes by given note ids.
+   * Removes notes by given note ids.
    * Available since Live 11.0.
    */
-  removeNotesById(ids: number[]) {
+  public async removeNotesById(ids: number[]) {
     return this.sendCommand("remove_notes_by_id", [ids]);
   }
 
   /**
    * Replaces selected notes with an array of new notes.
    */
-  replaceSelectedNotes(notes: Note[]) {
+  public async replaceSelectedNotes(notes: Note[]) {
     return this.sendCommand("replace_selected_notes", {
       notes: notes.map(noteToTuple),
     });
@@ -394,7 +437,7 @@ export class Clip extends Namespace<
    * Converts the given sample time to beat time.
    * Raises an error if the sample is not warped.
    */
-  sampleToBeatTime(sampleTime: number): Promise<number> {
+  public async sampleToBeatTime(sampleTime: number): Promise<number> {
     return this.sendCommand("sample_to_beat_time", [sampleTime]);
   }
 
@@ -404,7 +447,7 @@ export class Clip extends Namespace<
    * The scrub will continue until `stop_scrub` is called.
    * Global quantization applies to the scrub's position and length.
    */
-  scrub(position: number): Promise<void> {
+  public async scrub(position: number): Promise<void> {
     return this.sendCommand("scrub", [position]);
   }
 
@@ -413,43 +456,43 @@ export class Clip extends Namespace<
    * Converts the given seconds to sample time.
    * Raises an error if the sample is warped.
    */
-  secondsToSampleTime(seconds: number): Promise<number> {
+  public async secondsToSampleTime(seconds: number): Promise<number> {
     return this.sendCommand("seconds_to_sample_time", [seconds]);
   }
 
   /**
    * Selects all notes present in the clip.
    */
-  selectAllNotes(): Promise<void> {
+  public async selectAllNotes(): Promise<void> {
     return this.sendCommand("select_all_notes");
   }
 
   /**
-   * Set the clip's fire button state directly.
+   * Sets the clip's fire button state directly.
    * Supports all launch modes.
    */
-  setFireButtonState(state: boolean): Promise<void> {
+  public async setFireButtonState(state: boolean): Promise<void> {
     return this.sendCommand("set_fire_button_state", [state]);
   }
 
   /**
    * Adds the given notes to the clip.
    */
-  setNotes(notes: Note[]): Promise<void> {
+  public async setNotes(notes: Note[]): Promise<void> {
     return this.sendCommand("set_notes", { notes: notes.map(noteToTuple) });
   }
 
   /**
-   * Stop playig this clip.
+   * Stops playing this clip.
    */
-  stop(): Promise<void> {
+  public async stop(): Promise<void> {
     return this.sendCommand("stop");
   }
 
   /**
    * Stops the current scrub.
    */
-  stopScrub(): Promise<void> {
+  public async stopScrub(): Promise<void> {
     return this.sendCommand("stop_scrub");
   }
 }

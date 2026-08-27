@@ -1,14 +1,6 @@
-import os from "node:os";
-import path from "node:path";
-import dgram from "node:dgram";
 import truncate from "lodash/truncate.js";
-import { EventEmitter } from "events";
-import { v4 } from "uuid";
 import semver from "semver";
-import { unzipSync, deflateSync } from "zlib";
 import LruCache from "lru-cache";
-import { unwatchFile, watchFile } from "node:fs";
-import { readFile, writeFile } from "node:fs/promises";
 import pLimit from "p-limit";
 
 import { Song } from "./ns/song.js";
@@ -19,20 +11,61 @@ import { packageVersion } from "./util/package-version.js";
 import { Cache, isCached, CacheResponse } from "./util/cache.js";
 import { Logger } from "./util/logger.js";
 import { Session } from "./ns/session.js";
+import { EventEmitter } from "./util/event-emitter.js";
+import { hmacSha256Hex } from "./util/hmac-sha256.js";
 
-const SERVER_PORT_FILE = "ableton-js-server.port";
-const CLIENT_PORT_FILE = "ableton-js-client.port";
+const DEFAULT_HOST = "127.0.0.1";
+const DEFAULT_PORT = 39031;
 
 const limit = pLimit(200);
 
 interface Command {
-  uuid: string;
   ns: string;
   nsid?: string;
   name: string;
   etag?: string;
   cache?: boolean;
+  timeout?: number;
   args?: { [k: string]: any };
+}
+
+interface CommandEnvelope {
+  uuid: string;
+  commands: Command[];
+}
+
+interface CommandSlotResult {
+  ok: boolean;
+  data?: any;
+  error?: string;
+}
+
+interface QueuedCommand {
+  command: Command;
+  res: (data: any) => void;
+  rej: (error: any) => void;
+}
+
+function truncateCommandArgs(command: Command) {
+  if (command.ns === "internal" && command.name === "authenticate") {
+    return "{ hash: *** }";
+  }
+
+  return truncate(JSON.stringify(command.args), { length: 100 });
+}
+
+function summarizeCommands(commands: Command[]) {
+  if (commands.length === 0) {
+    return "commands[0]";
+  }
+
+  const first = commands[0]!;
+  const head = `${first.ns}.${first.name}(${truncateCommandArgs(first)})`;
+  if (commands.length === 1) {
+    return head;
+  }
+
+  return `commands[${commands.length}] starting with ${head}`;
 }
 
 interface Response {
@@ -53,25 +86,36 @@ interface EventMap {
   ping: [number];
 }
 
+/**
+ * A property listener registered with the Remote Script.
+ */
 export interface EventListener {
   prop: string;
   eventId: string;
   listener: (data: any) => any;
 }
 
+/**
+ * Thrown when a command envelope does not receive a reply
+ * within `commandTimeoutMs`.
+ */
 export class TimeoutError extends Error {
   constructor(
     public message: string,
-    public payload: Command,
+    public payload: CommandEnvelope,
   ) {
     super(message);
   }
 }
 
+/**
+ * Thrown when Live disconnects while a command envelope
+ * is still waiting for a reply.
+ */
 export class DisconnectError extends Error {
   constructor(
     public message: string,
-    public payload: Command,
+    public payload: CommandEnvelope,
   ) {
     super(message);
   }
@@ -79,20 +123,24 @@ export class DisconnectError extends Error {
 
 export interface AbletonOptions {
   /**
-   * Name of the file containing the port of the Remote Script. This
-   * file is expected to be in the OS' tmp directory.
+   * WebSocket host of the Remote Script.
    *
-   * @default ableton-js-server.port
+   * @default 127.0.0.1
    */
-  serverPortFile?: string;
+  host?: string;
 
   /**
-   * Name of the file containing the port of the client. This file
-   * is created in the OS' tmp directory if it doesn't exist yet.
+   * WebSocket port of the Remote Script.
    *
-   * @default ableton-js-client.port
+   * @default 39031
    */
-  clientPortFile?: string;
+  port?: number;
+
+  /**
+   * Shared secret matching PASSWORD in Config.py.
+   * Sent as HMAC-SHA256 of the plugin's per-connection salt.
+   */
+  password?: string;
 
   /**
    * Defines how regularly ableton-js should ping the Remote Script
@@ -103,10 +151,18 @@ export interface AbletonOptions {
   heartbeatInterval?: number;
 
   /**
+   * Defines how long ableton-js waits for the WebSocket handshake to
+   * complete before aborting and reconnecting, in milliseconds.
+   *
+   * @default 5000
+   */
+  connectTimeoutMs?: number;
+
+  /**
    * Defines how long ableton-js waits for an answer from the Remote
    * Script after sending a command before throwing a timeout error.
    *
-   * @default 2000
+   * @default 3000
    */
   commandTimeoutMs?: number;
 
@@ -114,7 +170,7 @@ export interface AbletonOptions {
    * Defines how long ableton-js waits for an answer from the Remote
    * Script after sending a command logging a warning about the delay.
    *
-   * @default 1000
+   * @default 2000
    */
   commandWarnMs?: number;
 
@@ -135,8 +191,12 @@ export interface AbletonOptions {
   logger?: Logger;
 }
 
+/**
+ * Client for the AbletonJS Remote Script.
+ * Connect with {@link Ableton.start}, then use namespaces like {@link Ableton.song}.
+ */
 export class Ableton extends EventEmitter<EventMap> {
-  private client: dgram.Socket | undefined;
+  private client: WebSocket | undefined;
   private msgMap = new Map<
     string,
     {
@@ -145,33 +205,47 @@ export class Ableton extends EventEmitter<EventMap> {
       clearTimeout: () => any;
     }
   >();
-  private timeoutMap = new Map<number, () => unknown>();
+  private commandQueue: QueuedCommand[] = [];
+  private flushScheduled = false;
   private eventListeners = new Map<string, Array<(data: any) => any>>();
-  private heartbeatInterval: NodeJS.Timeout | undefined;
+  private heartbeatInterval: ReturnType<typeof setInterval> | undefined;
+  private reconnectTimer: ReturnType<typeof setTimeout> | undefined;
+  private connectTimer: ReturnType<typeof setTimeout> | undefined;
   private _isConnected = false;
-  private buffer: Buffer[][] = [];
   private latency: number = 0;
-  private messageId: number = 0;
+  private reconnectDelay = 250;
+  private shouldReconnect = false;
 
-  private serverPort: number | undefined;
+  private host: string;
+  private port: number;
 
-  public cache?: Cache;
-  public song = new Song(this);
-  public session = new Session(this); // added for red session ring control
-  public application = new Application(this);
-  public internal = new Internal(this);
-  public midi = new Midi(this);
+  /** LRU cache used by cached property reads when caching is enabled. */
+  public readonly cache?: Cache;
+  /** The current Live Set (tracks, scenes, tempo, playback, …). */
+  public readonly song = new Song(this);
+  /** Red box / session ring control. */
+  public readonly session = new Session(this);
+  /** Live application metadata and dialogs. */
+  public readonly application = new Application(this);
+  /** Internal plugin helpers (ping, version, auth). */
+  public readonly internal = new Internal(this);
+  /** Forwarded MIDI note/CC tracking. */
+  public readonly midi = new Midi(this);
 
-  private clientPortFile: string;
-  private serverPortFile: string;
   private logger: Logger | undefined;
   private clientState: "closed" | "starting" | "started" = "closed";
   private cancelDisconnectEvents: Array<() => unknown> = [];
 
+  /**
+   * Creates a client for the AbletonJS Remote Script.
+   * Call {@link Ableton.start} before sending commands.
+   */
   constructor(private options?: AbletonOptions) {
     super();
 
     this.logger = options?.logger;
+    this.host = options?.host ?? DEFAULT_HOST;
+    this.port = options?.port ?? DEFAULT_PORT;
 
     if (!options?.disableCache) {
       this.cache = new LruCache<string, any>({
@@ -180,16 +254,12 @@ export class Ableton extends EventEmitter<EventMap> {
         ...options?.cacheOptions,
       });
     }
+  }
 
-    this.clientPortFile = path.join(
-      os.tmpdir(),
-      this.options?.clientPortFile ?? CLIENT_PORT_FILE,
-    );
+  private lastId = BigInt(1);
 
-    this.serverPortFile = path.join(
-      os.tmpdir(),
-      this.options?.serverPortFile ?? SERVER_PORT_FILE,
-    );
+  private getId() {
+    return String(this.lastId++);
   }
 
   private handleConnect(type: ConnectEventType) {
@@ -211,10 +281,22 @@ export class Ableton extends EventEmitter<EventMap> {
       if (type === "realtime") {
         this.msgMap.forEach((msg) => msg.clearTimeout());
         this.msgMap.clear();
+        this.rejectCommandQueue(
+          new Error("Live disconnected before the command could be sent."),
+        );
       }
 
       this.logger?.info("Live disconnected", { type });
       this.emit("disconnect", type);
+    }
+  }
+
+  private rejectCommandQueue(error: Error) {
+    const queued = this.commandQueue;
+    this.commandQueue = [];
+    this.flushScheduled = false;
+    for (const entry of queued) {
+      entry.rej(error);
     }
   }
 
@@ -225,16 +307,16 @@ export class Ableton extends EventEmitter<EventMap> {
   async waitForConnection() {
     if (this._isConnected) {
       return;
-    } else {
-      return Promise.race([
-        new Promise((res) => this.once("connect", res)),
-        this.internal.get("ping").catch(() => new Promise(() => {})),
-      ]);
     }
+
+    return new Promise<void>((res, rej) => {
+      this.once("connect", () => res());
+      this.once("error", (error) => rej(error));
+    });
   }
 
   /**
-   * Starts the server and waits for a connection with Live to be established.
+   * Starts the client and waits for a connection with Live to be established.
    *
    * @param timeoutMs
    * If set, the function will throw an error if it can't establish a connection
@@ -249,89 +331,23 @@ export class Ableton extends EventEmitter<EventMap> {
     }
 
     this.clientState = "starting";
-
-    // The recvBufferSize is set to macOS' default value, so the
-    // socket behaves the same on Windows and doesn't drop any packets
-    this.client = dgram.createSocket({
-      type: "udp4",
-      // 4 MB receive buffer to avoid losing packets
-      recvBufferSize: 4 * 1024 * 1024,
-    });
-
-    this.client.addListener("message", this.handleIncoming.bind(this));
-
-    this.client.addListener("listening", async () => {
-      const port = this.client?.address().port;
-      this.logger?.info("Client is bound and listening", { port });
-
-      // Write used port to a file so Live can read from it on startup
-      await writeFile(this.clientPortFile, String(port));
-    });
-
-    this.client.bind(undefined, "127.0.0.1");
-
-    // Wait for the server port file to exist
-    const sentPort = await new Promise<boolean>(async (res) => {
-      try {
-        const serverPort = await readFile(this.serverPortFile);
-        this.serverPort = Number(serverPort.toString());
-        this.logger?.info("Server port:", { port: this.serverPort });
-        res(false);
-      } catch (e) {
-        this.logger?.info(
-          "Server doesn't seem to be online yet, waiting for it to go online...",
-        );
-      }
-
-      // Set up a watcher in case the server port changes
-      watchFile(this.serverPortFile, async (curr) => {
-        if (curr.isFile()) {
-          const serverPort = await readFile(this.serverPortFile);
-          const newPort = Number(serverPort.toString());
-
-          if (!isNaN(newPort) && newPort !== this.serverPort) {
-            this.logger?.info("Server port changed:", { port: newPort });
-            this.serverPort = Number(serverPort.toString());
-
-            if (this.client) {
-              try {
-                const port = this.client.address().port;
-                this.logger?.info("Sending port to Live:", { port });
-                await this.setProp("internal", "", "client_port", port);
-                res(true);
-                return;
-              } catch (e) {
-                this.logger?.info("Sending port to Live failed", { e });
-              }
-            }
-          }
-
-          res(false);
-        }
-      });
-    });
-
-    this.logger?.debug("Receive Buffer Size:", this.client.getRecvBufferSize());
-
-    // Send used port to Live in case the plugin is already started
-    if (!sentPort) {
-      try {
-        const port = this.client.address().port;
-        this.logger?.info("Sending port to Live:", { port });
-        await this.setProp("internal", "", "client_port", port);
-      } catch (e) {
-        this.logger?.info("Live doesn't seem to be loaded yet, waiting...");
-      }
-    }
+    this.shouldReconnect = true;
+    this.logger?.info("Connecting to Live", { url: this.socketUrl() });
+    this.connectSocket();
 
     this.logger?.info("Checking connection...");
     const connection = this.waitForConnection();
 
     if (timeoutMs) {
-      const timeout = new Promise((_, rej) =>
-        setTimeout(() => rej("Connection timed out."), timeoutMs),
-      );
-      await Promise.race([connection, timeout]);
+      try {
+        const timeout = new Promise((_, rej) =>
+          setTimeout(() => rej(new Error("Connection timed out.")), timeoutMs),
+        );
+        await Promise.race([connection, timeout]);
+      } catch (e) {
+        await this.close();
+        throw e;
+      }
     } else {
       await connection;
     }
@@ -342,6 +358,20 @@ export class Ableton extends EventEmitter<EventMap> {
     this.handleConnect("start");
 
     const heartbeat = async () => {
+      if (
+        !this._isConnected ||
+        !this.client ||
+        this.client.readyState !== WebSocket.OPEN
+      ) {
+        return;
+      }
+
+      // A long in-flight command (e.g. set_data with a large payload) already
+      // proves the socket is alive; pinging would race its 3s timeout.
+      if (this.msgMap.size > 0 || this.commandQueue.length > 0) {
+        return;
+      }
+
       // Add a cancel function to the array of heartbeats
       let canceled = false;
       const cancel = () => {
@@ -351,13 +381,17 @@ export class Ableton extends EventEmitter<EventMap> {
       this.cancelDisconnectEvents.push(cancel);
 
       try {
+        const start = performance.now();
         await this.internal.get("ping");
         this.handleConnect("heartbeat");
+
+        this.latency = performance.now() - start;
+        this.emit("ping", this.latency);
       } catch (e) {
         // If the heartbeat has been canceled, don't emit a disconnect event
         if (!canceled && this._isConnected) {
           this.logger?.warn("Heartbeat failed:", { error: e, canceled });
-          this.handleDisconnect("heartbeat");
+          this.closeCurrentSocket();
         }
       } finally {
         this.cancelDisconnectEvents = this.cancelDisconnectEvents.filter(
@@ -375,10 +409,9 @@ export class Ableton extends EventEmitter<EventMap> {
     this.internal
       .get("version")
       .then((v) => {
-        const jsVersion = packageVersion;
-        if (semver.lt(v, jsVersion)) {
+        if (v !== packageVersion) {
           this.logger?.warn(
-            `The installed version of your AbletonJS plugin (${v}) is lower than the JS library (${jsVersion}).`,
+            `The installed version of your AbletonJS plugin (${v}) is different from the JS library (${packageVersion}).`,
             "Please update your AbletonJS plugin to the latest version: https://git.io/JvaOu",
           );
         }
@@ -386,21 +419,128 @@ export class Ableton extends EventEmitter<EventMap> {
       .catch(() => {});
   }
 
+  private socketUrl() {
+    return `ws://${this.host}:${this.port}`;
+  }
+
+  private clearConnectTimer() {
+    if (this.connectTimer) {
+      clearTimeout(this.connectTimer);
+      this.connectTimer = undefined;
+    }
+  }
+
+  private connectSocket() {
+    if (!this.shouldReconnect) {
+      return;
+    }
+
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = undefined;
+    }
+
+    this.clearConnectTimer();
+
+    if (this.client) {
+      const previous = this.client;
+      this.client = undefined;
+      previous.close();
+    }
+
+    const url = this.socketUrl();
+    const ws = new WebSocket(url);
+    this.client = ws;
+
+    const timeout = this.options?.connectTimeoutMs ?? 5000;
+    this.connectTimer = setTimeout(() => {
+      this.connectTimer = undefined;
+      if (this.client !== ws || ws.readyState !== WebSocket.CONNECTING) {
+        return;
+      }
+
+      this.logger?.warn("WebSocket connection timed out", { url, timeout });
+      this.client = undefined;
+      ws.close();
+      this.handleDisconnect("realtime");
+      this.scheduleReconnect();
+    }, timeout);
+
+    ws.addEventListener("open", () => {
+      if (this.client === ws) {
+        this.clearConnectTimer();
+        this.reconnectDelay = 250;
+      }
+    });
+
+    ws.addEventListener("message", (event) => {
+      if (this.client === ws && typeof event.data === "string") {
+        this.handleIncoming(event.data);
+      }
+    });
+
+    ws.addEventListener("close", () => {
+      if (this.client === ws) {
+        this.clearConnectTimer();
+        this.client = undefined;
+        this.handleDisconnect("realtime");
+        this.scheduleReconnect();
+      }
+    });
+  }
+
+  private closeCurrentSocket() {
+    if (!this.client || this.client.readyState === WebSocket.CLOSED) {
+      this.client = undefined;
+      this.scheduleReconnect();
+      return;
+    }
+
+    this.client.close();
+  }
+
+  private scheduleReconnect() {
+    if (!this.shouldReconnect || this.reconnectTimer) {
+      return;
+    }
+
+    const delay = this.reconnectDelay;
+    this.reconnectDelay = Math.min(this.reconnectDelay * 2, 2000);
+    this.logger?.info("Reconnecting to Live", { delay, url: this.socketUrl() });
+    this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = undefined;
+      this.connectSocket();
+    }, delay);
+  }
+
   /** Closes the client */
   async close() {
     this.logger?.info("Closing the client");
-    unwatchFile(this.serverPortFile);
+    this.shouldReconnect = false;
+
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = undefined;
+    }
+
+    this.clearConnectTimer();
 
     if (this.heartbeatInterval) {
       clearInterval(this.heartbeatInterval);
     }
 
     if (this.client) {
-      const closePromise = new Promise((res) =>
-        this.client?.once("close", res),
-      );
-      this.client.close();
-      await closePromise;
+      const socket = this.client;
+      if (socket.readyState === WebSocket.CLOSED) {
+        this.client = undefined;
+      } else {
+        const closePromise = new Promise<void>((res) => {
+          socket.addEventListener("close", () => res(), { once: true });
+        });
+        socket.close();
+        await closePromise;
+        this.client = undefined;
+      }
     }
 
     this.clientState = "closed";
@@ -416,173 +556,262 @@ export class Ableton extends EventEmitter<EventMap> {
     return this.latency;
   }
 
-  private setPing(latency: number) {
-    this.latency = latency;
-    this.emit("ping", this.latency);
-  }
-
-  private handleIncoming(msg: Buffer, info: dgram.RemoteInfo) {
+  private handleIncoming(msg: string) {
     try {
-      const messageId = msg[0];
-      const messageIndex = msg[1];
-      const totalMessages = msg[2];
-      const message = msg.subarray(3);
+      this.emit("raw_message", msg);
+      const data: Response = JSON.parse(msg);
+      const functionCallback = this.msgMap.get(data.uuid);
 
-      // Reset the timeout when receiving a new message
-      this.timeoutMap.get(messageId)?.();
+      this.emit("message", data);
 
-      if (messageIndex === 0 && totalMessages === 1) {
-        this.handleUncompressedMessage(unzipSync(message).toString());
+      if (data.event === "result" && functionCallback) {
+        this.msgMap.delete(data.uuid);
+        return functionCallback.res(data.data);
+      }
+
+      if (data.event === "error" && functionCallback) {
+        this.msgMap.delete(data.uuid);
+        return functionCallback.rej(new Error(data.data));
+      }
+
+      if (data.event === "result" || data.event === "error") {
         return;
       }
 
-      if (!this.buffer[messageId]) {
-        this.buffer[messageId] = [];
+      if (data.event === "disconnect") {
+        this.handleDisconnect("realtime");
+        this.closeCurrentSocket();
+        return;
       }
 
-      this.buffer[messageId][messageIndex] = message;
+      if (data.event === "connect") {
+        this.handleServerConnect(data);
+        return;
+      }
 
-      if (this.buffer[messageId].filter(Boolean).length === totalMessages) {
-        this.handleUncompressedMessage(
-          unzipSync(Buffer.concat(this.buffer[messageId])).toString(),
-        );
-        delete this.buffer[messageId];
+      const eventCallback = this.eventListeners.get(data.event);
+      if (eventCallback) {
+        return eventCallback.forEach((cb) => cb(data.data));
+      }
+
+      if (data.uuid) {
+        this.logger?.warn("Message could not be assigned to any request:", {
+          msg,
+        });
       }
     } catch (e) {
-      this.buffer = [];
       this.emit("error", e as Error);
     }
   }
 
-  private handleUncompressedMessage(msg: string) {
-    this.emit("raw_message", msg);
-    const data: Response = JSON.parse(msg);
-    const functionCallback = this.msgMap.get(data.uuid);
+  private async handleServerConnect(data: Response) {
+    this.cancelDisconnectEvents.forEach((cancel) => cancel());
 
-    this.emit("message", data);
-
-    if (data.event === "result" && functionCallback) {
-      this.msgMap.delete(data.uuid);
-      return functionCallback.res(data.data);
-    }
-
-    if (data.event === "error" && functionCallback) {
-      this.msgMap.delete(data.uuid);
-      return functionCallback.rej(new Error(data.data));
-    }
-
-    if (data.event === "disconnect") {
-      return this.handleDisconnect("realtime");
-    }
-
-    if (data.event === "connect") {
-      // If some heartbeat ping from the old connection is still pending,
-      // cancel it to prevent a double disconnect/connect event.
-      this.cancelDisconnectEvents.forEach((cancel) => cancel());
-
-      if (data.data?.port && data.data?.port !== this.serverPort) {
-        this.logger?.info("Got new server port via connect:", {
-          port: data.data.port,
-        });
-        this.serverPort = data.data.port;
-      }
-
-      return this.handleConnect(
-        this.clientState === "starting" ? "start" : "realtime",
-      );
-    }
-
-    const eventCallback = this.eventListeners.get(data.event);
-    if (eventCallback) {
-      return eventCallback.forEach((cb) => cb(data.data));
-    }
-
-    if (data.uuid) {
-      this.logger?.warn("Message could not be assigned to any request:", {
-        msg,
+    if (data.data?.port && data.data?.port !== this.port) {
+      this.logger?.info("Got server port via connect:", {
+        port: data.data.port,
       });
     }
+
+    if (data.data?.requiresAuth) {
+      if (!this.options?.password) {
+        this.abortAuthentication(
+          new Error(
+            "The AbletonJS plugin requires a password. Pass it to the constructor.",
+          ),
+        );
+        return;
+      }
+
+      if (!data.data?.salt) {
+        this.abortAuthentication(
+          new Error(
+            "The AbletonJS plugin did not send an authentication salt.",
+          ),
+        );
+        return;
+      }
+
+      try {
+        const hash = hmacSha256Hex(this.options.password, data.data.salt);
+        await this.sendCommand({
+          ns: "internal",
+          name: "authenticate",
+          args: { hash },
+        });
+      } catch (e) {
+        const error =
+          e instanceof Error ? e : new Error("Authentication failed");
+        this.abortAuthentication(error);
+        return;
+      }
+    }
+
+    this.handleConnect(this.clientState === "starting" ? "start" : "realtime");
+  }
+
+  private abortAuthentication(error: Error) {
+    this.logger?.error(error.message);
+    this.shouldReconnect = false;
+    this.clientState = "closed";
+    this.emit("error", error);
+    this.closeCurrentSocket();
   }
 
   /**
    * Sends a raw command to Ableton. Usually, you won't need this.
    * A good starting point in general is the `song` prop.
+   *
+   * Commands issued in the same event-loop turn are automatically
+   * coalesced into a single WebSocket round-trip.
    */
-  async sendCommand(command: Omit<Command, "uuid">): Promise<any> {
-    return limit(
-      () =>
-        new Promise((res, rej) => {
-          const msgId = v4();
-          const payload: Command = {
-            uuid: msgId,
-            ...command,
-          };
-          const msg = JSON.stringify(payload);
-          const timeout = this.options?.commandTimeoutMs ?? 2000;
-          const arg = truncate(JSON.stringify(command.args), { length: 100 });
-          const cls = command.nsid
-            ? `${command.ns}(${command.nsid})`
-            : command.ns;
-
-          this.messageId = (this.messageId + 1) % 256;
-
-          let timeoutId: NodeJS.Timeout | null = null;
-
-          const clearCurrentTimeout = () => {
-            if (timeoutId) {
-              clearTimeout(timeoutId);
-            }
-          };
-
-          const startTimeout = () => {
-            clearCurrentTimeout();
-
-            timeoutId = setTimeout(() => {
-              rej(
-                new TimeoutError(
-                  `The command ${cls}.${command.name}(${arg}) timed out after ${timeout} ms.`,
-                  payload,
-                ),
-              );
-            }, timeout);
-          };
-
-          this.timeoutMap.set(this.messageId, startTimeout);
-
-          const currentTimestamp = Date.now();
-          this.msgMap.set(msgId, {
-            res: (result: any) => {
-              const duration = Date.now() - currentTimestamp;
-
-              if (duration > (this.options?.commandWarnMs ?? 1000)) {
-                this.logger?.warn(`Command took longer than expected`, {
-                  command,
-                  duration,
-                });
-              }
-
-              this.setPing(duration);
-              clearCurrentTimeout();
-              res(result);
-            },
-            rej,
-            clearTimeout: () => {
-              clearCurrentTimeout();
-              rej(
-                new DisconnectError(
-                  `Live disconnected before being able to respond to ${cls}.${command.name}(${arg})`,
-                  payload,
-                ),
-              );
-            },
-          });
-
-          this.sendRaw(msg, this.messageId).finally(startTimeout);
-        }),
-    );
+  async sendCommand(command: Command): Promise<any> {
+    return new Promise((res, rej) => {
+      this.commandQueue.push({ command, res, rej });
+      if (!this.flushScheduled) {
+        this.flushScheduled = true;
+        queueMicrotask(() => {
+          this.flushScheduled = false;
+          void this.flushCommandQueue();
+        });
+      }
+    });
   }
 
-  async sendCachedCommand(command: Omit<Command, "uuid" | "cache">) {
+  private async flushCommandQueue() {
+    if (this.commandQueue.length === 0) {
+      return;
+    }
+
+    const queued = this.commandQueue;
+    this.commandQueue = [];
+
+    if (queued.length > 1) {
+      this.logger?.debug("Flushing command queue", { length: queued.length });
+    }
+
+    await limit(async () => {
+      try {
+        const results = await this.sendCommandEnvelope(
+          queued.map((entry) => entry.command),
+        );
+
+        if (!Array.isArray(results) || results.length !== queued.length) {
+          const error = new Error("Unexpected commands response from Ableton.");
+          for (const entry of queued) {
+            entry.rej(error);
+          }
+          return;
+        }
+
+        for (let i = 0; i < queued.length; i++) {
+          const entry = queued[i]!;
+          const slot = results[i]!;
+          if (slot.ok) {
+            entry.res(slot.data);
+          } else {
+            entry.rej(new Error(slot.error ?? "Command failed"));
+          }
+        }
+      } catch (error) {
+        for (const entry of queued) {
+          entry.rej(error);
+        }
+      }
+    });
+  }
+
+  private sendCommandEnvelope(
+    commands: Command[],
+  ): Promise<CommandSlotResult[]> {
+    return new Promise((res, rej) => {
+      const msgId = this.getId();
+      const payload: CommandEnvelope = {
+        uuid: msgId,
+        commands,
+      };
+      const msg = JSON.stringify(payload);
+      const summary = summarizeCommands(commands);
+
+      const timeout = commands
+        .filter((c) => c.timeout)
+        .reduce(
+          (acc, cur) => Math.max(acc, cur.timeout ?? 0),
+          this.options?.commandTimeoutMs ?? 3000,
+        );
+
+      let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+      const clearCurrentTimeout = () => {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+        }
+      };
+
+      const finish = () => {
+        this.msgMap.delete(msgId);
+        clearCurrentTimeout();
+      };
+
+      const startTimeout = () => {
+        clearCurrentTimeout();
+
+        timeoutId = setTimeout(() => {
+          finish();
+          rej(
+            new TimeoutError(
+              `The command ${summary} timed out after ${timeout} ms.`,
+              payload,
+            ),
+          );
+        }, timeout);
+      };
+
+      const currentTimestamp = Date.now();
+      this.msgMap.set(msgId, {
+        res: (result: any) => {
+          const duration = Date.now() - currentTimestamp;
+
+          if (duration > (this.options?.commandWarnMs ?? 2000)) {
+            this.logger?.warn(`Commands took longer than expected`, {
+              commands: summary,
+              duration,
+            });
+          }
+
+          finish();
+          res(result);
+        },
+        rej: (error: any) => {
+          finish();
+          rej(error);
+        },
+        clearTimeout: () => {
+          finish();
+          rej(
+            new DisconnectError(
+              `Live disconnected before being able to respond to ${summary}`,
+              payload,
+            ),
+          );
+        },
+      });
+
+      this.sendRaw(msg)
+        .then(startTimeout)
+        .catch((error) => {
+          finish();
+          rej(error);
+        });
+    });
+  }
+
+  /**
+   * Sends a command using the response cache when possible.
+   * Used by cached `get_prop` calls; prefer {@link Ableton.getProp} or
+   * `Namespace.get` instead of calling this directly.
+   */
+  async sendCachedCommand(command: Omit<Command, "cache">) {
     const args = command.args?.prop ?? JSON.stringify(command.args);
     const cacheKey = [command.ns, command.nsid, args].filter(Boolean).join("/");
     const cached = this.cache?.get(cacheKey);
@@ -608,6 +837,15 @@ export class Ableton extends EventEmitter<EventMap> {
     }
   }
 
+  /**
+   * Gets a property from a Live object.
+   * Prefer the typed `get` helpers on namespaces such as `song` or `track`.
+   *
+   * @param ns Namespace name (e.g. `"song"`, `"track"`)
+   * @param nsid Object id when addressing a specific Live object
+   * @param prop Property name
+   * @param cache When true and caching is enabled, use etag-based caching
+   */
   async getProp(
     ns: string,
     nsid: string | undefined,
@@ -623,6 +861,15 @@ export class Ableton extends EventEmitter<EventMap> {
     }
   }
 
+  /**
+   * Sets a property on a Live object.
+   * Prefer the typed `set` helpers on namespaces such as `song` or `track`.
+   *
+   * @param ns Namespace name (e.g. `"song"`, `"track"`)
+   * @param nsid Object id when addressing a specific Live object
+   * @param prop Property name
+   * @param value Value to assign
+   */
   async setProp(
     ns: string,
     nsid: string | undefined,
@@ -637,13 +884,19 @@ export class Ableton extends EventEmitter<EventMap> {
     });
   }
 
+  /**
+   * Subscribes to changes of a Live object property.
+   * Prefer the typed `addListener` helpers on namespaces such as `song` or `track`.
+   *
+   * @returns A function that removes this listener
+   */
   async addPropListener(
     ns: string,
     nsid: string | undefined,
     prop: string,
     listener: (data: any) => any,
   ) {
-    const eventId = v4();
+    const eventId = this.getId();
     const result = await this.sendCommand({
       ns,
       nsid,
@@ -663,6 +916,12 @@ export class Ableton extends EventEmitter<EventMap> {
     return () => this.removePropListener(ns, nsid, prop, result, listener);
   }
 
+  /**
+   * Removes a property listener previously added with {@link Ableton.addPropListener}.
+   * Usually you call the unsubscribe function returned by `addPropListener` instead.
+   *
+   * @returns `true` if the listener was removed, `false` if it was not found
+   */
   async removePropListener(
     ns: string,
     nsid: string | undefined,
@@ -704,37 +963,25 @@ export class Ableton extends EventEmitter<EventMap> {
     this.eventListeners.clear();
   }
 
-  async sendRaw(msg: string, messageId: number) {
-    if (!this.client || !this.serverPort) {
+  /**
+   * Sends a raw WebSocket text frame to the Remote Script.
+   * This bypasses command queuing and batching; use with caution.
+   */
+  async sendRaw(msg: string) {
+    if (this.clientState === "closed") {
       throw new Error(
         "The client hasn't been started yet. Please call start() first.",
       );
     }
 
-    const buffer = deflateSync(Buffer.from(msg));
-
-    const byteLimit = this.client.getSendBufferSize() - 100;
-    const totalChunks = Math.ceil(buffer.byteLength / byteLimit);
-
-    // Split the message into chunks if it becomes too large
-    for (let i = 0; i < totalChunks; i++) {
-      const chunk = Buffer.concat([
-        // Message ID (1 byte) - identifies which message this chunk belongs to
-        Buffer.alloc(1, messageId),
-        // Chunk index (1 byte) - 0, 1, 2, ... for regular chunks
-        Buffer.alloc(1, i),
-        // Total chunks (1 byte) - number of chunks in this message
-        Buffer.alloc(1, totalChunks),
-        // Chunk data
-        buffer.subarray(i * byteLimit, i * byteLimit + byteLimit),
-      ]);
-      this.client.send(chunk, 0, chunk.length, this.serverPort, "127.0.0.1");
-      // Add a bit of a delay between sent chunks to reduce the chance of the
-      // receiving buffer filling up which would cause chunks to be discarded.
-      await new Promise((res) => setTimeout(res, 1));
+    if (!this.client || this.client.readyState !== WebSocket.OPEN) {
+      throw new Error("The client is disconnected.");
     }
+
+    this.client.send(msg);
   }
 
+  /** Whether the client currently has an active connection to Live. */
   isConnected() {
     return this._isConnected;
   }

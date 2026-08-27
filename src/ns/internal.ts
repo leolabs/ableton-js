@@ -1,7 +1,6 @@
 import { Ableton } from "../index.js";
 import { Namespace } from "./index.js";
 import { packageVersion } from "../util/package-version.js";
-import semver from "semver";
 
 export interface GettableProperties {
   version: string;
@@ -24,8 +23,9 @@ export class Internal extends Namespace<
     super(ableton, "internal");
   }
 
-  async isPluginUpToDate() {
+  /** Returns whether the MIDI Remote Script version satisfies this client. */
+  public async isPluginUpToDate() {
     const pluginVersion = await this.get("version");
-    return !semver.lt(pluginVersion, packageVersion);
+    return pluginVersion === packageVersion;
   }
 }

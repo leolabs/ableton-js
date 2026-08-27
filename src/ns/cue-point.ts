@@ -31,12 +31,16 @@ export class CuePoint extends Namespace<
 > {
   constructor(
     ableton: Ableton,
-    public raw: RawCuePoint,
+    public readonly raw: RawCuePoint,
   ) {
     super(ableton, "cue-point", raw.id);
   }
 
-  async jump() {
+  /**
+   * Jumps playback to this cue when the song is playing (quantized),
+   * or moves the start position to this cue when stopped.
+   */
+  public async jump() {
     return this.sendCommand("jump");
   }
 }
