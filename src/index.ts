@@ -36,6 +36,7 @@ interface CommandSlotResult {
   ok: boolean;
   data?: any;
   error?: string;
+  errorType?: string;
 }
 
 interface QueuedCommand {
@@ -114,6 +115,20 @@ export class DisconnectError extends Error {
   constructor(
     public message: string,
     public payload: CommandEnvelope,
+  ) {
+    super(message);
+  }
+}
+
+/**
+ * Thrown when a command fails on the Remote Script side. `errorType` is the
+ * name of the Python exception class (e.g. "RuntimeError"), when the plugin
+ * sent one.
+ */
+export class CommandError extends Error {
+  constructor(
+    public message: string,
+    public errorType?: string,
   ) {
     super(message);
   }
@@ -720,7 +735,9 @@ export class Ableton extends EventEmitter<EventMap> {
           if (slot.ok) {
             entry.res(slot.data);
           } else {
-            entry.rej(new Error(slot.error ?? "Command failed"));
+            entry.rej(
+              new CommandError(slot.error || "Command failed", slot.errorType),
+            );
           }
         }
       } catch (error) {

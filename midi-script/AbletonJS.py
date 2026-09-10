@@ -184,7 +184,12 @@ class AbletonJS(ControlSurface):
                 logger.error("Handler Error:")
                 logger.exception(e)
                 message = str(e.args[0]) if e.args else str(e)
-                results.append({"ok": False, "error": message})
+                error_type = type(e).__name__
+                if not message:
+                    message = error_type
+                results.append(
+                    {"ok": False, "error": message, "errorType": error_type}
+                )
 
         self.socket.send_to(connection, "result", results, uuid)
 
