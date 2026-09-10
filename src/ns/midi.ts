@@ -60,10 +60,10 @@ export class MidiMessage {
       case 1:
         break;
       default:
-        throw "invalid midi message length: " + raw.bytes.length;
+        throw `invalid midi message length: ${raw.bytes.length}`;
     }
     if (!(raw.bytes[0] in MidiCommand)) {
-      throw "invalid midi command: " + raw.bytes[0];
+      throw `invalid midi command: ${raw.bytes[0]}`;
     }
     this.command = raw.bytes[0];
   }

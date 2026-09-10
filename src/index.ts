@@ -323,7 +323,7 @@ export class Ableton extends EventEmitter<EventMap> {
   async start(timeoutMs?: number) {
     if (this.clientState !== "closed") {
       this.logger?.warn(
-        "Tried calling start, but client is already " + this.clientState,
+        `Tried calling start, but client is already ${this.clientState}`,
       );
       return this.waitForConnection();
     }

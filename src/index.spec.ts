@@ -31,8 +31,8 @@ describe("AbletonJS", () => {
     await using ab = await createAbleton();
 
     await Promise.all(
-      Array(10000).map((d, i) =>
-        ab.song.get("current_song_time").catch((e) => {
+      Array(10000).map((_d, i) =>
+        ab.song.get("current_song_time").catch((e: any) => {
           console.error("Couldn't get", i);
           throw e;
         }),

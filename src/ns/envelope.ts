@@ -1,5 +1,4 @@
 import type { Ableton } from "../index.js";
-import type { RawClip } from "./clip.js";
 import {
   DeviceParameter,
   type RawDeviceParameter,

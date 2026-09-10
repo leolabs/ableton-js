@@ -8,7 +8,7 @@ export class Color {
     } else if (color.length === 6 || color.length === 7) {
       this.color = color.replace("#", "");
     } else {
-      throw new Error("Color " + color + " is not in a valid format");
+      throw new Error(`Color ${color} is not in a valid format`);
     }
   }
 
