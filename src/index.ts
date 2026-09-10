@@ -211,6 +211,7 @@ export class Ableton extends EventEmitter<EventMap> {
   private connectTimer: ReturnType<typeof setTimeout> | undefined;
   private _isConnected = false;
   private latency: number = 0;
+  private lastMessageReceivedAt = 0;
   private reconnectDelay = 250;
   private shouldReconnect = false;
 
@@ -364,9 +365,9 @@ export class Ableton extends EventEmitter<EventMap> {
         return;
       }
 
-      // A long in-flight command (e.g. set_data with a large payload) already
-      // proves the socket is alive; pinging would race its 3s timeout.
-      if (this.msgMap.size > 0 || this.commandQueue.length > 0) {
+      // Skip the ping if we've heard from Live recently
+      const heartbeatInterval = this.options?.heartbeatInterval ?? 2000;
+      if (Date.now() - this.lastMessageReceivedAt < heartbeatInterval) {
         return;
       }
 
@@ -566,10 +567,13 @@ export class Ableton extends EventEmitter<EventMap> {
   private handleIncoming(msg: string) {
     try {
       this.emit("raw_message", msg);
+
       const data: Response = JSON.parse(msg);
-      const functionCallback = this.msgMap.get(data.uuid);
+      this.lastMessageReceivedAt = Date.now();
 
       this.emit("message", data);
+
+      const functionCallback = this.msgMap.get(data.uuid);
 
       if (data.event === "result" && functionCallback) {
         this.msgMap.delete(data.uuid);
