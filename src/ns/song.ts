@@ -9,7 +9,7 @@ import { type RawTrack, Track } from "./track.js";
 import { type RawTuningSystem, TuningSystem } from "./tuning-system.js";
 
 export interface GettableProperties {
-  appointed_device: RawDevice;
+  appointed_device: RawDevice | null;
   arrangement_overdub: boolean;
   back_to_arranger: number;
   can_capture_midi: boolean;
@@ -124,7 +124,7 @@ export interface SettableProperties {
 }
 
 export interface ObservableProperties {
-  appointed_device: RawDevice;
+  appointed_device: RawDevice | null;
   arrangement_overdub: boolean;
   back_to_arranger: number;
   can_capture_midi: boolean;

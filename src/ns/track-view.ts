@@ -7,11 +7,11 @@ export type DeviceInsertMode = "default" | "selected_left" | "selected_right";
 export interface GettableProperties {
   // device_insert_mode: DeviceInsertMode; – for some reason, Live returns a boolean here
   is_collapsed: boolean;
-  selected_device: RawDevice;
+  selected_device: RawDevice | null;
 }
 
 export interface TransformedProperties {
-  selected_device: AnyDevice;
+  selected_device: AnyDevice | null;
 }
 
 export interface SettableProperties {
@@ -22,7 +22,7 @@ export interface SettableProperties {
 export interface ObservableProperties {
   // device_insert_mode: DeviceInsertMode;
   is_collapsed: boolean;
-  selected_device: RawDevice;
+  selected_device: RawDevice | null;
 }
 
 export class TrackView extends Namespace<
@@ -35,7 +35,8 @@ export class TrackView extends Namespace<
     super(ableton, "track-view", nsid);
 
     this.transformers = {
-      selected_device: (device) => wrapDevice(ableton, device),
+      selected_device: (device) =>
+        device ? wrapDevice(ableton, device) : null,
     };
 
     this.cachedProps = {

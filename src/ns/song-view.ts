@@ -11,22 +11,22 @@ import { type RawScene, Scene } from "./scene.js";
 import { type RawTrack, Track } from "./track.js";
 
 export interface GettableProperties {
-  detail_clip: RawClip;
+  detail_clip: RawClip | null;
   draw_mode: boolean;
   follow_song: boolean;
-  highlighted_clip_slot: RawClipSlot;
+  highlighted_clip_slot: RawClipSlot | null;
   selected_chain: any /* Todo: Implement Chain class */;
-  selected_parameter: RawDeviceParameter;
-  selected_scene: RawScene;
-  selected_track: RawTrack;
+  selected_parameter: RawDeviceParameter | null;
+  selected_scene: RawScene | null;
+  selected_track: RawTrack | null;
 }
 
 export interface TransformedProperties {
-  detail_clip: Clip;
-  selected_parameter: DeviceParameter;
-  selected_scene: Scene;
-  selected_track: Track;
-  highlighted_clip_slot: ClipSlot;
+  detail_clip: Clip | null;
+  selected_parameter: DeviceParameter | null;
+  selected_scene: Scene | null;
+  selected_track: Track | null;
+  highlighted_clip_slot: ClipSlot | null;
 }
 
 export interface SettableProperties {
@@ -58,11 +58,13 @@ export class SongView extends Namespace<
     super(ableton, "song-view");
 
     this.transformers = {
-      selected_parameter: (param) => new DeviceParameter(ableton, param),
-      selected_track: (track) => new Track(ableton, track),
-      selected_scene: (scene) => new Scene(ableton, scene),
-      highlighted_clip_slot: (slot) => new ClipSlot(ableton, slot),
-      detail_clip: (clip) => new Clip(ableton, clip),
+      selected_parameter: (param) =>
+        param ? new DeviceParameter(ableton, param) : null,
+      selected_track: (track) => (track ? new Track(ableton, track) : null),
+      selected_scene: (scene) => (scene ? new Scene(ableton, scene) : null),
+      highlighted_clip_slot: (slot) =>
+        slot ? new ClipSlot(ableton, slot) : null,
+      detail_clip: (clip) => (clip ? new Clip(ableton, clip) : null),
     };
 
     this.cachedProps = {
