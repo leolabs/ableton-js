@@ -35,6 +35,12 @@ from .WebSocket import (
 DIRECT_SEND_MAX_BYTES = 65536
 EAGAIN_ERRNOS = (11, 35, 10035)
 
+# Bounds how long any blocking call on a client socket (send or recv) may
+# block. Sends can happen synchronously on Live's own main thread (e.g. a
+# listener callback pushing a property change), so without this a slow or
+# stalled client could otherwise freeze the whole application indefinitely.
+SOCKET_TIMEOUT_SECONDS = 3.0
+
 
 def _auth_enabled():
     return bool(PASSWORD)
@@ -56,6 +62,7 @@ class ClientConnection:
 
     def __init__(self, sock):
         self.sock = sock
+        self.sock.settimeout(SOCKET_TIMEOUT_SECONDS)
         self.out_queue = queue.Queue()
         self._send_lock = threading.Lock()
         self._closed = False
@@ -78,6 +85,8 @@ class ClientConnection:
                     return False
                 self.sock.sendall(frame)
                 return True
+            except socket.timeout:
+                return False
             except OSError as e:
                 errno = getattr(e, "errno", None)
                 if errno not in EAGAIN_ERRNOS:
@@ -348,6 +357,8 @@ class Socket:
             while self._running:
                 try:
                     data = conn.recv(65536)
+                except socket.timeout:
+                    continue
                 except OSError:
                     break
                 if not data:
