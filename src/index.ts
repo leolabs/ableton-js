@@ -389,7 +389,7 @@ export class Ableton extends EventEmitter<EventMap> {
         // If the heartbeat has been canceled, don't emit a disconnect event
         if (!canceled && this._isConnected) {
           this.logger?.warn("Heartbeat failed:", { error: e, canceled });
-          this.closeCurrentSocket();
+          this.closeCurrentSocket("heartbeat");
         }
       } finally {
         this.cancelDisconnectEvents = this.cancelDisconnectEvents.filter(
@@ -458,10 +458,8 @@ export class Ableton extends EventEmitter<EventMap> {
       }
 
       this.logger?.warn("WebSocket connection timed out", { url, timeout });
-      this.client = undefined;
+      this.teardownSocket(ws, "realtime");
       ws.close();
-      this.handleDisconnect("realtime");
-      this.scheduleReconnect();
     }, timeout);
 
     ws.addEventListener("open", () => {
@@ -477,24 +475,36 @@ export class Ableton extends EventEmitter<EventMap> {
       }
     });
 
+    // Catches closes we didn't trigger ourselves, like the remote side
+    // dropping the connection. If we already handled this socket elsewhere,
+    // teardownSocket just does nothing here.
     ws.addEventListener("close", () => {
-      if (this.client === ws) {
-        this.clearConnectTimer();
-        this.client = undefined;
-        this.handleDisconnect("realtime");
-        this.scheduleReconnect();
-      }
+      this.teardownSocket(ws, "realtime");
     });
   }
 
-  private closeCurrentSocket() {
-    if (!this.client || this.client.readyState === WebSocket.CLOSED) {
-      this.client = undefined;
+  // Cleans up after `ws` and schedules a reconnect. Can be called more than
+  // once for the same socket, only the first call does anything.
+  private teardownSocket(ws: WebSocket, type: DisconnectEventType) {
+    if (this.client !== ws) {
+      return;
+    }
+
+    this.clearConnectTimer();
+    this.client = undefined;
+    this.handleDisconnect(type);
+    this.scheduleReconnect();
+  }
+
+  private closeCurrentSocket(type: DisconnectEventType = "realtime") {
+    const ws = this.client;
+    if (!ws) {
       this.scheduleReconnect();
       return;
     }
 
-    this.client.close();
+    this.teardownSocket(ws, type);
+    ws.close();
   }
 
   private scheduleReconnect() {
@@ -530,14 +540,13 @@ export class Ableton extends EventEmitter<EventMap> {
     if (this.client) {
       const socket = this.client;
       if (socket.readyState === WebSocket.CLOSED) {
-        this.client = undefined;
+        this.teardownSocket(socket, "realtime");
       } else {
         const closePromise = new Promise<void>((res) => {
           socket.addEventListener("close", () => res(), { once: true });
         });
         socket.close();
         await closePromise;
-        this.client = undefined;
       }
     }
 
@@ -577,7 +586,6 @@ export class Ableton extends EventEmitter<EventMap> {
       }
 
       if (data.event === "disconnect") {
-        this.handleDisconnect("realtime");
         this.closeCurrentSocket();
         return;
       }
