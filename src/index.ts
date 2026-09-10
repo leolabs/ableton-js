@@ -15,8 +15,6 @@ import { packageVersion } from "./util/package-version.js";
 const DEFAULT_HOST = "127.0.0.1";
 const DEFAULT_PORT = 39031;
 
-const limit = pLimit(200);
-
 interface Command {
   ns: string;
   nsid?: string;
@@ -218,6 +216,7 @@ export class Ableton extends EventEmitter<EventMap> {
       clearTimeout: () => any;
     }
   >();
+  private limit = pLimit(200);
   private commandQueue: QueuedCommand[] = [];
   private flushScheduled = false;
   private eventListeners = new Map<string, Array<(data: any) => any>>();
@@ -715,7 +714,7 @@ export class Ableton extends EventEmitter<EventMap> {
       this.logger?.debug("Flushing command queue", { length: queued.length });
     }
 
-    await limit(async () => {
+    await this.limit(async () => {
       try {
         const results = await this.sendCommandEnvelope(
           queued.map((entry) => entry.command),
