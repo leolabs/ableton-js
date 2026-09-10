@@ -1,6 +1,6 @@
 import type { Ableton } from "../index.js";
 import { CuePoint, type RawCuePoint } from "./cue-point.js";
-import type { RawDevice } from "./device.js";
+import { Device, type RawDevice } from "./device.js";
 import { GroovePool } from "./groove-pool.js";
 import { Namespace } from "./index.js";
 import { type RawScene, Scene } from "./scene.js";
@@ -68,6 +68,7 @@ export interface GettableProperties {
 }
 
 export interface TransformedProperties {
+  appointed_device: Device | null;
   cue_points: CuePoint[];
   master_track: Track;
   return_tracks: Track[];
@@ -226,6 +227,8 @@ export class Song extends Namespace<
     super(ableton, "song");
 
     this.transformers = {
+      appointed_device: (device) =>
+        device ? new Device(ableton, device) : null,
       cue_points: (points) => points.map((c) => new CuePoint(ableton, c)),
       master_track: (track) => new Track(ableton, track),
       return_tracks: (tracks) => tracks.map((t) => new Track(ableton, t)),
