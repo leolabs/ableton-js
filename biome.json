@@ -1,0 +1,30 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.11/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": ["**", "!**/*.js", "!**/*.mjs"]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 80,
+    "expand": "auto",
+    "includes": ["**", "!**/*.json", "!**/*.js", "!**/*.mjs"]
+  },
+  "linter": {
+    "rules": {
+      "suspicious": {
+        "noEmptyInterface": "off",
+        "useIterableCallbackReturn": "off",
+        "noExplicitAny": "off"
+      },
+      "style": {
+        "noNonNullAssertion": "off"
+      }
+    }
+  }
+}

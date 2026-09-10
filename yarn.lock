@@ -2,6 +2,60 @@
 # yarn lockfile v1
 
 
+"@biomejs/biome@^2.5.11":
+  version "2.5.11"
+  resolved "https://registry.yarnpkg.com/@biomejs/biome/-/biome-2.5.11.tgz#2325a9f54a651d0420be1f1517380f56013f7ba1"
+  integrity sha512-Tj0dnkLPdW0ASjHfj2D/ZkkvPU2wrFmnE1jWTD2xzV1ycapV1DutbYXk4NDnR3rYTi1ZCbNFD4G2gRMEY65WaA==
+  optionalDependencies:
+    "@biomejs/cli-darwin-arm64" "2.5.11"
+    "@biomejs/cli-darwin-x64" "2.5.11"
+    "@biomejs/cli-linux-arm64" "2.5.11"
+    "@biomejs/cli-linux-arm64-musl" "2.5.11"
+    "@biomejs/cli-linux-x64" "2.5.11"
+    "@biomejs/cli-linux-x64-musl" "2.5.11"
+    "@biomejs/cli-win32-arm64" "2.5.11"
+    "@biomejs/cli-win32-x64" "2.5.11"
+
+"@biomejs/cli-darwin-arm64@2.5.11":
+  version "2.5.11"
+  resolved "https://registry.yarnpkg.com/@biomejs/cli-darwin-arm64/-/cli-darwin-arm64-2.5.11.tgz#2b8af359fc43f10c81b88621884b25ec83130054"
+  integrity sha512-6SGZxoKbXvUjMn1t6A98HqWISPnGNbYs0R/Rt2JarmXBSev+lva4QxUMWEBX9lX1Wo1XTJ78uk5xVDtG58SRZg==
+
+"@biomejs/cli-darwin-x64@2.5.11":
+  version "2.5.11"
+  resolved "https://registry.yarnpkg.com/@biomejs/cli-darwin-x64/-/cli-darwin-x64-2.5.11.tgz#4aedca314957186b0d9f9e93afcff95d1e142523"
+  integrity sha512-nYkXY7tLBEgnGbYapDKAyKzgt44ZEyG+AKalvTXtCWKYgepI9dw327q+cVgedxm+Udi1ZzHKUyZrIusHi/KQbw==
+
+"@biomejs/cli-linux-arm64-musl@2.5.11":
+  version "2.5.11"
+  resolved "https://registry.yarnpkg.com/@biomejs/cli-linux-arm64-musl/-/cli-linux-arm64-musl-2.5.11.tgz#2938a40986262431d2d263c9ebd091ca90af6e05"
+  integrity sha512-qhyZUMyCbWYFV2bAwRNVvfMVZ+hv7WYl6mossGrxC+uiQQXhvsuWWU8zz6jYX0mChZd9MgQZbm4vozTmG/5iGw==
+
+"@biomejs/cli-linux-arm64@2.5.11":
+  version "2.5.11"
+  resolved "https://registry.yarnpkg.com/@biomejs/cli-linux-arm64/-/cli-linux-arm64-2.5.11.tgz#ab7b951f313050c047294441333c7dbe2f9b622d"
+  integrity sha512-3PVLSTD9RR73rvVPt5G3T1gc+ycggWEGfTD7RvzzbtcDPD27NxgxBbAFfpm7DXJKW6VLHWE1lLMGvFt2Qxjcow==
+
+"@biomejs/cli-linux-x64-musl@2.5.11":
+  version "2.5.11"
+  resolved "https://registry.yarnpkg.com/@biomejs/cli-linux-x64-musl/-/cli-linux-x64-musl-2.5.11.tgz#1c6b4eee8bba5d19fde0a9edecc3c865aa15e5c7"
+  integrity sha512-oRRlrchG5EfrEL/EmtT1qUjSNHk3/5LGeZhQqADBBAJF1b1ET6964xEKe7aGlGARzDfza8H/seEsFJl7S6Ql9w==
+
+"@biomejs/cli-linux-x64@2.5.11":
+  version "2.5.11"
+  resolved "https://registry.yarnpkg.com/@biomejs/cli-linux-x64/-/cli-linux-x64-2.5.11.tgz#dc9e6824e38a34d9a95383e31d59a4f23ef60181"
+  integrity sha512-JOytptlsgM33B2MMFUg8iBrb4IKpbD5JnJrSeYiaFEeAj4vuXx0iQSQZ4qK7sqyMtfjZxxPdNdMZZVL4y/mFyA==
+
+"@biomejs/cli-win32-arm64@2.5.11":
+  version "2.5.11"
+  resolved "https://registry.yarnpkg.com/@biomejs/cli-win32-arm64/-/cli-win32-arm64-2.5.11.tgz#7c9fabc7d27c3794122fa499dcc944a232a96edb"
+  integrity sha512-e49E6K9hzH/ohJNx8Y26mY8HaV4I4ZViIeoqhKsmoXLKHhQnMeBAVqCgsGf2Wa3lXlS7RkporDXMHHWkzvZzFw==
+
+"@biomejs/cli-win32-x64@2.5.11":
+  version "2.5.11"
+  resolved "https://registry.yarnpkg.com/@biomejs/cli-win32-x64/-/cli-win32-x64-2.5.11.tgz#0040003958f3ba5d6a2558011ca02bdb608821f5"
+  integrity sha512-QSQr/KjOgXA7OzXJUWS+oguKyAZ3Q0l/lnlDGbu397eKo83atuWUjBPJrsqbKNF6CARGw8XXJLGzpHC8Ryhd4Q==
+
 "@esbuild/aix-ppc64@0.25.12":
   version "0.25.12"
   resolved "https://registry.yarnpkg.com/@esbuild/aix-ppc64/-/aix-ppc64-0.25.12.tgz#80fcbe36130e58b7670511e888b8e88a259ed76c"
