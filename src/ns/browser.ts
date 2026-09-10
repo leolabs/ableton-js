@@ -1,6 +1,6 @@
-import { Ableton } from "../index.js";
+import type { Ableton } from "../index.js";
+import { BrowserItem, type RawBrowserItem } from "./browser-item.js";
 import { Namespace } from "./index.js";
-import { BrowserItem, RawBrowserItem } from "./browser-item.js";
 
 /** Live's `Browser.FilterType`. */
 export type BrowserFilterType =

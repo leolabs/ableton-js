@@ -1,6 +1,6 @@
-import { Ableton } from "../index.js";
+import type { Ableton } from "../index.js";
+import { DrumChain, type RawDrumChain } from "./drum-chain.js";
 import { Namespace } from "./index.js";
-import { DrumChain, RawDrumChain } from "./drum-chain.js";
 
 export interface GettableProperties {
   chains: RawDrumChain[];

@@ -1,9 +1,12 @@
-import { Ableton } from "../index.js";
-import { Namespace } from "./index.js";
-import { RawDeviceParameter, DeviceParameter } from "./device-parameter.js";
-import { Chain, RawChain } from "./chain.js";
-import { DrumPad, RawDrumPad } from "./drum-pad.js";
+import type { Ableton } from "../index.js";
+import { Chain, type RawChain } from "./chain.js";
+import {
+  DeviceParameter,
+  type RawDeviceParameter,
+} from "./device-parameter.js";
 import { DeviceView } from "./device-view.js";
+import { DrumPad, type RawDrumPad } from "./drum-pad.js";
+import { Namespace } from "./index.js";
 import { LOOPER_CLASS_NAME, LooperDevice } from "./looper-device.js";
 import { PLUGIN_CLASS_NAME, PluginDevice } from "./plugin-device.js";
 import { isRackClassName, RackDevice } from "./rack-device.js";

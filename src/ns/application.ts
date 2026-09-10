@@ -1,7 +1,7 @@
-import { Ableton } from "../index.js";
-import { Namespace } from "./index.js";
+import type { Ableton } from "../index.js";
 import { ApplicationView } from "./application-view.js";
 import { Browser } from "./browser.js";
+import { Namespace } from "./index.js";
 
 /** Live's `Application.MessageButtons`. */
 export type MessageButtons =

@@ -1,6 +1,6 @@
 import { describe, it } from "vitest";
-import { gettablePropKeys, createAbleton } from "../util/tests.js";
-import { GettableProperties } from "./application-view.js";
+import { createAbleton, gettablePropKeys } from "../util/tests.js";
+import type { GettableProperties } from "./application-view.js";
 
 const gettableProps = gettablePropKeys<GettableProperties>({
   browse_mode: true,

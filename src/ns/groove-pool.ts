@@ -1,6 +1,6 @@
-import { Ableton } from "../index.js";
+import type { Ableton } from "../index.js";
+import { Groove, type RawGroove } from "./groove.js";
 import { Namespace } from "./index.js";
-import { Groove, RawGroove } from "./groove.js";
 
 export interface GettableProperties {
   grooves: RawGroove[];

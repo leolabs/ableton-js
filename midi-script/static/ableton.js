@@ -1122,345 +1122,279 @@ class _ {
     });
   }
 }
-class b extends _ {
-  constructor(e, t) {
-    super(e, "device-parameter", t.id), this.raw = t;
+class Ts extends _ {
+  constructor(e) {
+    super(e, "application-view");
   }
-}
-class Nt extends _ {
-  constructor(e, t) {
-    super(e, "chain-mixer-device", t.id), this.raw = t, this.transformers = {
-      chain_activator: (s) => new b(e, s),
-      panning: (s) => s ? new b(e, s) : null,
-      sends: (s) => s.map((i) => new b(e, i)),
-      volume: (s) => s ? new b(e, s) : null
-    };
+  /** Returns the available main document subviews (e.g. Session, Arranger). */
+  async availableMainViews() {
+    return this.sendCachedCommand("available_main_views");
   }
-}
-class P extends _ {
-  constructor(e, t) {
-    super(e, "chain", t.id), this.raw = t, this.transformers = {
-      devices: (s) => s.map((i) => q(e, i)),
-      mixer_device: (s) => new Nt(e, s)
-    }, this.cachedProps = {
-      devices: !0,
-      mixer_device: !0
-    };
+  /** Shows and focuses the given view. */
+  async focusView(e) {
+    return this.sendCommand("focus_view", [e]);
+  }
+  /** Hides the given view. */
+  async hideView(e) {
+    return this.sendCommand("hide_view", [e]);
   }
   /**
-   * Deletes a device identified by its index in this chain's `devices` list.
+   * Returns whether the given view is currently visible.
+   * When `mainWindowOnly` is false, also checks the second window.
    */
-  async deleteDevice(e) {
-    return this.sendCommand("delete_device", { index: e });
+  async isViewVisible(e, t = !0) {
+    return this.sendCommand("is_view_visible", [e, t]);
   }
-  /** Duplicates the device at `index` in this chain. */
-  async duplicateDevice(e) {
-    return this.sendCommand("duplicate_device", { index: e });
-  }
-  /**
-   * Inserts a native Live device by UI name at `deviceIndex` (-1 = end).
-   * Available since Live 12.3.
-   */
-  async insertDevice(e, t = -1) {
-    const s = await this.sendCommand("insert_device", {
-      device_name: e,
-      device_index: t
+  /** Scrolls the given view in the given direction when possible. */
+  async scrollView(e, t, s) {
+    return this.sendCommand("scroll_view", {
+      direction: t,
+      view: e,
+      modifier_pressed: s
     });
-    return q(this.ableton, s);
   }
-}
-class Ut extends _ {
-  constructor(e, t) {
-    super(e, "drum-chain", t.id), this.raw = t, this.transformers = {
-      devices: (s) => s.map((i) => q(e, i)),
-      mixer_device: (s) => new Nt(e, s)
-    }, this.cachedProps = {
-      devices: !0,
-      mixer_device: !0
-    };
+  /** Shows the given view. */
+  async showView(e) {
+    return this.sendCommand("show_view", [e]);
   }
   /**
-   * Deletes a device identified by its index in this chain's `devices` list.
+   * Reveals the device chain and browser and starts hot-swap for the selected
+   * device. Calling again stops hot-swap.
    */
-  async deleteDevice(e) {
-    return this.sendCommand("delete_device", { index: e });
+  async toggleBrowse() {
+    return this.sendCommand("toggle_browse");
   }
-  /** Duplicates the device at `index` in this chain. */
-  async duplicateDevice(e) {
-    return this.sendCommand("duplicate_device", { index: e });
-  }
-  /**
-   * Inserts a native Live device by UI name at `deviceIndex` (-1 = end).
-   * Available since Live 12.3.
-   */
-  async insertDevice(e, t = -1) {
-    const s = await this.sendCommand("insert_device", {
-      device_name: e,
-      device_index: t
+  /** Zooms the given view in the given direction when possible. */
+  async zoomView(e, t, s) {
+    return this.sendCommand("zoom_view", {
+      direction: t,
+      view: e,
+      modifier_pressed: s
     });
-    return q(this.ableton, s);
   }
 }
-function ze(n, e) {
-  return e.is_drum_chain ? new Ut(n, e) : new P(n, e);
-}
-class I extends _ {
+class M extends _ {
   constructor(e, t) {
-    super(e, "drum-pad", t.id), this.raw = t, this.transformers = {
-      chains: (s) => s.map((i) => new Ut(e, i))
+    super(e, "browser-item", t.id), this.raw = t, this.transformers = {
+      children: (s) => s.map((i) => new M(e, i))
     }, this.cachedProps = {
-      chains: !0
+      children: !0,
+      is_device: !0,
+      is_folder: !0,
+      is_loadable: !1,
+      is_selected: !1,
+      name: !0,
+      source: !0,
+      uri: !0
     };
   }
-  /** Deletes all chains on this pad (same as clearing a drum rack pad in Live). */
-  async deleteAllChains() {
-    return this.sendCommand("delete_all_chains");
-  }
 }
-class Ue extends _ {
-  constructor(e, t) {
-    super(e, "device-view", t);
-  }
-}
-const Ts = "Looper";
 class As extends _ {
-  constructor(e, t) {
-    super(e, "looper-device", t.id), this.raw = t, this.view = new Ue(e, t.id), this.transformers = {
-      chains: (s) => s.map((i) => new P(e, i)),
-      drum_pads: (s) => s.map((i) => new I(e, i)),
-      parameters: (s) => s.map((i) => new b(e, i)),
-      return_chains: (s) => s.map((i) => new P(e, i))
+  constructor(e) {
+    super(e, "browser");
+    const t = (s) => s.map((i) => new M(e, i));
+    this.transformers = {
+      audio_effects: t,
+      clips: t,
+      colors: t,
+      current_project: t,
+      drums: t,
+      instruments: t,
+      legacy_libraries: t,
+      max_for_live: t,
+      midi_effects: t,
+      packs: t,
+      plugins: t,
+      samples: t,
+      sounds: t,
+      user_library: t,
+      user_folders: t,
+      hotswap_target: (s) => new M(e, s)
     }, this.cachedProps = {
-      chains: !0,
-      drum_pads: !0,
-      parameters: !0,
-      return_chains: !0
+      audio_effects: !0,
+      clips: !0,
+      colors: !0,
+      current_project: !0,
+      drums: !0,
+      filter_type: !1,
+      instruments: !0,
+      legacy_libraries: !0,
+      max_for_live: !0,
+      midi_effects: !0,
+      packs: !0,
+      plugins: !0,
+      samples: !0,
+      sounds: !0,
+      user_library: !0,
+      user_folders: !0,
+      hotswap_target: !0
     };
   }
-  view;
-  /** Erases Looper's recorded content. */
-  async clear() {
-    return this.sendCommand("clear");
-  }
-  /** Doubles the length of Looper's buffer. */
-  async doubleLength() {
-    return this.sendCommand("double_length");
-  }
-  /** Doubles the speed of Looper's playback. */
-  async doubleSpeed() {
-    return this.sendCommand("double_speed");
-  }
-  /** Exports Looper's content to a Session Clip Slot. */
-  async exportToClipSlot(e) {
-    return this.sendCommand("export_to_clip_slot", {
-      slot_id: typeof e == "string" ? e : e.raw.id
+  /** Loads the provided browser item. */
+  async loadItem(e) {
+    return this.sendCommand("load_item", {
+      id: typeof e == "string" ? e : e.raw.id
     });
   }
-  /** Halves the length of Looper's buffer. */
-  async halfLength() {
-    return this.sendCommand("half_length");
+  /** Previews the provided browser item. */
+  async previewItem(e) {
+    return this.sendCommand("preview_item", {
+      id: typeof e == "string" ? e : e.raw.id
+    });
   }
-  /** Halves the speed of Looper's playback. */
-  async halfSpeed() {
-    return this.sendCommand("half_speed");
+  /** Returns the relation between the given browser item and the current hotswap target. */
+  async relationToHotswapTarget(e) {
+    return this.sendCommand("relation_to_hotswap_target", {
+      id: typeof e == "string" ? e : e.raw.id
+    });
   }
-  /** Plays back while adding additional layers of incoming audio. */
-  async overdub() {
-    return this.sendCommand("overdub");
-  }
-  /** Plays back without overdubbing. */
-  async play() {
-    return this.sendCommand("play");
-  }
-  /** Records incoming audio. */
-  async record() {
-    return this.sendCommand("record");
-  }
-  /**
-   * Saves the current state of the device to the compare AB slot.
-   * Only relevant if `can_compare_ab`, otherwise throws.
-   */
-  async savePresetToCompareAbSlot() {
-    return this.sendCommand("save_preset_to_compare_ab_slot");
-  }
-  /** Stops Looper's playback. */
-  async stop() {
-    return this.sendCommand("stop");
-  }
-  /** Sets the selected bank in the device for persistency. */
-  async storeChosenBank(e, t) {
-    return this.sendCommand("store_chosen_bank", [e, t]);
-  }
-  /**
-   * Erases everything that was recorded since the last time Overdub was enabled.
-   * Calling a second time will restore the material erased by the previous undo
-   * operation.
-   */
-  async undo() {
-    return this.sendCommand("undo");
+  /** Stops the current preview. */
+  async stopPreview() {
+    return this.sendCommand("stop_preview");
   }
 }
-const Es = "PluginDevice";
+class Es extends _ {
+  constructor(e) {
+    super(e, "application"), this.cachedProps = {
+      unavailable_features: !0
+    };
+  }
+  browser = new As(this.ableton);
+  view = new Ts(this.ableton);
+  /** Returns true if the given entry exists in Options.txt. */
+  async hasOption(e) {
+    return this.sendCommand("has_option", [e]);
+  }
+  /** Presses a button, by index, on the current message box. */
+  async pressCurrentDialogButton(e) {
+    return this.sendCommand("press_current_dialog_button", [e]);
+  }
+  // Live's show_message is not wrapped: it requires a Base.Text, which cannot
+  // be instantiated from Python. Use showOnTheFlyMessage for free-form strings.
+  /**
+   * Shows a message box with a free-form string, returning the pressed button index.
+   *
+   * This command blocks until the user pushes a button, so the timeout defaults to
+   * 60000ms. Increase the timeout if you expect the user to take longer to close
+   * the dialog.
+   */
+  async showOnTheFlyMessage(e, t = {}) {
+    return this.sendCommand(
+      "show_on_the_fly_message",
+      {
+        message: e,
+        buttons: t.buttons ?? "OK_BUTTON",
+        enable_markup: t.enableMarkup ?? !1,
+        show_success_icon: t.showSuccessIcon ?? !1,
+        push_dialog_type: t.pushDialogType ?? "MESSAGE_BOX"
+      },
+      void 0,
+      t.timeout ?? 6e4
+    );
+  }
+}
+const ze = "5.0.0-4";
 class Ls extends _ {
-  constructor(e, t) {
-    super(e, "plugin-device", t.id), this.raw = t, this.view = new Ue(e, t.id), this.transformers = {
-      chains: (s) => s.map((i) => new P(e, i)),
-      drum_pads: (s) => s.map((i) => new I(e, i)),
-      parameters: (s) => s.map((i) => new b(e, i)),
-      return_chains: (s) => s.map((i) => new P(e, i))
-    }, this.cachedProps = {
-      chains: !0,
-      drum_pads: !0,
-      parameters: !0,
-      return_chains: !0
-    };
+  constructor(e) {
+    super(e, "internal");
   }
-  view;
-  /**
-   * Gets the range of plugin parameter names, bound by begin and end.
-   * If end is smaller than 0 it is interpreted as the parameter count.
-   */
-  async getParameterNames(e = 0, t = -1) {
-    return this.sendCommand("get_parameter_names", { begin: e, end: t });
-  }
-  /**
-   * Saves the current state of the device to the compare AB slot.
-   * Only relevant if `can_compare_ab`, otherwise throws.
-   */
-  async savePresetToCompareAbSlot() {
-    return this.sendCommand("save_preset_to_compare_ab_slot");
-  }
-  /** Sets the selected bank in the device for persistency. */
-  async storeChosenBank(e, t) {
-    return this.sendCommand("store_chosen_bank", [e, t]);
+  /** Returns whether the MIDI Remote Script version satisfies this client. */
+  async isPluginUpToDate() {
+    return await this.get("version") === ze;
   }
 }
-class ks extends _ {
-  constructor(e, t) {
-    super(e, "rack-device-view", t), this.transformers = {
-      selected_chain: (s) => s ? ze(e, s) : null,
-      selected_drum_pad: (s) => s ? new I(e, s) : null
-    }, this.cachedProps = {
-      selected_chain: !0,
-      selected_drum_pad: !0
+var Nt = /* @__PURE__ */ ((n) => (n[n.NoteOn = 128] = "NoteOn", n[n.NoteOff = 144] = "NoteOff", n[n.AfterTouch = 160] = "AfterTouch", n[n.ControlChange = 176] = "ControlChange", n[n.PatchChange = 192] = "PatchChange", n[n.ChannelPressure = 208] = "ChannelPressure", n[n.PitchBend = 224] = "PitchBend", n[n.SysExStart = 240] = "SysExStart", n[n.MidiTimeCodeQuarterFrame = 241] = "MidiTimeCodeQuarterFrame", n[n.SongPositionPointer = 242] = "SongPositionPointer", n[n.SongSelect = 243] = "SongSelect", n[n.TuneRequest = 246] = "TuneRequest", n[n.SysExEnd = 247] = "SysExEnd", n[n.TimingClock = 248] = "TimingClock", n[n.Start = 250] = "Start", n[n.Continue = 251] = "Continue", n[n.Stop = 252] = "Stop", n[n.ActiveSensing = 254] = "ActiveSensing", n[n.SystemReset = 255] = "SystemReset", n))(Nt || {});
+class ks {
+  command;
+  parameter1 = null;
+  parameter2 = null;
+  constructor(e) {
+    switch (e.bytes.length) {
+      case 0:
+        throw "bytes missing from midi message";
+      case 3:
+        this.parameter1 = e.bytes[1], this.parameter2 = e.bytes[2];
+        break;
+      case 2:
+        this.parameter1 = e.bytes[1];
+        break;
+      case 1:
+        break;
+      default:
+        throw "invalid midi message length: " + e.bytes.length;
+    }
+    if (!(e.bytes[0] in Nt))
+      throw "invalid midi command: " + e.bytes[0];
+    this.command = e.bytes[0];
+  }
+  /** Returns this message as a control-change payload, or throws if it is not CC. */
+  toCC() {
+    if (this.command !== 176)
+      throw "not a midi CC message";
+    return {
+      command: this.command,
+      controller: this.parameter1,
+      value: this.parameter2
+    };
+  }
+  /** Returns this message as a note payload, or throws if it is not note on/off. */
+  toNote() {
+    if (this.command !== 128 && this.command !== 144)
+      throw "not a midi note message";
+    return {
+      command: this.command,
+      key: this.parameter1,
+      velocity: this.parameter2
     };
   }
 }
-const Rs = [
-  "InstrumentGroupDevice",
-  "DrumGroupDevice",
-  "AudioEffectGroupDevice",
-  "MidiEffectGroupDevice"
-];
+class Rs extends _ {
+  constructor(e) {
+    super(e, "midi"), this.transformers = {
+      midi: (t) => new ks(t)
+    };
+  }
+}
 class zs extends _ {
-  constructor(e, t) {
-    super(e, "rack-device", t.id), this.raw = t, this.view = new ks(e, t.id), this.transformers = {
-      chain_selector: (s) => s ? new b(e, s) : null,
-      chains: (s) => s.map((i) => ze(e, i)),
-      drum_pads: (s) => s.map((i) => new I(e, i)),
-      parameters: (s) => s.map((i) => new b(e, i)),
-      return_chains: (s) => s.map((i) => new P(e, i)),
-      visible_drum_pads: (s) => s.map((i) => new I(e, i))
-    }, this.cachedProps = {
-      chain_selector: !0,
-      chains: !0,
-      drum_pads: !0,
-      parameters: !0,
-      return_chains: !0,
-      visible_drum_pads: !0
-    };
+  constructor(e) {
+    super(e, "session", void 0);
   }
-  view;
-  /** Increases the number of visible macro controls in the rack. */
-  async addMacro() {
-    return this.sendCommand("add_macro");
+  /** Creates the Session View highlight ("red box") with the given size. */
+  async setupSessionBox(e, t) {
+    return this.sendCommand("setup_session_box", { num_tracks: e, num_scenes: t });
   }
-  /**
-   * Copies all contents of a drum pad from a source pad into a destination pad.
-   * Indices are note numbers (0–127). Throws if the source pad is empty or
-   * indices are out of range.
-   */
-  async copyPad(e, t) {
-    return this.sendCommand("copy_pad", {
-      source_index: e,
-      destination_index: t
+  /** Moves the Session View highlight to the given track and scene offsets. */
+  async setSessionOffset(e, t) {
+    return this.sendCommand("set_session_offset", {
+      track_offset: e,
+      scene_offset: t
     });
   }
-  /** Deletes the currently selected macro variation. */
-  async deleteSelectedVariation() {
-    return this.sendCommand("delete_selected_variation");
+}
+class Ps extends _ {
+  constructor(e, t) {
+    super(e, "cue-point", t.id), this.raw = t;
   }
   /**
-   * Inserts a new chain at `index`, or at the end when `index` is `-1`
-   * (default).
+   * Jumps playback to this cue when the song is playing (quantized),
+   * or moves the start position to this cue when stopped.
    */
-  async insertChain(e = -1) {
-    const t = await this.sendCommand("insert_chain", { index: e });
-    return ze(this.ableton, t);
+  async jump() {
+    return this.sendCommand("jump");
   }
-  /** Randomizes values for all macro controls not excluded from randomization. */
-  async randomizeMacros() {
-    return this.sendCommand("randomize_macros");
-  }
-  /** Recalls the macro variation that was recalled most recently. */
-  async recallLastUsedVariation() {
-    return this.sendCommand("recall_last_used_variation");
-  }
-  /** Recalls the currently selected macro variation. */
-  async recallSelectedVariation() {
-    return this.sendCommand("recall_selected_variation");
-  }
-  /** Decreases the number of visible macro controls in the rack. */
-  async removeMacro() {
-    return this.sendCommand("remove_macro");
-  }
-  /**
-   * Saves the current state of the device to the compare AB slot.
-   * Only relevant if `can_compare_ab`, otherwise throws.
-   */
-  async savePresetToCompareAbSlot() {
-    return this.sendCommand("save_preset_to_compare_ab_slot");
-  }
-  /** Sets the selected bank in the device for persistency. */
-  async storeChosenBank(e, t) {
-    return this.sendCommand("store_chosen_bank", [e, t]);
-  }
-  /** Stores a new variation of the values of all currently mapped macros. */
-  async storeVariation() {
-    return this.sendCommand("store_variation");
-  }
-}
-function Ps(n) {
-  return Rs.includes(n);
-}
-function q(n, e) {
-  return e.class_name === Ts ? new As(n, e) : e.class_name === Es ? new Ls(n, e) : Ps(e.class_name) ? new zs(n, e) : new Fs(n, e);
 }
 class Fs extends _ {
   constructor(e, t) {
-    super(e, "device", t.id), this.raw = t, this.view = new Ue(e, t.id), this.transformers = {
-      chains: (s) => s.map((i) => new P(e, i)),
-      drum_pads: (s) => s.map((i) => new I(e, i)),
-      parameters: (s) => s.map((i) => new b(e, i)),
-      return_chains: (s) => s.map((i) => new P(e, i))
+    super(e, "groove", t.id), this.raw = t;
+  }
+}
+class Os extends _ {
+  constructor(e) {
+    super(e, "groove-pool"), this.transformers = {
+      grooves: (t) => t.map((s) => new Fs(e, s))
     }, this.cachedProps = {
-      chains: !0,
-      drum_pads: !0,
-      parameters: !0,
-      return_chains: !0
+      grooves: !0
     };
-  }
-  view;
-  /**
-   * Saves the current state of the device to the compare AB slot.
-   * Only relevant if `can_compare_ab`, otherwise throws.
-   */
-  async savePresetToCompareAbSlot() {
-    return this.sendCommand("save_preset_to_compare_ab_slot");
-  }
-  /** Sets the selected bank in the device for persistency. */
-  async storeChosenBank(e, t) {
-    return this.sendCommand("store_chosen_bank", [e, t]);
   }
 }
 class G {
@@ -1493,7 +1427,25 @@ class G {
     return this.numberRepresentation;
   }
 }
-class St extends _ {
+const ke = (n) => ({
+  pitch: n[0],
+  time: n[1],
+  duration: n[2],
+  velocity: n[3],
+  muted: n[4]
+}), St = (n) => [
+  n.pitch,
+  n.time,
+  n.duration,
+  n.velocity,
+  n.muted
+];
+class b extends _ {
+  constructor(e, t) {
+    super(e, "device-parameter", t.id), this.raw = t;
+  }
+}
+class Ct extends _ {
   constructor(e, t) {
     super(e, "envelope", t.id), this.raw = t, this.transformers = {
       parameter: (s) => new b(e, s)
@@ -1547,19 +1499,6 @@ class St extends _ {
     return this.sendCommand("value_at_time", { time: e });
   }
 }
-const ke = (n) => ({
-  pitch: n[0],
-  time: n[1],
-  duration: n[2],
-  velocity: n[3],
-  muted: n[4]
-}), Ct = (n) => [
-  n.pitch,
-  n.time,
-  n.duration,
-  n.velocity,
-  n.muted
-];
 class E extends _ {
   constructor(e, t) {
     super(e, "clip", t.id), this.raw = t, this.transformers = {
@@ -1589,7 +1528,7 @@ class E extends _ {
     const t = await this.sendCommand("automation_envelope", {
       parameter_id: typeof e == "string" ? e : e.raw.id
     });
-    return t ? new St(this.ableton, t) : null;
+    return t ? new Ct(this.ableton, t) : null;
   }
   /**
    * Clears the envelope of this clip's given parameter.
@@ -1608,7 +1547,7 @@ class E extends _ {
     const t = await this.sendCommand("create_automation_envelope", {
       parameter_id: typeof e == "string" ? e : e.raw.id
     });
-    return new St(this.ableton, t);
+    return new Ct(this.ableton, t);
   }
   /**
    * Crops the clip. The region that is cropped depends on whether
@@ -1750,7 +1689,7 @@ class E extends _ {
    */
   async replaceSelectedNotes(e) {
     return this.sendCommand("replace_selected_notes", {
-      notes: e.map(Ct)
+      notes: e.map(St)
     });
   }
   /**
@@ -1795,7 +1734,7 @@ class E extends _ {
    * Adds the given notes to the clip.
    */
   async setNotes(e) {
-    return this.sendCommand("set_notes", { notes: e.map(Ct) });
+    return this.sendCommand("set_notes", { notes: e.map(St) });
   }
   /**
    * Stops playing this clip.
@@ -1810,7 +1749,7 @@ class E extends _ {
     return this.sendCommand("stop_scrub");
   }
 }
-class He extends _ {
+class Ue extends _ {
   constructor(e, t) {
     super(e, "clip_slot", t.id), this.raw = t, this.transformers = {
       clip: (s) => s ? new E(e, s) : null,
@@ -1865,7 +1804,360 @@ class He extends _ {
     return this.sendCommand("stop");
   }
 }
-class Os extends _ {
+class Pe extends _ {
+  constructor(e, t) {
+    super(e, "scene", t.id), this.raw = t, this.transformers = {
+      color: (s) => new G(s),
+      clip_slots: (s) => s.map((i) => new Ue(this.ableton, i))
+    }, this.cachedProps = {
+      clip_slots: !0
+    };
+  }
+  /**
+   * Fires the scene directly. Fires all clip slots
+   * that this scene owns and selects the scene itself.
+   */
+  async fire() {
+    return this.sendCommand("fire");
+  }
+}
+class Ut extends _ {
+  constructor(e, t) {
+    super(e, "chain-mixer-device", t.id), this.raw = t, this.transformers = {
+      chain_activator: (s) => new b(e, s),
+      panning: (s) => s ? new b(e, s) : null,
+      sends: (s) => s.map((i) => new b(e, i)),
+      volume: (s) => s ? new b(e, s) : null
+    };
+  }
+}
+class P extends _ {
+  constructor(e, t) {
+    super(e, "chain", t.id), this.raw = t, this.transformers = {
+      devices: (s) => s.map((i) => q(e, i)),
+      mixer_device: (s) => new Ut(e, s)
+    }, this.cachedProps = {
+      devices: !0,
+      mixer_device: !0
+    };
+  }
+  /**
+   * Deletes a device identified by its index in this chain's `devices` list.
+   */
+  async deleteDevice(e) {
+    return this.sendCommand("delete_device", { index: e });
+  }
+  /** Duplicates the device at `index` in this chain. */
+  async duplicateDevice(e) {
+    return this.sendCommand("duplicate_device", { index: e });
+  }
+  /**
+   * Inserts a native Live device by UI name at `deviceIndex` (-1 = end).
+   * Available since Live 12.3.
+   */
+  async insertDevice(e, t = -1) {
+    const s = await this.sendCommand("insert_device", {
+      device_name: e,
+      device_index: t
+    });
+    return q(this.ableton, s);
+  }
+}
+class He extends _ {
+  constructor(e, t) {
+    super(e, "device-view", t);
+  }
+}
+class Ht extends _ {
+  constructor(e, t) {
+    super(e, "drum-chain", t.id), this.raw = t, this.transformers = {
+      devices: (s) => s.map((i) => q(e, i)),
+      mixer_device: (s) => new Ut(e, s)
+    }, this.cachedProps = {
+      devices: !0,
+      mixer_device: !0
+    };
+  }
+  /**
+   * Deletes a device identified by its index in this chain's `devices` list.
+   */
+  async deleteDevice(e) {
+    return this.sendCommand("delete_device", { index: e });
+  }
+  /** Duplicates the device at `index` in this chain. */
+  async duplicateDevice(e) {
+    return this.sendCommand("duplicate_device", { index: e });
+  }
+  /**
+   * Inserts a native Live device by UI name at `deviceIndex` (-1 = end).
+   * Available since Live 12.3.
+   */
+  async insertDevice(e, t = -1) {
+    const s = await this.sendCommand("insert_device", {
+      device_name: e,
+      device_index: t
+    });
+    return q(this.ableton, s);
+  }
+}
+function Fe(n, e) {
+  return e.is_drum_chain ? new Ht(n, e) : new P(n, e);
+}
+class I extends _ {
+  constructor(e, t) {
+    super(e, "drum-pad", t.id), this.raw = t, this.transformers = {
+      chains: (s) => s.map((i) => new Ht(e, i))
+    }, this.cachedProps = {
+      chains: !0
+    };
+  }
+  /** Deletes all chains on this pad (same as clearing a drum rack pad in Live). */
+  async deleteAllChains() {
+    return this.sendCommand("delete_all_chains");
+  }
+}
+const qs = "Looper";
+class Is extends _ {
+  constructor(e, t) {
+    super(e, "looper-device", t.id), this.raw = t, this.view = new He(e, t.id), this.transformers = {
+      chains: (s) => s.map((i) => new P(e, i)),
+      drum_pads: (s) => s.map((i) => new I(e, i)),
+      parameters: (s) => s.map((i) => new b(e, i)),
+      return_chains: (s) => s.map((i) => new P(e, i))
+    }, this.cachedProps = {
+      chains: !0,
+      drum_pads: !0,
+      parameters: !0,
+      return_chains: !0
+    };
+  }
+  view;
+  /** Erases Looper's recorded content. */
+  async clear() {
+    return this.sendCommand("clear");
+  }
+  /** Doubles the length of Looper's buffer. */
+  async doubleLength() {
+    return this.sendCommand("double_length");
+  }
+  /** Doubles the speed of Looper's playback. */
+  async doubleSpeed() {
+    return this.sendCommand("double_speed");
+  }
+  /** Exports Looper's content to a Session Clip Slot. */
+  async exportToClipSlot(e) {
+    return this.sendCommand("export_to_clip_slot", {
+      slot_id: typeof e == "string" ? e : e.raw.id
+    });
+  }
+  /** Halves the length of Looper's buffer. */
+  async halfLength() {
+    return this.sendCommand("half_length");
+  }
+  /** Halves the speed of Looper's playback. */
+  async halfSpeed() {
+    return this.sendCommand("half_speed");
+  }
+  /** Plays back while adding additional layers of incoming audio. */
+  async overdub() {
+    return this.sendCommand("overdub");
+  }
+  /** Plays back without overdubbing. */
+  async play() {
+    return this.sendCommand("play");
+  }
+  /** Records incoming audio. */
+  async record() {
+    return this.sendCommand("record");
+  }
+  /**
+   * Saves the current state of the device to the compare AB slot.
+   * Only relevant if `can_compare_ab`, otherwise throws.
+   */
+  async savePresetToCompareAbSlot() {
+    return this.sendCommand("save_preset_to_compare_ab_slot");
+  }
+  /** Stops Looper's playback. */
+  async stop() {
+    return this.sendCommand("stop");
+  }
+  /** Sets the selected bank in the device for persistency. */
+  async storeChosenBank(e, t) {
+    return this.sendCommand("store_chosen_bank", [e, t]);
+  }
+  /**
+   * Erases everything that was recorded since the last time Overdub was enabled.
+   * Calling a second time will restore the material erased by the previous undo
+   * operation.
+   */
+  async undo() {
+    return this.sendCommand("undo");
+  }
+}
+const js = "PluginDevice";
+class Ds extends _ {
+  constructor(e, t) {
+    super(e, "plugin-device", t.id), this.raw = t, this.view = new He(e, t.id), this.transformers = {
+      chains: (s) => s.map((i) => new P(e, i)),
+      drum_pads: (s) => s.map((i) => new I(e, i)),
+      parameters: (s) => s.map((i) => new b(e, i)),
+      return_chains: (s) => s.map((i) => new P(e, i))
+    }, this.cachedProps = {
+      chains: !0,
+      drum_pads: !0,
+      parameters: !0,
+      return_chains: !0
+    };
+  }
+  view;
+  /**
+   * Gets the range of plugin parameter names, bound by begin and end.
+   * If end is smaller than 0 it is interpreted as the parameter count.
+   */
+  async getParameterNames(e = 0, t = -1) {
+    return this.sendCommand("get_parameter_names", { begin: e, end: t });
+  }
+  /**
+   * Saves the current state of the device to the compare AB slot.
+   * Only relevant if `can_compare_ab`, otherwise throws.
+   */
+  async savePresetToCompareAbSlot() {
+    return this.sendCommand("save_preset_to_compare_ab_slot");
+  }
+  /** Sets the selected bank in the device for persistency. */
+  async storeChosenBank(e, t) {
+    return this.sendCommand("store_chosen_bank", [e, t]);
+  }
+}
+class Ns extends _ {
+  constructor(e, t) {
+    super(e, "rack-device-view", t), this.transformers = {
+      selected_chain: (s) => s ? Fe(e, s) : null,
+      selected_drum_pad: (s) => s ? new I(e, s) : null
+    }, this.cachedProps = {
+      selected_chain: !0,
+      selected_drum_pad: !0
+    };
+  }
+}
+const Us = [
+  "InstrumentGroupDevice",
+  "DrumGroupDevice",
+  "AudioEffectGroupDevice",
+  "MidiEffectGroupDevice"
+];
+class Hs extends _ {
+  constructor(e, t) {
+    super(e, "rack-device", t.id), this.raw = t, this.view = new Ns(e, t.id), this.transformers = {
+      chain_selector: (s) => s ? new b(e, s) : null,
+      chains: (s) => s.map((i) => Fe(e, i)),
+      drum_pads: (s) => s.map((i) => new I(e, i)),
+      parameters: (s) => s.map((i) => new b(e, i)),
+      return_chains: (s) => s.map((i) => new P(e, i)),
+      visible_drum_pads: (s) => s.map((i) => new I(e, i))
+    }, this.cachedProps = {
+      chain_selector: !0,
+      chains: !0,
+      drum_pads: !0,
+      parameters: !0,
+      return_chains: !0,
+      visible_drum_pads: !0
+    };
+  }
+  view;
+  /** Increases the number of visible macro controls in the rack. */
+  async addMacro() {
+    return this.sendCommand("add_macro");
+  }
+  /**
+   * Copies all contents of a drum pad from a source pad into a destination pad.
+   * Indices are note numbers (0–127). Throws if the source pad is empty or
+   * indices are out of range.
+   */
+  async copyPad(e, t) {
+    return this.sendCommand("copy_pad", {
+      source_index: e,
+      destination_index: t
+    });
+  }
+  /** Deletes the currently selected macro variation. */
+  async deleteSelectedVariation() {
+    return this.sendCommand("delete_selected_variation");
+  }
+  /**
+   * Inserts a new chain at `index`, or at the end when `index` is `-1`
+   * (default).
+   */
+  async insertChain(e = -1) {
+    const t = await this.sendCommand("insert_chain", { index: e });
+    return Fe(this.ableton, t);
+  }
+  /** Randomizes values for all macro controls not excluded from randomization. */
+  async randomizeMacros() {
+    return this.sendCommand("randomize_macros");
+  }
+  /** Recalls the macro variation that was recalled most recently. */
+  async recallLastUsedVariation() {
+    return this.sendCommand("recall_last_used_variation");
+  }
+  /** Recalls the currently selected macro variation. */
+  async recallSelectedVariation() {
+    return this.sendCommand("recall_selected_variation");
+  }
+  /** Decreases the number of visible macro controls in the rack. */
+  async removeMacro() {
+    return this.sendCommand("remove_macro");
+  }
+  /**
+   * Saves the current state of the device to the compare AB slot.
+   * Only relevant if `can_compare_ab`, otherwise throws.
+   */
+  async savePresetToCompareAbSlot() {
+    return this.sendCommand("save_preset_to_compare_ab_slot");
+  }
+  /** Sets the selected bank in the device for persistency. */
+  async storeChosenBank(e, t) {
+    return this.sendCommand("store_chosen_bank", [e, t]);
+  }
+  /** Stores a new variation of the values of all currently mapped macros. */
+  async storeVariation() {
+    return this.sendCommand("store_variation");
+  }
+}
+function Ms(n) {
+  return Us.includes(n);
+}
+function q(n, e) {
+  return e.class_name === qs ? new Is(n, e) : e.class_name === js ? new Ds(n, e) : Ms(e.class_name) ? new Hs(n, e) : new Bs(n, e);
+}
+class Bs extends _ {
+  constructor(e, t) {
+    super(e, "device", t.id), this.raw = t, this.view = new He(e, t.id), this.transformers = {
+      chains: (s) => s.map((i) => new P(e, i)),
+      drum_pads: (s) => s.map((i) => new I(e, i)),
+      parameters: (s) => s.map((i) => new b(e, i)),
+      return_chains: (s) => s.map((i) => new P(e, i))
+    }, this.cachedProps = {
+      chains: !0,
+      drum_pads: !0,
+      parameters: !0,
+      return_chains: !0
+    };
+  }
+  view;
+  /**
+   * Saves the current state of the device to the compare AB slot.
+   * Only relevant if `can_compare_ab`, otherwise throws.
+   */
+  async savePresetToCompareAbSlot() {
+    return this.sendCommand("save_preset_to_compare_ab_slot");
+  }
+  /** Sets the selected bank in the device for persistency. */
+  async storeChosenBank(e, t) {
+    return this.sendCommand("store_chosen_bank", [e, t]);
+  }
+}
+class Ws extends _ {
   constructor(e, t) {
     super(e, "mixer-device", t.id), this.raw = t, this.transformers = {
       crossfader: (s) => new b(e, s),
@@ -1878,21 +2170,6 @@ class Os extends _ {
       track_activator: (s) => new b(e, s),
       volume: (s) => new b(e, s)
     };
-  }
-}
-class qs extends _ {
-  constructor(e, t) {
-    super(e, "track-view", t), this.transformers = {
-      selected_device: (s) => q(e, s)
-    }, this.cachedProps = {
-      selected_device: !0
-    };
-  }
-  /**
-   * Selects the track's instrument if it has one.
-   */
-  async selectInstrument() {
-    return this.sendCommand("select_instrument");
   }
 }
 class xt extends _ {
@@ -1920,15 +2197,30 @@ class xt extends _ {
     return new E(this.ableton, s);
   }
 }
+class Gs extends _ {
+  constructor(e, t) {
+    super(e, "track-view", t), this.transformers = {
+      selected_device: (s) => q(e, s)
+    }, this.cachedProps = {
+      selected_device: !0
+    };
+  }
+  /**
+   * Selects the track's instrument if it has one.
+   */
+  async selectInstrument() {
+    return this.sendCommand("select_instrument");
+  }
+}
 class A extends _ {
   constructor(e, t) {
-    super(e, "track", t.id), this.raw = t, this.view = new qs(this.ableton, t.id), this.transformers = {
+    super(e, "track", t.id), this.raw = t, this.view = new Gs(this.ableton, t.id), this.transformers = {
       arrangement_clips: (s) => s.map((i) => new E(e, i)),
       color: (s) => new G(s),
       devices: (s) => s.map((i) => q(e, i)),
-      clip_slots: (s) => s.map((i) => new He(e, i)),
+      clip_slots: (s) => s.map((i) => new Ue(e, i)),
       group_track: (s) => s ? new A(e, s) : null,
-      mixer_device: (s) => new Os(e, s),
+      mixer_device: (s) => new Ws(e, s),
       take_lanes: (s) => s.map((i) => new xt(e, i))
     }, this.cachedProps = {
       arrangement_clips: !0,
@@ -2041,42 +2333,13 @@ class A extends _ {
     return new E(this.ableton, s);
   }
 }
-class Is extends _ {
-  constructor(e, t) {
-    super(e, "cue-point", t.id), this.raw = t;
-  }
-  /**
-   * Jumps playback to this cue when the song is playing (quantized),
-   * or moves the start position to this cue when stopped.
-   */
-  async jump() {
-    return this.sendCommand("jump");
-  }
-}
-class Pe extends _ {
-  constructor(e, t) {
-    super(e, "scene", t.id), this.raw = t, this.transformers = {
-      color: (s) => new G(s),
-      clip_slots: (s) => s.map((i) => new He(this.ableton, i))
-    }, this.cachedProps = {
-      clip_slots: !0
-    };
-  }
-  /**
-   * Fires the scene directly. Fires all clip slots
-   * that this scene owns and selects the scene itself.
-   */
-  async fire() {
-    return this.sendCommand("fire");
-  }
-}
-class js extends _ {
+class $s extends _ {
   constructor(e) {
     super(e, "song-view"), this.transformers = {
       selected_parameter: (t) => new b(e, t),
       selected_track: (t) => new A(e, t),
       selected_scene: (t) => new Pe(e, t),
-      highlighted_clip_slot: (t) => new He(e, t),
+      highlighted_clip_slot: (t) => new Ue(e, t),
       detail_clip: (t) => new E(e, t)
     }, this.cachedProps = {
       detail_clip: !0,
@@ -2097,33 +2360,19 @@ class js extends _ {
     });
   }
 }
-class Ds extends _ {
-  constructor(e, t) {
-    super(e, "groove", t.id), this.raw = t;
-  }
-}
-class Ns extends _ {
-  constructor(e) {
-    super(e, "groove-pool"), this.transformers = {
-      grooves: (t) => t.map((s) => new Ds(e, s))
-    }, this.cachedProps = {
-      grooves: !0
-    };
-  }
-}
-class Us extends _ {
+class Vs extends _ {
   constructor(e, t) {
     super(e, "tuning-system", t.id), this.raw = t;
   }
 }
-class Hs extends _ {
+class Js extends _ {
   constructor(e) {
     super(e, "song"), this.transformers = {
-      cue_points: (t) => t.map((s) => new Is(e, s)),
+      cue_points: (t) => t.map((s) => new Ps(e, s)),
       master_track: (t) => new A(e, t),
       return_tracks: (t) => t.map((s) => new A(e, s)),
       tracks: (t) => t.map((s) => new A(e, s)),
-      tuning_system: (t) => t ? new Us(e, t) : null,
+      tuning_system: (t) => t ? new Vs(e, t) : null,
       visible_tracks: (t) => t.map((s) => new A(e, s)),
       scenes: (t) => t.map((s) => new Pe(e, s))
     }, this.cachedProps = {
@@ -2136,8 +2385,8 @@ class Hs extends _ {
       scenes: !0
     };
   }
-  view = new js(this.ableton);
-  groovePool = new Ns(this.ableton);
+  view = new $s(this.ableton);
+  groovePool = new Os(this.ableton);
   /** Begins a grouped undo step for subsequent song edits. */
   async beginUndoStep() {
     return this.sendCommand("begin_undo_step");
@@ -2294,256 +2543,7 @@ class Hs extends _ {
     return this.sendCommand("undo");
   }
 }
-const Fe = "5.0.0-4";
-class Ms extends _ {
-  constructor(e) {
-    super(e, "internal");
-  }
-  /** Returns whether the MIDI Remote Script version satisfies this client. */
-  async isPluginUpToDate() {
-    return await this.get("version") === Fe;
-  }
-}
-class Bs extends _ {
-  constructor(e) {
-    super(e, "application-view");
-  }
-  /** Returns the available main document subviews (e.g. Session, Arranger). */
-  async availableMainViews() {
-    return this.sendCachedCommand("available_main_views");
-  }
-  /** Shows and focuses the given view. */
-  async focusView(e) {
-    return this.sendCommand("focus_view", [e]);
-  }
-  /** Hides the given view. */
-  async hideView(e) {
-    return this.sendCommand("hide_view", [e]);
-  }
-  /**
-   * Returns whether the given view is currently visible.
-   * When `mainWindowOnly` is false, also checks the second window.
-   */
-  async isViewVisible(e, t = !0) {
-    return this.sendCommand("is_view_visible", [e, t]);
-  }
-  /** Scrolls the given view in the given direction when possible. */
-  async scrollView(e, t, s) {
-    return this.sendCommand("scroll_view", {
-      direction: t,
-      view: e,
-      modifier_pressed: s
-    });
-  }
-  /** Shows the given view. */
-  async showView(e) {
-    return this.sendCommand("show_view", [e]);
-  }
-  /**
-   * Reveals the device chain and browser and starts hot-swap for the selected
-   * device. Calling again stops hot-swap.
-   */
-  async toggleBrowse() {
-    return this.sendCommand("toggle_browse");
-  }
-  /** Zooms the given view in the given direction when possible. */
-  async zoomView(e, t, s) {
-    return this.sendCommand("zoom_view", {
-      direction: t,
-      view: e,
-      modifier_pressed: s
-    });
-  }
-}
-class M extends _ {
-  constructor(e, t) {
-    super(e, "browser-item", t.id), this.raw = t, this.transformers = {
-      children: (s) => s.map((i) => new M(e, i))
-    }, this.cachedProps = {
-      children: !0,
-      is_device: !0,
-      is_folder: !0,
-      is_loadable: !1,
-      is_selected: !1,
-      name: !0,
-      source: !0,
-      uri: !0
-    };
-  }
-}
-class Ws extends _ {
-  constructor(e) {
-    super(e, "browser");
-    const t = (s) => s.map((i) => new M(e, i));
-    this.transformers = {
-      audio_effects: t,
-      clips: t,
-      colors: t,
-      current_project: t,
-      drums: t,
-      instruments: t,
-      legacy_libraries: t,
-      max_for_live: t,
-      midi_effects: t,
-      packs: t,
-      plugins: t,
-      samples: t,
-      sounds: t,
-      user_library: t,
-      user_folders: t,
-      hotswap_target: (s) => new M(e, s)
-    }, this.cachedProps = {
-      audio_effects: !0,
-      clips: !0,
-      colors: !0,
-      current_project: !0,
-      drums: !0,
-      filter_type: !1,
-      instruments: !0,
-      legacy_libraries: !0,
-      max_for_live: !0,
-      midi_effects: !0,
-      packs: !0,
-      plugins: !0,
-      samples: !0,
-      sounds: !0,
-      user_library: !0,
-      user_folders: !0,
-      hotswap_target: !0
-    };
-  }
-  /** Loads the provided browser item. */
-  async loadItem(e) {
-    return this.sendCommand("load_item", {
-      id: typeof e == "string" ? e : e.raw.id
-    });
-  }
-  /** Previews the provided browser item. */
-  async previewItem(e) {
-    return this.sendCommand("preview_item", {
-      id: typeof e == "string" ? e : e.raw.id
-    });
-  }
-  /** Returns the relation between the given browser item and the current hotswap target. */
-  async relationToHotswapTarget(e) {
-    return this.sendCommand("relation_to_hotswap_target", {
-      id: typeof e == "string" ? e : e.raw.id
-    });
-  }
-  /** Stops the current preview. */
-  async stopPreview() {
-    return this.sendCommand("stop_preview");
-  }
-}
-class Gs extends _ {
-  constructor(e) {
-    super(e, "application"), this.cachedProps = {
-      unavailable_features: !0
-    };
-  }
-  browser = new Ws(this.ableton);
-  view = new Bs(this.ableton);
-  /** Returns true if the given entry exists in Options.txt. */
-  async hasOption(e) {
-    return this.sendCommand("has_option", [e]);
-  }
-  /** Presses a button, by index, on the current message box. */
-  async pressCurrentDialogButton(e) {
-    return this.sendCommand("press_current_dialog_button", [e]);
-  }
-  // Live's show_message is not wrapped: it requires a Base.Text, which cannot
-  // be instantiated from Python. Use showOnTheFlyMessage for free-form strings.
-  /**
-   * Shows a message box with a free-form string, returning the pressed button index.
-   *
-   * This command blocks until the user pushes a button, so the timeout defaults to
-   * 60000ms. Increase the timeout if you expect the user to take longer to close
-   * the dialog.
-   */
-  async showOnTheFlyMessage(e, t = {}) {
-    return this.sendCommand(
-      "show_on_the_fly_message",
-      {
-        message: e,
-        buttons: t.buttons ?? "OK_BUTTON",
-        enable_markup: t.enableMarkup ?? !1,
-        show_success_icon: t.showSuccessIcon ?? !1,
-        push_dialog_type: t.pushDialogType ?? "MESSAGE_BOX"
-      },
-      void 0,
-      t.timeout ?? 6e4
-    );
-  }
-}
-var Ht = /* @__PURE__ */ ((n) => (n[n.NoteOn = 128] = "NoteOn", n[n.NoteOff = 144] = "NoteOff", n[n.AfterTouch = 160] = "AfterTouch", n[n.ControlChange = 176] = "ControlChange", n[n.PatchChange = 192] = "PatchChange", n[n.ChannelPressure = 208] = "ChannelPressure", n[n.PitchBend = 224] = "PitchBend", n[n.SysExStart = 240] = "SysExStart", n[n.MidiTimeCodeQuarterFrame = 241] = "MidiTimeCodeQuarterFrame", n[n.SongPositionPointer = 242] = "SongPositionPointer", n[n.SongSelect = 243] = "SongSelect", n[n.TuneRequest = 246] = "TuneRequest", n[n.SysExEnd = 247] = "SysExEnd", n[n.TimingClock = 248] = "TimingClock", n[n.Start = 250] = "Start", n[n.Continue = 251] = "Continue", n[n.Stop = 252] = "Stop", n[n.ActiveSensing = 254] = "ActiveSensing", n[n.SystemReset = 255] = "SystemReset", n))(Ht || {});
-class $s {
-  command;
-  parameter1 = null;
-  parameter2 = null;
-  constructor(e) {
-    switch (e.bytes.length) {
-      case 0:
-        throw "bytes missing from midi message";
-      case 3:
-        this.parameter1 = e.bytes[1], this.parameter2 = e.bytes[2];
-        break;
-      case 2:
-        this.parameter1 = e.bytes[1];
-        break;
-      case 1:
-        break;
-      default:
-        throw "invalid midi message length: " + e.bytes.length;
-    }
-    if (!(e.bytes[0] in Ht))
-      throw "invalid midi command: " + e.bytes[0];
-    this.command = e.bytes[0];
-  }
-  /** Returns this message as a control-change payload, or throws if it is not CC. */
-  toCC() {
-    if (this.command !== 176)
-      throw "not a midi CC message";
-    return {
-      command: this.command,
-      controller: this.parameter1,
-      value: this.parameter2
-    };
-  }
-  /** Returns this message as a note payload, or throws if it is not note on/off. */
-  toNote() {
-    if (this.command !== 128 && this.command !== 144)
-      throw "not a midi note message";
-    return {
-      command: this.command,
-      key: this.parameter1,
-      velocity: this.parameter2
-    };
-  }
-}
-class Vs extends _ {
-  constructor(e) {
-    super(e, "midi"), this.transformers = {
-      midi: (t) => new $s(t)
-    };
-  }
-}
-const Js = (n) => n && "__cached" in n;
-class Qs extends _ {
-  constructor(e) {
-    super(e, "session", void 0);
-  }
-  /** Creates the Session View highlight ("red box") with the given size. */
-  async setupSessionBox(e, t) {
-    return this.sendCommand("setup_session_box", { num_tracks: e, num_scenes: t });
-  }
-  /** Moves the Session View highlight to the given track and scene offsets. */
-  async setSessionOffset(e, t) {
-    return this.sendCommand("set_session_offset", {
-      track_offset: e,
-      scene_offset: t
-    });
-  }
-}
+const Qs = (n) => n && "__cached" in n;
 class Xs {
   listeners = /* @__PURE__ */ new Map();
   on(e, t) {
@@ -2947,15 +2947,15 @@ class Ln extends Xs {
   /** LRU cache used by cached property reads when caching is enabled. */
   cache;
   /** The current Live Set (tracks, scenes, tempo, playback, …). */
-  song = new Hs(this);
+  song = new Js(this);
   /** Red box / session ring control. */
-  session = new Qs(this);
+  session = new zs(this);
   /** Live application metadata and dialogs. */
-  application = new Gs(this);
+  application = new Es(this);
   /** Internal plugin helpers (ping, version, auth). */
-  internal = new Ms(this);
+  internal = new Ls(this);
   /** Forwarded MIDI note/CC tracking. */
-  midi = new Vs(this);
+  midi = new Rs(this);
   logger;
   clientState = "closed";
   cancelDisconnectEvents = [];
@@ -3036,8 +3036,8 @@ class Ln extends Xs {
       s,
       this.options?.heartbeatInterval ?? 2e3
     ), s(), this.internal.get("version").then((i) => {
-      i !== Fe && this.logger?.warn(
-        `The installed version of your AbletonJS plugin (${i}) is different from the JS library (${Fe}).`,
+      i !== ze && this.logger?.warn(
+        `The installed version of your AbletonJS plugin (${i}) is different from the JS library (${ze}).`,
         "Please update your AbletonJS plugin to the latest version: https://git.io/JvaOu"
       );
     }).catch(() => {
@@ -3270,7 +3270,7 @@ class Ln extends Xs {
       etag: i?.etag,
       cache: !0
     });
-    if (Js(r)) {
+    if (Qs(r)) {
       if (i)
         return i.data;
       throw new Error("Tried to get an object that isn't cached.");
@@ -3378,6 +3378,6 @@ export {
   Ln as Ableton,
   xn as DisconnectError,
   Cn as TimeoutError,
-  Fe as packageVersion
+  ze as packageVersion
 };
 //# sourceMappingURL=ableton.js.map

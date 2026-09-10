@@ -1,6 +1,9 @@
-import { Ableton } from "../index.js";
+import type { Ableton } from "../index.js";
+import {
+  DeviceParameter,
+  type RawDeviceParameter,
+} from "./device-parameter.js";
 import { Namespace } from "./index.js";
-import { DeviceParameter, RawDeviceParameter } from "./device-parameter.js";
 
 export interface GettableProperties {
   chain_activator: RawDeviceParameter;

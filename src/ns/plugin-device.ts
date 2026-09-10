@@ -1,17 +1,17 @@
-import { Ableton } from "../index.js";
-import { Namespace } from "./index.js";
+import type { Ableton } from "../index.js";
 import { Chain } from "./chain.js";
-import {
+import type {
   AnyDevice,
   GettableProperties as DeviceGettableProperties,
   ObservableProperties as DeviceObservableProperties,
-  RawDevice,
   SettableProperties as DeviceSettableProperties,
   TransformedProperties as DeviceTransformedProperties,
+  RawDevice,
 } from "./device.js";
 import { DeviceParameter } from "./device-parameter.js";
 import { DeviceView } from "./device-view.js";
 import { DrumPad } from "./drum-pad.js";
+import { Namespace } from "./index.js";
 
 /** Live's `class_name` for VST/AU/VST3 plugin devices. */
 export const PLUGIN_CLASS_NAME = "PluginDevice";

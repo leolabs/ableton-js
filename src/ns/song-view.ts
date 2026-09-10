@@ -1,11 +1,14 @@
+import type { Ableton } from "../index.js";
+import { Clip, type RawClip } from "./clip.js";
+import { ClipSlot, type RawClipSlot } from "./clip-slot.js";
+import type { Device } from "./device.js";
+import {
+  DeviceParameter,
+  type RawDeviceParameter,
+} from "./device-parameter.js";
 import { Namespace } from "./index.js";
-import { Ableton } from "../index.js";
-import { Clip, RawClip } from "./clip.js";
-import { ClipSlot, RawClipSlot } from "./clip-slot.js";
-import { DeviceParameter, RawDeviceParameter } from "./device-parameter.js";
-import { RawScene, Scene } from "./scene.js";
-import { RawTrack, Track } from "./track.js";
-import { Device } from "./device.js";
+import { type RawScene, Scene } from "./scene.js";
+import { type RawTrack, Track } from "./track.js";
 
 export interface GettableProperties {
   detail_clip: RawClip;

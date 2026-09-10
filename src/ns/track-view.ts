@@ -1,6 +1,6 @@
-import { Ableton } from "../index.js";
+import type { Ableton } from "../index.js";
+import { type AnyDevice, type RawDevice, wrapDevice } from "./device.js";
 import { Namespace } from "./index.js";
-import { RawDevice, AnyDevice, wrapDevice } from "./device.js";
 
 export type DeviceInsertMode = "default" | "selected_left" | "selected_right";
 

@@ -1,7 +1,10 @@
-import { Ableton } from "../index.js";
-import { Namespace } from "./index.js";
+import type { Ableton } from "../index.js";
 import type { RawClip } from "./clip.js";
-import { DeviceParameter, RawDeviceParameter } from "./device-parameter.js";
+import {
+  DeviceParameter,
+  type RawDeviceParameter,
+} from "./device-parameter.js";
+import { Namespace } from "./index.js";
 
 export interface EnvelopeEventControlCoefficients {
   x1: number;
@@ -75,7 +78,10 @@ export class Envelope extends Namespace<
   /**
    * Deletes the events in the specified time range.
    */
-  public async deleteEventsInRange(fromTime: number, toTime: number): Promise<void> {
+  public async deleteEventsInRange(
+    fromTime: number,
+    toTime: number,
+  ): Promise<void> {
     return this.sendCommand("delete_events_in_range", {
       from_time: fromTime,
       to_time: toTime,
@@ -85,7 +91,10 @@ export class Envelope extends Namespace<
   /**
    * Returns the events in the specified time range.
    */
-  public async eventsInRange(fromTime: number, toTime: number): Promise<EnvelopeEvent[]> {
+  public async eventsInRange(
+    fromTime: number,
+    toTime: number,
+  ): Promise<EnvelopeEvent[]> {
     return this.sendCommand("events_in_range", {
       from_time: fromTime,
       to_time: toTime,
@@ -95,7 +104,11 @@ export class Envelope extends Namespace<
   /**
    * Given a start time, a step length and a value, creates a step in the envelope.
    */
-  public async insertStep(startTime: number, length: number, value: number): Promise<void> {
+  public async insertStep(
+    startTime: number,
+    length: number,
+    value: number,
+  ): Promise<void> {
     return this.sendCommand("insert_step", {
       start_time: startTime,
       length,

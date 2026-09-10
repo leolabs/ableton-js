@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { gettablePropKeys, createAbleton } from "../util/tests.js";
-import { BrowserItem, GettableProperties } from "./browser-item.js";
+import { createAbleton, gettablePropKeys } from "../util/tests.js";
+import { BrowserItem, type GettableProperties } from "./browser-item.js";
 
 const gettableProps = gettablePropKeys<GettableProperties>({
   children: true,

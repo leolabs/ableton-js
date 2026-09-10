@@ -1,15 +1,15 @@
-import { Ableton } from "../index.js";
-import { Namespace } from "./index.js";
+import type { Ableton } from "../index.js";
 import { Color } from "../util/color.js";
-import { DeviceParameter } from "./device-parameter.js";
-import { Envelope } from "./envelope.js";
 import {
-  Note,
-  NoteExtended,
+  type Note,
+  type NoteExtended,
+  type NoteTuple,
   noteToTuple,
-  NoteTuple,
   tupleToNote,
 } from "../util/note.js";
+import type { DeviceParameter } from "./device-parameter.js";
+import { Envelope } from "./envelope.js";
+import { Namespace } from "./index.js";
 
 export type WarpMode =
   | "beats"

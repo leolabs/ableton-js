@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
+import type { Ableton } from "./index.js";
 import {
-  sleep,
   callCount,
   createAbleton,
   createAbletonClients,
+  sleep,
 } from "./util/tests.js";
-import { Ableton } from "./index.js";
 
 const PROTOCOL_EVENTS = new Set(["result", "error", "connect", "disconnect"]);
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { Ableton } from "../index.js";
-import { Chain, RawChain } from "./chain.js";
+import type { Ableton } from "../index.js";
+import { Chain, type RawChain } from "./chain.js";
 import { DrumChain, isDrumChain, wrapChain } from "./drum-chain.js";
 
 function rawChain(overrides: Partial<RawChain> = {}): RawChain {

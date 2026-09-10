@@ -1,8 +1,8 @@
-import { Ableton } from "../index.js";
-import { Namespace } from "./index.js";
-import { Chain, RawChain } from "./chain.js";
+import type { Ableton } from "../index.js";
+import type { Chain, RawChain } from "./chain.js";
 import { wrapChain } from "./drum-chain.js";
-import { DrumPad, RawDrumPad } from "./drum-pad.js";
+import { DrumPad, type RawDrumPad } from "./drum-pad.js";
+import { Namespace } from "./index.js";
 
 export interface GettableProperties {
   /** Drum racks only; `null` on other rack types. */

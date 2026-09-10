@@ -1,6 +1,6 @@
-import { vi } from "vitest";
+import type { vi } from "vitest";
 import { Ableton } from "../index.js";
-import { Track } from "../ns/track.js";
+import type { Track } from "../ns/track.js";
 
 /**
  * Exhaustive list of gettable property keys.

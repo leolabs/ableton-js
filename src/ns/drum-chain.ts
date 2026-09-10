@@ -1,15 +1,15 @@
-import { Ableton } from "../index.js";
-import { Namespace } from "./index.js";
+import type { Ableton } from "../index.js";
 import {
   Chain,
-  GettableProperties as ChainGettableProperties,
-  ObservableProperties as ChainObservableProperties,
-  RawChain,
-  SettableProperties as ChainSettableProperties,
-  TransformedProperties as ChainTransformedProperties,
+  type GettableProperties as ChainGettableProperties,
+  type ObservableProperties as ChainObservableProperties,
+  type SettableProperties as ChainSettableProperties,
+  type TransformedProperties as ChainTransformedProperties,
+  type RawChain,
 } from "./chain.js";
-import { wrapDevice } from "./device.js";
 import { ChainMixerDevice } from "./chain-mixer-device.js";
+import { wrapDevice } from "./device.js";
+import { Namespace } from "./index.js";
 
 export interface GettableProperties extends ChainGettableProperties {
   /** Choke group index for this drum chain. */

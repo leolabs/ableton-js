@@ -1,17 +1,20 @@
-import { Ableton } from "../index.js";
-import { Namespace } from "./index.js";
+import type { Ableton } from "../index.js";
 import { Chain } from "./chain.js";
-import { AnyChain, wrapChain } from "./drum-chain.js";
-import {
+import type {
   AnyDevice,
   GettableProperties as DeviceGettableProperties,
   ObservableProperties as DeviceObservableProperties,
-  RawDevice,
   SettableProperties as DeviceSettableProperties,
   TransformedProperties as DeviceTransformedProperties,
+  RawDevice,
 } from "./device.js";
-import { DeviceParameter, RawDeviceParameter } from "./device-parameter.js";
+import {
+  DeviceParameter,
+  type RawDeviceParameter,
+} from "./device-parameter.js";
+import { type AnyChain, wrapChain } from "./drum-chain.js";
 import { DrumPad } from "./drum-pad.js";
+import { Namespace } from "./index.js";
 import { RackDeviceView } from "./rack-device-view.js";
 
 /**

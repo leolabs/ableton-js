@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { Ableton } from "../index.js";
-import { Device, RawDevice } from "./device.js";
-import { wrapDevice } from "./device.js";
+import type { Ableton } from "../index.js";
+import { Device, type RawDevice, wrapDevice } from "./device.js";
 import { isLooperDevice, LooperDevice } from "./looper-device.js";
 import { isPluginDevice, PluginDevice } from "./plugin-device.js";
 import { isRackDevice, RACK_CLASS_NAMES, RackDevice } from "./rack-device.js";

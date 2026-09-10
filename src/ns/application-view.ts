@@ -1,4 +1,4 @@
-import { Ableton } from "../index.js";
+import type { Ableton } from "../index.js";
 import { Namespace } from "./index.js";
 
 export type DocumentView = "Session" | "Arranger";

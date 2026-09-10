@@ -1,18 +1,18 @@
-import { Ableton } from "../index.js";
-import { Namespace } from "./index.js";
-import { ClipSlot } from "./clip-slot.js";
+import type { Ableton } from "../index.js";
 import { Chain } from "./chain.js";
-import {
+import type { ClipSlot } from "./clip-slot.js";
+import type {
+  AnyDevice,
   GettableProperties as DeviceGettableProperties,
   ObservableProperties as DeviceObservableProperties,
-  RawDevice,
   SettableProperties as DeviceSettableProperties,
   TransformedProperties as DeviceTransformedProperties,
-  AnyDevice,
+  RawDevice,
 } from "./device.js";
 import { DeviceParameter } from "./device-parameter.js";
 import { DeviceView } from "./device-view.js";
 import { DrumPad } from "./drum-pad.js";
+import { Namespace } from "./index.js";
 
 /** Live's `class_name` for the built-in Looper audio effect. */
 export const LOOPER_CLASS_NAME = "Looper";

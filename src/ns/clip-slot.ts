@@ -1,7 +1,7 @@
-import { Ableton } from "../index.js";
-import { Namespace } from "./index.js";
+import type { Ableton } from "../index.js";
 import { Color } from "../util/color.js";
-import { Clip, RawClip } from "./clip.js";
+import { Clip, type RawClip } from "./clip.js";
+import { Namespace } from "./index.js";
 
 export type PlayingStatus = "stopped" | "started" | "recording";
 

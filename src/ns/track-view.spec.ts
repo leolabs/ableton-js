@@ -1,6 +1,6 @@
 import { describe, it } from "vitest";
-import { gettablePropKeys, createAbleton } from "../util/tests.js";
-import { GettableProperties } from "./track-view.js";
+import { createAbleton, gettablePropKeys } from "../util/tests.js";
+import type { GettableProperties } from "./track-view.js";
 
 const gettableProps = gettablePropKeys<GettableProperties>({
   is_collapsed: true,

@@ -1,12 +1,12 @@
-import { Ableton } from "../index.js";
-import { Namespace } from "./index.js";
-import { RawDevice, wrapDevice, Device } from "./device.js";
-import { ClipSlot, RawClipSlot } from "./clip-slot.js";
-import { MixerDevice, RawMixerDevice } from "./mixer-device.js";
-import { Clip, RawClip } from "./clip.js";
+import type { Ableton } from "../index.js";
 import { Color } from "../util/color.js";
+import { Clip, type RawClip } from "./clip.js";
+import { ClipSlot, type RawClipSlot } from "./clip-slot.js";
+import { type Device, type RawDevice, wrapDevice } from "./device.js";
+import { Namespace } from "./index.js";
+import { MixerDevice, type RawMixerDevice } from "./mixer-device.js";
+import { type RawTakeLane, TakeLane } from "./take-lane.js";
 import { TrackView } from "./track-view.js";
-import { TakeLane, RawTakeLane } from "./take-lane.js";
 
 export type RoutingLayout = "midi" | "mono" | "stereo";
 
@@ -226,7 +226,10 @@ export class Track extends Namespace<
    * Duplicates the given clip into the arrangement of this track at the provided destination time and returns it.
    * When the type of the clip and the type of the track are incompatible, a runtime error is raised.
    */
-  public async duplicateClipToArrangement(clipOrId: Clip | string, time: number) {
+  public async duplicateClipToArrangement(
+    clipOrId: Clip | string,
+    time: number,
+  ) {
     const rawClip = await this.sendCommand("duplicate_clip_to_arrangement", {
       clip_id: typeof clipOrId === "string" ? clipOrId : clipOrId.raw.id,
       time: time,

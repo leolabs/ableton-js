@@ -1,6 +1,6 @@
-import { describe, it, expect } from "vitest";
-import { gettablePropKeys, createAbleton } from "../util/tests.js";
-import { GettableProperties } from "./song.js";
+import { describe, expect, it } from "vitest";
+import { createAbleton, gettablePropKeys } from "../util/tests.js";
+import type { GettableProperties } from "./song.js";
 
 const gettableProps = gettablePropKeys<GettableProperties>({
   appointed_device: true,

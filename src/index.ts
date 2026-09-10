@@ -1,18 +1,16 @@
 import truncate from "lodash/truncate.js";
-import semver from "semver";
 import LruCache from "lru-cache";
 import pLimit from "p-limit";
-
-import { Song } from "./ns/song.js";
-import { Internal } from "./ns/internal.js";
 import { Application } from "./ns/application.js";
+import { Internal } from "./ns/internal.js";
 import { Midi } from "./ns/midi.js";
-import { packageVersion } from "./util/package-version.js";
-import { Cache, isCached, CacheResponse } from "./util/cache.js";
-import { Logger } from "./util/logger.js";
 import { Session } from "./ns/session.js";
+import { Song } from "./ns/song.js";
+import { type Cache, type CacheResponse, isCached } from "./util/cache.js";
 import { EventEmitter } from "./util/event-emitter.js";
 import { hmacSha256Hex } from "./util/hmac-sha256.js";
+import type { Logger } from "./util/logger.js";
+import { packageVersion } from "./util/package-version.js";
 
 const DEFAULT_HOST = "127.0.0.1";
 const DEFAULT_PORT = 39031;

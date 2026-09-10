@@ -1,6 +1,6 @@
 import { describe, it } from "vitest";
-import { gettablePropKeys, createAbleton, createTrack } from "../util/tests.js";
-import { GettableProperties } from "./mixer-device.js";
+import { createAbleton, createTrack, gettablePropKeys } from "../util/tests.js";
+import type { GettableProperties } from "./mixer-device.js";
 
 const gettableProps = gettablePropKeys<GettableProperties>({
   crossfade_assign: true,

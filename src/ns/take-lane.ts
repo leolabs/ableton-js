@@ -1,6 +1,6 @@
-import { Ableton } from "../index.js";
+import type { Ableton } from "../index.js";
+import { Clip, type RawClip } from "./clip.js";
 import { Namespace } from "./index.js";
-import { Clip, RawClip } from "./clip.js";
 
 export interface GettableProperties {
   arrangement_clips: RawClip[];

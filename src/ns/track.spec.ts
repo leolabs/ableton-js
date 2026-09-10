@@ -1,13 +1,13 @@
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { createAbleton, createTrack, gettablePropKeys } from "../util/tests.js";
 import { Color } from "../util/color.js";
+import { createAbleton, createTrack, gettablePropKeys } from "../util/tests.js";
 import { Clip } from "./clip.js";
 import { ClipSlot } from "./clip-slot.js";
 import { Device } from "./device.js";
 import { MixerDevice } from "./mixer-device.js";
 import { TakeLane } from "./take-lane.js";
-import { GettableProperties } from "./track.js";
+import type { GettableProperties } from "./track.js";
 
 const samplePath = resolve(
   import.meta.dirname,

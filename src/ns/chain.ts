@@ -1,10 +1,10 @@
-import { Ableton } from "../index.js";
-import { Namespace } from "./index.js";
-import { AnyDevice, RawDevice, wrapDevice } from "./device.js";
+import type { Ableton } from "../index.js";
 import {
   ChainMixerDevice,
-  RawChainMixerDevice,
+  type RawChainMixerDevice,
 } from "./chain-mixer-device.js";
+import { type AnyDevice, type RawDevice, wrapDevice } from "./device.js";
+import { Namespace } from "./index.js";
 
 export interface GettableProperties {
   color: number | null;

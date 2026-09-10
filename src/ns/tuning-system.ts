@@ -1,4 +1,4 @@
-import { Ableton } from "../index.js";
+import type { Ableton } from "../index.js";
 import { Namespace } from "./index.js";
 
 /** Note index within the pseudo-octave plus octave number. */

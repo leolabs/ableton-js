@@ -1,12 +1,12 @@
-import { Ableton } from "../index.js";
-import { Namespace } from "./index.js";
-import { Track, RawTrack } from "./track.js";
-import { CuePoint, RawCuePoint } from "./cue-point.js";
-import { SongView } from "./song-view.js";
-import { Scene, RawScene } from "./scene.js";
-import { RawDevice } from "./device.js";
+import type { Ableton } from "../index.js";
+import { CuePoint, type RawCuePoint } from "./cue-point.js";
+import type { RawDevice } from "./device.js";
 import { GroovePool } from "./groove-pool.js";
-import { TuningSystem, RawTuningSystem } from "./tuning-system.js";
+import { Namespace } from "./index.js";
+import { type RawScene, Scene } from "./scene.js";
+import { SongView } from "./song-view.js";
+import { type RawTrack, Track } from "./track.js";
+import { type RawTuningSystem, TuningSystem } from "./tuning-system.js";
 
 export interface GettableProperties {
   appointed_device: RawDevice;
