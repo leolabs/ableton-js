@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AbletonJS</title>
+  </head>
+  <body>
+    <h1>AbletonJS</h1>
+    <p>
+      Open the browser console to use the global <code>ableton</code> client.
+    </p>
+    <script type="module">
+      import { Ableton } from "./ableton.js";
+
+      const ableton = new Ableton({ logger: console });
+      window.ableton = ableton;
+      window.Ableton = Ableton;
+
+      const styles = [
+        "font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:600",
+        "color:inherit",
+      ];
+
+      console.log("Run %cawait ableton.start()%c to get started", ...styles);
+
+      ableton.once("connect", () => {
+        setTimeout(() => {
+          console.log(`%cYou're now connected to Live! 🎉`, "font-weight:600");
+          console.log(
+            `Try running %cawait ableton.song.get("tempo")%c to get a property`,
+            ...styles,
+          );
+          console.log(
+            `Or run %cawait ableton.song.addListener("is_playing", v => console.log("Playing:", v))%c to listen to changes on a property.`,
+            ...styles,
+          );
+        }, 10);
+      });
+    </script>
+  </body>
+</html>
