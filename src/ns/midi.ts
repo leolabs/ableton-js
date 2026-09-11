@@ -49,7 +49,7 @@ export class MidiMessage {
   constructor(raw: RawMidiMessage) {
     switch (raw.bytes.length) {
       case 0:
-        throw "bytes missing from midi message";
+        throw new Error("bytes missing from midi message");
       case 3:
         this.parameter1 = raw.bytes[1];
         this.parameter2 = raw.bytes[2];
@@ -60,10 +60,10 @@ export class MidiMessage {
       case 1:
         break;
       default:
-        throw `invalid midi message length: ${raw.bytes.length}`;
+        throw new Error(`invalid midi message length: ${raw.bytes.length}`);
     }
     if (!(raw.bytes[0] in MidiCommand)) {
-      throw `invalid midi command: ${raw.bytes[0]}`;
+      throw new Error(`invalid midi command: ${raw.bytes[0]}`);
     }
     this.command = raw.bytes[0];
   }
@@ -71,7 +71,7 @@ export class MidiMessage {
   /** Returns this message as a control-change payload, or throws if it is not CC. */
   toCC(): MidiCC {
     if (this.command !== MidiCommand.ControlChange) {
-      throw "not a midi CC message";
+      throw new Error("not a midi CC message");
     }
     return {
       command: this.command,
@@ -86,7 +86,7 @@ export class MidiMessage {
       this.command !== MidiCommand.NoteOn &&
       this.command !== MidiCommand.NoteOff
     ) {
-      throw "not a midi note message";
+      throw new Error("not a midi note message");
     }
     return {
       command: this.command,
