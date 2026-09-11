@@ -1,30 +1,30 @@
 var N = typeof globalThis < "u" ? globalThis : typeof window < "u" ? window : typeof global < "u" ? global : typeof self < "u" ? self : {};
-function Bt(n) {
+function Wt(n) {
   return n && n.__esModule && Object.prototype.hasOwnProperty.call(n, "default") ? n.default : n;
 }
-var Q, Me;
+var Q, He;
 function Rt() {
-  if (Me) return Q;
-  Me = 1;
+  if (He) return Q;
+  He = 1;
   var n = typeof N == "object" && N && N.Object === Object && N;
   return Q = n, Q;
 }
 var X, Be;
-function Wt() {
+function Gt() {
   if (Be) return X;
   Be = 1;
   var n = Rt(), e = typeof self == "object" && self && self.Object === Object && self, t = n || e || Function("return this")();
   return X = t, X;
 }
 var Y, We;
-function Ie() {
+function qe() {
   if (We) return Y;
   We = 1;
-  var n = Wt(), e = n.Symbol;
+  var n = Gt(), e = n.Symbol;
   return Y = e, Y;
 }
 var K, Ge;
-function Gt() {
+function $t() {
   if (Ge) return K;
   Ge = 1;
   function n(e, t) {
@@ -35,17 +35,17 @@ function Gt() {
   return K = n, K;
 }
 var Z, $e;
-function $t() {
+function Vt() {
   if ($e) return Z;
   $e = 1;
   var n = Array.isArray;
   return Z = n, Z;
 }
 var ee, Ve;
-function Vt() {
+function Jt() {
   if (Ve) return ee;
   Ve = 1;
-  var n = Ie(), e = Object.prototype, t = e.hasOwnProperty, s = e.toString, i = n ? n.toStringTag : void 0;
+  var n = qe(), e = Object.prototype, t = e.hasOwnProperty, s = e.toString, i = n ? n.toStringTag : void 0;
   function r(a) {
     var o = t.call(a, i), h = a[i];
     try {
@@ -59,7 +59,7 @@ function Vt() {
   return ee = r, ee;
 }
 var te, Je;
-function Jt() {
+function Qt() {
   if (Je) return te;
   Je = 1;
   var n = Object.prototype, e = n.toString;
@@ -72,7 +72,7 @@ var se, Qe;
 function zt() {
   if (Qe) return se;
   Qe = 1;
-  var n = Ie(), e = Vt(), t = Jt(), s = "[object Null]", i = "[object Undefined]", r = n ? n.toStringTag : void 0;
+  var n = qe(), e = Jt(), t = Qt(), s = "[object Null]", i = "[object Undefined]", r = n ? n.toStringTag : void 0;
   function a(o) {
     return o == null ? o === void 0 ? i : s : r && r in Object(o) ? e(o) : t(o);
   }
@@ -101,7 +101,7 @@ var re, Ke;
 function Ot() {
   if (Ke) return re;
   Ke = 1;
-  var n = Ie(), e = Gt(), t = $t(), s = Ft(), i = n ? n.prototype : void 0, r = i ? i.toString : void 0;
+  var n = qe(), e = $t(), t = Vt(), s = Ft(), i = n ? n.prototype : void 0, r = i ? i.toString : void 0;
   function a(o) {
     if (typeof o == "string")
       return o;
@@ -115,7 +115,7 @@ function Ot() {
   return re = a, re;
 }
 var ae, Ze;
-function Qt() {
+function Xt() {
   if (Ze) return ae;
   Ze = 1;
   function n(e, t, s) {
@@ -128,10 +128,10 @@ function Qt() {
   return ae = n, ae;
 }
 var oe, et;
-function Xt() {
+function Yt() {
   if (et) return oe;
   et = 1;
-  var n = Qt();
+  var n = Xt();
   function e(t, s, i) {
     var r = t.length;
     return i = i === void 0 ? r : i, !s && i >= r ? t : n(t, s, i);
@@ -149,7 +149,7 @@ function je() {
   return ce = h, ce;
 }
 var he, st;
-function qt() {
+function It() {
   if (st) return he;
   st = 1;
   function n(e) {
@@ -159,7 +159,7 @@ function qt() {
   return he = n, he;
 }
 var ue, nt;
-function Yt() {
+function Kt() {
   if (nt) return ue;
   nt = 1;
   var n = zt(), e = Pt(), t = "[object RegExp]";
@@ -169,7 +169,7 @@ function Yt() {
   return ue = s, ue;
 }
 var le, it;
-function Kt() {
+function Zt() {
   if (it) return le;
   it = 1;
   function n(e) {
@@ -182,7 +182,7 @@ function Kt() {
 var D = { exports: {} };
 D.exports;
 var rt;
-function Zt() {
+function es() {
   return rt || (rt = 1, (function(n, e) {
     var t = Rt(), s = e && !e.nodeType && e, i = s && !0 && n && !n.nodeType && n, r = i && i.exports === s, a = r && t.process, o = (function() {
       try {
@@ -195,14 +195,14 @@ function Zt() {
   })(D, D.exports)), D.exports;
 }
 var de, at;
-function es() {
+function ts() {
   if (at) return de;
   at = 1;
-  var n = Yt(), e = Kt(), t = Zt(), s = t && t.isRegExp, i = s ? e(s) : n;
+  var n = Kt(), e = Zt(), t = es(), s = t && t.isRegExp, i = s ? e(s) : n;
   return de = i, de;
 }
 var fe, ot;
-function ts() {
+function ss() {
   if (ot) return fe;
   ot = 1;
   function n(e) {
@@ -213,14 +213,14 @@ function ts() {
   return fe = n, fe;
 }
 var me, ct;
-function ss() {
+function ns() {
   if (ct) return me;
   ct = 1;
-  var n = ts(), e = n("length");
+  var n = ss(), e = n("length");
   return me = e, me;
 }
 var pe, ht;
-function ns() {
+function is() {
   if (ht) return pe;
   ht = 1;
   var n = "\\ud800-\\udfff", e = "\\u0300-\\u036f", t = "\\ufe20-\\ufe2f", s = "\\u20d0-\\u20ff", i = e + t + s, r = "\\ufe0e\\ufe0f", a = "[" + n + "]", o = "[" + i + "]", h = "\\ud83c[\\udffb-\\udfff]", c = "(?:" + o + "|" + h + ")", l = "[^" + n + "]", u = "(?:\\ud83c[\\udde6-\\uddff]){2}", d = "[\\ud800-\\udbff][\\udc00-\\udfff]", f = "\\u200d", m = c + "?", g = "[" + r + "]?", p = "(?:" + f + "(?:" + [l, u, d].join("|") + ")" + g + m + ")*", v = g + m + p, C = "(?:" + [l + o + "?", o, u, d, a].join("|") + ")", w = RegExp(h + "(?=" + h + ")|" + C + v, "g");
@@ -232,17 +232,17 @@ function ns() {
   return pe = y, pe;
 }
 var ge, ut;
-function is() {
+function rs() {
   if (ut) return ge;
   ut = 1;
-  var n = ss(), e = je(), t = ns();
+  var n = ns(), e = je(), t = is();
   function s(i) {
     return e(i) ? t(i) : n(i);
   }
   return ge = s, ge;
 }
 var _e, lt;
-function rs() {
+function as() {
   if (lt) return _e;
   lt = 1;
   function n(e) {
@@ -251,7 +251,7 @@ function rs() {
   return _e = n, _e;
 }
 var ye, dt;
-function as() {
+function os() {
   if (dt) return ye;
   dt = 1;
   var n = "\\ud800-\\udfff", e = "\\u0300-\\u036f", t = "\\ufe20-\\ufe2f", s = "\\u20d0-\\u20ff", i = e + t + s, r = "\\ufe0e\\ufe0f", a = "[" + n + "]", o = "[" + i + "]", h = "\\ud83c[\\udffb-\\udfff]", c = "(?:" + o + "|" + h + ")", l = "[^" + n + "]", u = "(?:\\ud83c[\\udde6-\\uddff]){2}", d = "[\\ud800-\\udbff][\\udc00-\\udfff]", f = "\\u200d", m = c + "?", g = "[" + r + "]?", p = "(?:" + f + "(?:" + [l, u, d].join("|") + ")" + g + m + ")*", v = g + m + p, C = "(?:" + [l + o + "?", o, u, d, a].join("|") + ")", w = RegExp(h + "(?=" + h + ")|" + C + v, "g");
@@ -261,17 +261,17 @@ function as() {
   return ye = y, ye;
 }
 var ve, ft;
-function os() {
+function cs() {
   if (ft) return ve;
   ft = 1;
-  var n = rs(), e = je(), t = as();
+  var n = as(), e = je(), t = os();
   function s(i) {
     return e(i) ? t(i) : n(i);
   }
   return ve = s, ve;
 }
 var we, mt;
-function cs() {
+function hs() {
   if (mt) return we;
   mt = 1;
   var n = /\s/;
@@ -283,20 +283,20 @@ function cs() {
   return we = e, we;
 }
 var be, pt;
-function hs() {
+function us() {
   if (pt) return be;
   pt = 1;
-  var n = cs(), e = /^\s+/;
+  var n = hs(), e = /^\s+/;
   function t(s) {
     return s && s.slice(0, n(s) + 1).replace(e, "");
   }
   return be = t, be;
 }
 var Se, gt;
-function us() {
+function ls() {
   if (gt) return Se;
   gt = 1;
-  var n = hs(), e = qt(), t = Ft(), s = NaN, i = /^[-+]0x[0-9a-f]+$/i, r = /^0b[01]+$/i, a = /^0o[0-7]+$/i, o = parseInt;
+  var n = us(), e = It(), t = Ft(), s = NaN, i = /^[-+]0x[0-9a-f]+$/i, r = /^0b[01]+$/i, a = /^0o[0-7]+$/i, o = parseInt;
   function h(c) {
     if (typeof c == "number")
       return c;
@@ -315,10 +315,10 @@ function us() {
   return Se = h, Se;
 }
 var Ce, _t;
-function ls() {
+function ds() {
   if (_t) return Ce;
   _t = 1;
-  var n = us(), e = 1 / 0, t = 17976931348623157e292;
+  var n = ls(), e = 1 / 0, t = 17976931348623157e292;
   function s(i) {
     if (!i)
       return i === 0 ? i : 0;
@@ -331,10 +331,10 @@ function ls() {
   return Ce = s, Ce;
 }
 var xe, yt;
-function ds() {
+function fs() {
   if (yt) return xe;
   yt = 1;
-  var n = ls();
+  var n = ds();
   function e(t) {
     var s = n(t), i = s % 1;
     return s === s ? i ? s - i : s : 0;
@@ -342,7 +342,7 @@ function ds() {
   return xe = e, xe;
 }
 var Te, vt;
-function fs() {
+function ms() {
   if (vt) return Te;
   vt = 1;
   var n = Ot();
@@ -352,10 +352,10 @@ function fs() {
   return Te = e, Te;
 }
 var Ae, wt;
-function ms() {
+function ps() {
   if (wt) return Ae;
   wt = 1;
-  var n = Ot(), e = Xt(), t = je(), s = qt(), i = es(), r = is(), a = os(), o = ds(), h = fs(), c = 30, l = "...", u = /\w*$/;
+  var n = Ot(), e = Yt(), t = je(), s = It(), i = ts(), r = rs(), a = cs(), o = fs(), h = ms(), c = 30, l = "...", u = /\w*$/;
   function d(f, m) {
     var g = c, p = l;
     if (s(m)) {
@@ -391,10 +391,10 @@ function ms() {
   }
   return Ae = d, Ae;
 }
-var ps = ms();
-const gs = /* @__PURE__ */ Bt(ps), j = typeof performance == "object" && performance && typeof performance.now == "function" ? performance : Date, _s = typeof AbortController == "function", H = _s ? AbortController : class {
+var gs = ps();
+const _s = /* @__PURE__ */ Wt(gs), j = typeof performance == "object" && performance && typeof performance.now == "function" ? performance : Date, ys = typeof AbortController == "function", M = ys ? AbortController : class {
   constructor() {
-    this.signal = new It();
+    this.signal = new qt();
   }
   abort(e = new Error("This operation was aborted")) {
     this.signal.reason = this.signal.reason || e, this.signal.aborted = !0, this.signal.dispatchEvent({
@@ -402,7 +402,7 @@ const gs = /* @__PURE__ */ Bt(ps), j = typeof performance == "object" && perform
       target: this.signal
     });
   }
-}, ys = typeof AbortSignal == "function", vs = typeof H.AbortSignal == "function", It = ys ? AbortSignal : vs ? H.AbortController : class {
+}, vs = typeof AbortSignal == "function", ws = typeof M.AbortSignal == "function", qt = vs ? AbortSignal : ws ? M.AbortController : class {
   constructor() {
     this.reason = void 0, this.aborted = !1, this._listeners = [];
   }
@@ -426,7 +426,7 @@ const gs = /* @__PURE__ */ Bt(ps), j = typeof performance == "object" && perform
     const { prototype: s } = O, { get: i } = Object.getOwnPropertyDescriptor(s, n);
     Ne(t, `${n} method`, `cache.${e}()`, i);
   }
-}, ws = (n, e) => {
+}, bs = (n, e) => {
   const t = `LRU_CACHE_PROPERTY_${n}`;
   if (W(t)) {
     const { prototype: s } = O, { get: i } = Object.getOwnPropertyDescriptor(s, n);
@@ -444,7 +444,7 @@ class U extends Array {
     super(e), this.fill(0);
   }
 }
-class bs {
+class Ss {
   constructor(e) {
     if (e === 0)
       return [];
@@ -504,7 +504,7 @@ class O {
       throw new TypeError(
         "cannot set fetchContext without fetchMethod"
       );
-    if (this.keyMap = /* @__PURE__ */ new Map(), this.keyList = new Array(t).fill(null), this.valList = new Array(t).fill(null), this.next = new V(t), this.prev = new V(t), this.head = 0, this.tail = 0, this.free = new bs(t), this.initialFill = 1, this.size = 0, typeof c == "function" && (this.dispose = c), typeof l == "function" ? (this.disposeAfter = l, this.disposed = []) : (this.disposeAfter = null, this.disposed = null), this.noDisposeOnSet = !!u, this.noUpdateTTL = !!d, this.noDeleteOnFetchRejection = !!C, this.allowStaleOnFetchRejection = !!y, this.allowStaleOnFetchAbort = !!S, this.ignoreFetchAbort = !!x, this.maxEntrySize !== 0) {
+    if (this.keyMap = /* @__PURE__ */ new Map(), this.keyList = new Array(t).fill(null), this.valList = new Array(t).fill(null), this.next = new V(t), this.prev = new V(t), this.head = 0, this.tail = 0, this.free = new Ss(t), this.initialFill = 1, this.size = 0, typeof c == "function" && (this.dispose = c), typeof l == "function" ? (this.disposeAfter = l, this.disposed = []) : (this.disposeAfter = null, this.disposed = null), this.noDisposeOnSet = !!u, this.noUpdateTTL = !!d, this.noDeleteOnFetchRejection = !!C, this.allowStaleOnFetchRejection = !!y, this.allowStaleOnFetchAbort = !!S, this.ignoreFetchAbort = !!x, this.maxEntrySize !== 0) {
       if (this.maxSize !== 0 && !z(this.maxSize))
         throw new TypeError(
           "maxSize must be a positive integer if specified"
@@ -772,7 +772,7 @@ class O {
     const r = t === void 0 ? void 0 : this.valList[t];
     if (this.isBackgroundFetch(r))
       return r;
-    const a = new H();
+    const a = new M();
     s.signal && s.signal.addEventListener(
       "abort",
       () => a.abort(s.signal.reason)
@@ -925,23 +925,23 @@ class O {
     return Le("reset", "clear"), this.clear;
   }
   get length() {
-    return ws("length", "size"), this.size;
+    return bs("length", "size"), this.size;
   }
   static get AbortController() {
-    return H;
+    return M;
   }
   static get AbortSignal() {
-    return It;
+    return qt;
   }
 }
-class Ss {
+class Cs {
   value;
   next;
   constructor(e) {
     this.value = e;
   }
 }
-class Cs {
+class xs {
   #e;
   #t;
   #s;
@@ -949,7 +949,7 @@ class Cs {
     this.clear();
   }
   enqueue(e) {
-    const t = new Ss(e);
+    const t = new Cs(e);
     this.#e ? (this.#t.next = t, this.#t = t) : (this.#e = t, this.#t = t), this.#s++;
   }
   dequeue() {
@@ -977,9 +977,9 @@ class Cs {
       yield this.dequeue();
   }
 }
-function xs(n) {
+function Ts(n) {
   bt(n);
-  const e = new Cs();
+  const e = new xs();
   let t = 0;
   const s = () => {
     t < n && e.size > 0 && (t++, e.dequeue()());
@@ -1122,7 +1122,7 @@ class _ {
     });
   }
 }
-class Ts extends _ {
+class As extends _ {
   constructor(e) {
     super(e, "application-view");
   }
@@ -1173,10 +1173,10 @@ class Ts extends _ {
     });
   }
 }
-class M extends _ {
+class H extends _ {
   constructor(e, t) {
     super(e, "browser-item", t.id), this.raw = t, this.transformers = {
-      children: (s) => s.map((i) => new M(e, i))
+      children: (s) => s.map((i) => new H(e, i))
     }, this.cachedProps = {
       children: !0,
       is_device: !0,
@@ -1189,10 +1189,10 @@ class M extends _ {
     };
   }
 }
-class As extends _ {
+class Es extends _ {
   constructor(e) {
     super(e, "browser");
-    const t = (s) => s.map((i) => new M(e, i));
+    const t = (s) => s.map((i) => new H(e, i));
     this.transformers = {
       audio_effects: t,
       clips: t,
@@ -1209,7 +1209,7 @@ class As extends _ {
       sounds: t,
       user_library: t,
       user_folders: t,
-      hotswap_target: (s) => new M(e, s)
+      hotswap_target: (s) => new H(e, s)
     }, this.cachedProps = {
       audio_effects: !0,
       clips: !0,
@@ -1253,14 +1253,14 @@ class As extends _ {
     return this.sendCommand("stop_preview");
   }
 }
-class Es extends _ {
+class Ls extends _ {
   constructor(e) {
     super(e, "application"), this.cachedProps = {
       unavailable_features: !0
     };
   }
-  browser = new As(this.ableton);
-  view = new Ts(this.ableton);
+  browser = new Es(this.ableton);
+  view = new As(this.ableton);
   /** Returns true if the given entry exists in Options.txt. */
   async hasOption(e) {
     return this.sendCommand("has_option", [e]);
@@ -1293,8 +1293,8 @@ class Es extends _ {
     );
   }
 }
-const ze = "5.0.0-4";
-class Ls extends _ {
+const ze = "5.0.0";
+class ks extends _ {
   constructor(e) {
     super(e, "internal");
   }
@@ -1304,14 +1304,14 @@ class Ls extends _ {
   }
 }
 var Nt = /* @__PURE__ */ ((n) => (n[n.NoteOn = 128] = "NoteOn", n[n.NoteOff = 144] = "NoteOff", n[n.AfterTouch = 160] = "AfterTouch", n[n.ControlChange = 176] = "ControlChange", n[n.PatchChange = 192] = "PatchChange", n[n.ChannelPressure = 208] = "ChannelPressure", n[n.PitchBend = 224] = "PitchBend", n[n.SysExStart = 240] = "SysExStart", n[n.MidiTimeCodeQuarterFrame = 241] = "MidiTimeCodeQuarterFrame", n[n.SongPositionPointer = 242] = "SongPositionPointer", n[n.SongSelect = 243] = "SongSelect", n[n.TuneRequest = 246] = "TuneRequest", n[n.SysExEnd = 247] = "SysExEnd", n[n.TimingClock = 248] = "TimingClock", n[n.Start = 250] = "Start", n[n.Continue = 251] = "Continue", n[n.Stop = 252] = "Stop", n[n.ActiveSensing = 254] = "ActiveSensing", n[n.SystemReset = 255] = "SystemReset", n))(Nt || {});
-class ks {
+class Rs {
   command;
   parameter1 = null;
   parameter2 = null;
   constructor(e) {
     switch (e.bytes.length) {
       case 0:
-        throw "bytes missing from midi message";
+        throw new Error("bytes missing from midi message");
       case 3:
         this.parameter1 = e.bytes[1], this.parameter2 = e.bytes[2];
         break;
@@ -1321,16 +1321,16 @@ class ks {
       case 1:
         break;
       default:
-        throw "invalid midi message length: " + e.bytes.length;
+        throw new Error(`invalid midi message length: ${e.bytes.length}`);
     }
     if (!(e.bytes[0] in Nt))
-      throw "invalid midi command: " + e.bytes[0];
+      throw new Error(`invalid midi command: ${e.bytes[0]}`);
     this.command = e.bytes[0];
   }
   /** Returns this message as a control-change payload, or throws if it is not CC. */
   toCC() {
     if (this.command !== 176)
-      throw "not a midi CC message";
+      throw new Error("not a midi CC message");
     return {
       command: this.command,
       controller: this.parameter1,
@@ -1340,7 +1340,7 @@ class ks {
   /** Returns this message as a note payload, or throws if it is not note on/off. */
   toNote() {
     if (this.command !== 128 && this.command !== 144)
-      throw "not a midi note message";
+      throw new Error("not a midi note message");
     return {
       command: this.command,
       key: this.parameter1,
@@ -1348,14 +1348,14 @@ class ks {
     };
   }
 }
-class Rs extends _ {
+class zs extends _ {
   constructor(e) {
     super(e, "midi"), this.transformers = {
-      midi: (t) => new ks(t)
+      midi: (t) => new Rs(t)
     };
   }
 }
-class zs extends _ {
+class Ps extends _ {
   constructor(e) {
     super(e, "session", void 0);
   }
@@ -1371,7 +1371,7 @@ class zs extends _ {
     });
   }
 }
-class Ps extends _ {
+class Fs extends _ {
   constructor(e, t) {
     super(e, "cue-point", t.id), this.raw = t;
   }
@@ -1383,15 +1383,356 @@ class Ps extends _ {
     return this.sendCommand("jump");
   }
 }
-class Fs extends _ {
+class b extends _ {
+  constructor(e, t) {
+    super(e, "device-parameter", t.id), this.raw = t;
+  }
+}
+class Ut extends _ {
+  constructor(e, t) {
+    super(e, "chain-mixer-device", t.id), this.raw = t, this.transformers = {
+      chain_activator: (s) => new b(e, s),
+      panning: (s) => s ? new b(e, s) : null,
+      sends: (s) => s.map((i) => new b(e, i)),
+      volume: (s) => s ? new b(e, s) : null
+    };
+  }
+}
+class P extends _ {
+  constructor(e, t) {
+    super(e, "chain", t.id), this.raw = t, this.transformers = {
+      devices: (s) => s.map((i) => I(e, i)),
+      mixer_device: (s) => new Ut(e, s)
+    }, this.cachedProps = {
+      devices: !0,
+      mixer_device: !0
+    };
+  }
+  /**
+   * Deletes a device identified by its index in this chain's `devices` list.
+   */
+  async deleteDevice(e) {
+    return this.sendCommand("delete_device", { index: e });
+  }
+  /** Duplicates the device at `index` in this chain. */
+  async duplicateDevice(e) {
+    return this.sendCommand("duplicate_device", { index: e });
+  }
+  /**
+   * Inserts a native Live device by UI name at `deviceIndex` (-1 = end).
+   * Available since Live 12.3.
+   */
+  async insertDevice(e, t = -1) {
+    const s = await this.sendCommand("insert_device", {
+      device_name: e,
+      device_index: t
+    });
+    return I(this.ableton, s);
+  }
+}
+class Ue extends _ {
+  constructor(e, t) {
+    super(e, "device-view", t);
+  }
+}
+class Mt extends _ {
+  constructor(e, t) {
+    super(e, "drum-chain", t.id), this.raw = t, this.transformers = {
+      devices: (s) => s.map((i) => I(e, i)),
+      mixer_device: (s) => new Ut(e, s)
+    }, this.cachedProps = {
+      devices: !0,
+      mixer_device: !0
+    };
+  }
+  /**
+   * Deletes a device identified by its index in this chain's `devices` list.
+   */
+  async deleteDevice(e) {
+    return this.sendCommand("delete_device", { index: e });
+  }
+  /** Duplicates the device at `index` in this chain. */
+  async duplicateDevice(e) {
+    return this.sendCommand("duplicate_device", { index: e });
+  }
+  /**
+   * Inserts a native Live device by UI name at `deviceIndex` (-1 = end).
+   * Available since Live 12.3.
+   */
+  async insertDevice(e, t = -1) {
+    const s = await this.sendCommand("insert_device", {
+      device_name: e,
+      device_index: t
+    });
+    return I(this.ableton, s);
+  }
+}
+function Pe(n, e) {
+  return e.is_drum_chain ? new Mt(n, e) : new P(n, e);
+}
+class q extends _ {
+  constructor(e, t) {
+    super(e, "drum-pad", t.id), this.raw = t, this.transformers = {
+      chains: (s) => s.map((i) => new Mt(e, i))
+    }, this.cachedProps = {
+      chains: !0
+    };
+  }
+  /** Deletes all chains on this pad (same as clearing a drum rack pad in Live). */
+  async deleteAllChains() {
+    return this.sendCommand("delete_all_chains");
+  }
+}
+const Os = "Looper";
+class Is extends _ {
+  constructor(e, t) {
+    super(e, "looper-device", t.id), this.raw = t, this.view = new Ue(e, t.id), this.transformers = {
+      chains: (s) => s.map((i) => new P(e, i)),
+      drum_pads: (s) => s.map((i) => new q(e, i)),
+      parameters: (s) => s.map((i) => new b(e, i)),
+      return_chains: (s) => s.map((i) => new P(e, i))
+    }, this.cachedProps = {
+      chains: !0,
+      drum_pads: !0,
+      parameters: !0,
+      return_chains: !0
+    };
+  }
+  view;
+  /** Erases Looper's recorded content. */
+  async clear() {
+    return this.sendCommand("clear");
+  }
+  /** Doubles the length of Looper's buffer. */
+  async doubleLength() {
+    return this.sendCommand("double_length");
+  }
+  /** Doubles the speed of Looper's playback. */
+  async doubleSpeed() {
+    return this.sendCommand("double_speed");
+  }
+  /** Exports Looper's content to a Session Clip Slot. */
+  async exportToClipSlot(e) {
+    return this.sendCommand("export_to_clip_slot", {
+      slot_id: typeof e == "string" ? e : e.raw.id
+    });
+  }
+  /** Halves the length of Looper's buffer. */
+  async halfLength() {
+    return this.sendCommand("half_length");
+  }
+  /** Halves the speed of Looper's playback. */
+  async halfSpeed() {
+    return this.sendCommand("half_speed");
+  }
+  /** Plays back while adding additional layers of incoming audio. */
+  async overdub() {
+    return this.sendCommand("overdub");
+  }
+  /** Plays back without overdubbing. */
+  async play() {
+    return this.sendCommand("play");
+  }
+  /** Records incoming audio. */
+  async record() {
+    return this.sendCommand("record");
+  }
+  /**
+   * Saves the current state of the device to the compare AB slot.
+   * Only relevant if `can_compare_ab`, otherwise throws.
+   */
+  async savePresetToCompareAbSlot() {
+    return this.sendCommand("save_preset_to_compare_ab_slot");
+  }
+  /** Stops Looper's playback. */
+  async stop() {
+    return this.sendCommand("stop");
+  }
+  /** Sets the selected bank in the device for persistency. */
+  async storeChosenBank(e, t) {
+    return this.sendCommand("store_chosen_bank", [e, t]);
+  }
+  /**
+   * Erases everything that was recorded since the last time Overdub was enabled.
+   * Calling a second time will restore the material erased by the previous undo
+   * operation.
+   */
+  async undo() {
+    return this.sendCommand("undo");
+  }
+}
+const qs = "PluginDevice";
+class js extends _ {
+  constructor(e, t) {
+    super(e, "plugin-device", t.id), this.raw = t, this.view = new Ue(e, t.id), this.transformers = {
+      chains: (s) => s.map((i) => new P(e, i)),
+      drum_pads: (s) => s.map((i) => new q(e, i)),
+      parameters: (s) => s.map((i) => new b(e, i)),
+      return_chains: (s) => s.map((i) => new P(e, i))
+    }, this.cachedProps = {
+      chains: !0,
+      drum_pads: !0,
+      parameters: !0,
+      return_chains: !0
+    };
+  }
+  view;
+  /**
+   * Gets the range of plugin parameter names, bound by begin and end.
+   * If end is smaller than 0 it is interpreted as the parameter count.
+   */
+  async getParameterNames(e = 0, t = -1) {
+    return this.sendCommand("get_parameter_names", { begin: e, end: t });
+  }
+  /**
+   * Saves the current state of the device to the compare AB slot.
+   * Only relevant if `can_compare_ab`, otherwise throws.
+   */
+  async savePresetToCompareAbSlot() {
+    return this.sendCommand("save_preset_to_compare_ab_slot");
+  }
+  /** Sets the selected bank in the device for persistency. */
+  async storeChosenBank(e, t) {
+    return this.sendCommand("store_chosen_bank", [e, t]);
+  }
+}
+class Ds extends _ {
+  constructor(e, t) {
+    super(e, "rack-device-view", t), this.transformers = {
+      selected_chain: (s) => s ? Pe(e, s) : null,
+      selected_drum_pad: (s) => s ? new q(e, s) : null
+    }, this.cachedProps = {
+      selected_chain: !0,
+      selected_drum_pad: !0
+    };
+  }
+}
+const Ns = [
+  "InstrumentGroupDevice",
+  "DrumGroupDevice",
+  "AudioEffectGroupDevice",
+  "MidiEffectGroupDevice"
+];
+class Us extends _ {
+  constructor(e, t) {
+    super(e, "rack-device", t.id), this.raw = t, this.view = new Ds(e, t.id), this.transformers = {
+      chain_selector: (s) => s ? new b(e, s) : null,
+      chains: (s) => s.map((i) => Pe(e, i)),
+      drum_pads: (s) => s.map((i) => new q(e, i)),
+      parameters: (s) => s.map((i) => new b(e, i)),
+      return_chains: (s) => s.map((i) => new P(e, i)),
+      visible_drum_pads: (s) => s.map((i) => new q(e, i))
+    }, this.cachedProps = {
+      chain_selector: !0,
+      chains: !0,
+      drum_pads: !0,
+      parameters: !0,
+      return_chains: !0,
+      visible_drum_pads: !0
+    };
+  }
+  view;
+  /** Increases the number of visible macro controls in the rack. */
+  async addMacro() {
+    return this.sendCommand("add_macro");
+  }
+  /**
+   * Copies all contents of a drum pad from a source pad into a destination pad.
+   * Indices are note numbers (0–127). Throws if the source pad is empty or
+   * indices are out of range.
+   */
+  async copyPad(e, t) {
+    return this.sendCommand("copy_pad", {
+      source_index: e,
+      destination_index: t
+    });
+  }
+  /** Deletes the currently selected macro variation. */
+  async deleteSelectedVariation() {
+    return this.sendCommand("delete_selected_variation");
+  }
+  /**
+   * Inserts a new chain at `index`, or at the end when `index` is `-1`
+   * (default).
+   */
+  async insertChain(e = -1) {
+    const t = await this.sendCommand("insert_chain", { index: e });
+    return Pe(this.ableton, t);
+  }
+  /** Randomizes values for all macro controls not excluded from randomization. */
+  async randomizeMacros() {
+    return this.sendCommand("randomize_macros");
+  }
+  /** Recalls the macro variation that was recalled most recently. */
+  async recallLastUsedVariation() {
+    return this.sendCommand("recall_last_used_variation");
+  }
+  /** Recalls the currently selected macro variation. */
+  async recallSelectedVariation() {
+    return this.sendCommand("recall_selected_variation");
+  }
+  /** Decreases the number of visible macro controls in the rack. */
+  async removeMacro() {
+    return this.sendCommand("remove_macro");
+  }
+  /**
+   * Saves the current state of the device to the compare AB slot.
+   * Only relevant if `can_compare_ab`, otherwise throws.
+   */
+  async savePresetToCompareAbSlot() {
+    return this.sendCommand("save_preset_to_compare_ab_slot");
+  }
+  /** Sets the selected bank in the device for persistency. */
+  async storeChosenBank(e, t) {
+    return this.sendCommand("store_chosen_bank", [e, t]);
+  }
+  /** Stores a new variation of the values of all currently mapped macros. */
+  async storeVariation() {
+    return this.sendCommand("store_variation");
+  }
+}
+function Ms(n) {
+  return Ns.includes(n);
+}
+function I(n, e) {
+  return e.class_name === Os ? new Is(n, e) : e.class_name === qs ? new js(n, e) : Ms(e.class_name) ? new Us(n, e) : new Ht(n, e);
+}
+class Ht extends _ {
+  constructor(e, t) {
+    super(e, "device", t.id), this.raw = t, this.view = new Ue(e, t.id), this.transformers = {
+      chains: (s) => s.map((i) => new P(e, i)),
+      drum_pads: (s) => s.map((i) => new q(e, i)),
+      parameters: (s) => s.map((i) => new b(e, i)),
+      return_chains: (s) => s.map((i) => new P(e, i))
+    }, this.cachedProps = {
+      chains: !0,
+      drum_pads: !0,
+      parameters: !0,
+      return_chains: !0
+    };
+  }
+  view;
+  /**
+   * Saves the current state of the device to the compare AB slot.
+   * Only relevant if `can_compare_ab`, otherwise throws.
+   */
+  async savePresetToCompareAbSlot() {
+    return this.sendCommand("save_preset_to_compare_ab_slot");
+  }
+  /** Sets the selected bank in the device for persistency. */
+  async storeChosenBank(e, t) {
+    return this.sendCommand("store_chosen_bank", [e, t]);
+  }
+}
+class Hs extends _ {
   constructor(e, t) {
     super(e, "groove", t.id), this.raw = t;
   }
 }
-class Os extends _ {
+class Bs extends _ {
   constructor(e) {
     super(e, "groove-pool"), this.transformers = {
-      grooves: (t) => t.map((s) => new Fs(e, s))
+      grooves: (t) => t.map((s) => new Hs(e, s))
     }, this.cachedProps = {
       grooves: !0
     };
@@ -1405,7 +1746,7 @@ class G {
     else if (e.length === 6 || e.length === 7)
       this.color = e.replace("#", "");
     else
-      throw new Error("Color " + e + " is not in a valid format");
+      throw new Error(`Color ${e} is not in a valid format`);
   }
   get hex() {
     return `#${this.color}`;
@@ -1440,11 +1781,6 @@ const ke = (n) => ({
   n.velocity,
   n.muted
 ];
-class b extends _ {
-  constructor(e, t) {
-    super(e, "device-parameter", t.id), this.raw = t;
-  }
-}
 class Ct extends _ {
   constructor(e, t) {
     super(e, "envelope", t.id), this.raw = t, this.transformers = {
@@ -1749,7 +2085,7 @@ class E extends _ {
     return this.sendCommand("stop_scrub");
   }
 }
-class Ue extends _ {
+class Me extends _ {
   constructor(e, t) {
     super(e, "clip_slot", t.id), this.raw = t, this.transformers = {
       clip: (s) => s ? new E(e, s) : null,
@@ -1804,11 +2140,11 @@ class Ue extends _ {
     return this.sendCommand("stop");
   }
 }
-class Pe extends _ {
+class Fe extends _ {
   constructor(e, t) {
     super(e, "scene", t.id), this.raw = t, this.transformers = {
       color: (s) => new G(s),
-      clip_slots: (s) => s.map((i) => new Ue(this.ableton, i))
+      clip_slots: (s) => s.map((i) => new Me(this.ableton, i))
     }, this.cachedProps = {
       clip_slots: !0
     };
@@ -1819,342 +2155,6 @@ class Pe extends _ {
    */
   async fire() {
     return this.sendCommand("fire");
-  }
-}
-class Ut extends _ {
-  constructor(e, t) {
-    super(e, "chain-mixer-device", t.id), this.raw = t, this.transformers = {
-      chain_activator: (s) => new b(e, s),
-      panning: (s) => s ? new b(e, s) : null,
-      sends: (s) => s.map((i) => new b(e, i)),
-      volume: (s) => s ? new b(e, s) : null
-    };
-  }
-}
-class P extends _ {
-  constructor(e, t) {
-    super(e, "chain", t.id), this.raw = t, this.transformers = {
-      devices: (s) => s.map((i) => q(e, i)),
-      mixer_device: (s) => new Ut(e, s)
-    }, this.cachedProps = {
-      devices: !0,
-      mixer_device: !0
-    };
-  }
-  /**
-   * Deletes a device identified by its index in this chain's `devices` list.
-   */
-  async deleteDevice(e) {
-    return this.sendCommand("delete_device", { index: e });
-  }
-  /** Duplicates the device at `index` in this chain. */
-  async duplicateDevice(e) {
-    return this.sendCommand("duplicate_device", { index: e });
-  }
-  /**
-   * Inserts a native Live device by UI name at `deviceIndex` (-1 = end).
-   * Available since Live 12.3.
-   */
-  async insertDevice(e, t = -1) {
-    const s = await this.sendCommand("insert_device", {
-      device_name: e,
-      device_index: t
-    });
-    return q(this.ableton, s);
-  }
-}
-class He extends _ {
-  constructor(e, t) {
-    super(e, "device-view", t);
-  }
-}
-class Ht extends _ {
-  constructor(e, t) {
-    super(e, "drum-chain", t.id), this.raw = t, this.transformers = {
-      devices: (s) => s.map((i) => q(e, i)),
-      mixer_device: (s) => new Ut(e, s)
-    }, this.cachedProps = {
-      devices: !0,
-      mixer_device: !0
-    };
-  }
-  /**
-   * Deletes a device identified by its index in this chain's `devices` list.
-   */
-  async deleteDevice(e) {
-    return this.sendCommand("delete_device", { index: e });
-  }
-  /** Duplicates the device at `index` in this chain. */
-  async duplicateDevice(e) {
-    return this.sendCommand("duplicate_device", { index: e });
-  }
-  /**
-   * Inserts a native Live device by UI name at `deviceIndex` (-1 = end).
-   * Available since Live 12.3.
-   */
-  async insertDevice(e, t = -1) {
-    const s = await this.sendCommand("insert_device", {
-      device_name: e,
-      device_index: t
-    });
-    return q(this.ableton, s);
-  }
-}
-function Fe(n, e) {
-  return e.is_drum_chain ? new Ht(n, e) : new P(n, e);
-}
-class I extends _ {
-  constructor(e, t) {
-    super(e, "drum-pad", t.id), this.raw = t, this.transformers = {
-      chains: (s) => s.map((i) => new Ht(e, i))
-    }, this.cachedProps = {
-      chains: !0
-    };
-  }
-  /** Deletes all chains on this pad (same as clearing a drum rack pad in Live). */
-  async deleteAllChains() {
-    return this.sendCommand("delete_all_chains");
-  }
-}
-const qs = "Looper";
-class Is extends _ {
-  constructor(e, t) {
-    super(e, "looper-device", t.id), this.raw = t, this.view = new He(e, t.id), this.transformers = {
-      chains: (s) => s.map((i) => new P(e, i)),
-      drum_pads: (s) => s.map((i) => new I(e, i)),
-      parameters: (s) => s.map((i) => new b(e, i)),
-      return_chains: (s) => s.map((i) => new P(e, i))
-    }, this.cachedProps = {
-      chains: !0,
-      drum_pads: !0,
-      parameters: !0,
-      return_chains: !0
-    };
-  }
-  view;
-  /** Erases Looper's recorded content. */
-  async clear() {
-    return this.sendCommand("clear");
-  }
-  /** Doubles the length of Looper's buffer. */
-  async doubleLength() {
-    return this.sendCommand("double_length");
-  }
-  /** Doubles the speed of Looper's playback. */
-  async doubleSpeed() {
-    return this.sendCommand("double_speed");
-  }
-  /** Exports Looper's content to a Session Clip Slot. */
-  async exportToClipSlot(e) {
-    return this.sendCommand("export_to_clip_slot", {
-      slot_id: typeof e == "string" ? e : e.raw.id
-    });
-  }
-  /** Halves the length of Looper's buffer. */
-  async halfLength() {
-    return this.sendCommand("half_length");
-  }
-  /** Halves the speed of Looper's playback. */
-  async halfSpeed() {
-    return this.sendCommand("half_speed");
-  }
-  /** Plays back while adding additional layers of incoming audio. */
-  async overdub() {
-    return this.sendCommand("overdub");
-  }
-  /** Plays back without overdubbing. */
-  async play() {
-    return this.sendCommand("play");
-  }
-  /** Records incoming audio. */
-  async record() {
-    return this.sendCommand("record");
-  }
-  /**
-   * Saves the current state of the device to the compare AB slot.
-   * Only relevant if `can_compare_ab`, otherwise throws.
-   */
-  async savePresetToCompareAbSlot() {
-    return this.sendCommand("save_preset_to_compare_ab_slot");
-  }
-  /** Stops Looper's playback. */
-  async stop() {
-    return this.sendCommand("stop");
-  }
-  /** Sets the selected bank in the device for persistency. */
-  async storeChosenBank(e, t) {
-    return this.sendCommand("store_chosen_bank", [e, t]);
-  }
-  /**
-   * Erases everything that was recorded since the last time Overdub was enabled.
-   * Calling a second time will restore the material erased by the previous undo
-   * operation.
-   */
-  async undo() {
-    return this.sendCommand("undo");
-  }
-}
-const js = "PluginDevice";
-class Ds extends _ {
-  constructor(e, t) {
-    super(e, "plugin-device", t.id), this.raw = t, this.view = new He(e, t.id), this.transformers = {
-      chains: (s) => s.map((i) => new P(e, i)),
-      drum_pads: (s) => s.map((i) => new I(e, i)),
-      parameters: (s) => s.map((i) => new b(e, i)),
-      return_chains: (s) => s.map((i) => new P(e, i))
-    }, this.cachedProps = {
-      chains: !0,
-      drum_pads: !0,
-      parameters: !0,
-      return_chains: !0
-    };
-  }
-  view;
-  /**
-   * Gets the range of plugin parameter names, bound by begin and end.
-   * If end is smaller than 0 it is interpreted as the parameter count.
-   */
-  async getParameterNames(e = 0, t = -1) {
-    return this.sendCommand("get_parameter_names", { begin: e, end: t });
-  }
-  /**
-   * Saves the current state of the device to the compare AB slot.
-   * Only relevant if `can_compare_ab`, otherwise throws.
-   */
-  async savePresetToCompareAbSlot() {
-    return this.sendCommand("save_preset_to_compare_ab_slot");
-  }
-  /** Sets the selected bank in the device for persistency. */
-  async storeChosenBank(e, t) {
-    return this.sendCommand("store_chosen_bank", [e, t]);
-  }
-}
-class Ns extends _ {
-  constructor(e, t) {
-    super(e, "rack-device-view", t), this.transformers = {
-      selected_chain: (s) => s ? Fe(e, s) : null,
-      selected_drum_pad: (s) => s ? new I(e, s) : null
-    }, this.cachedProps = {
-      selected_chain: !0,
-      selected_drum_pad: !0
-    };
-  }
-}
-const Us = [
-  "InstrumentGroupDevice",
-  "DrumGroupDevice",
-  "AudioEffectGroupDevice",
-  "MidiEffectGroupDevice"
-];
-class Hs extends _ {
-  constructor(e, t) {
-    super(e, "rack-device", t.id), this.raw = t, this.view = new Ns(e, t.id), this.transformers = {
-      chain_selector: (s) => s ? new b(e, s) : null,
-      chains: (s) => s.map((i) => Fe(e, i)),
-      drum_pads: (s) => s.map((i) => new I(e, i)),
-      parameters: (s) => s.map((i) => new b(e, i)),
-      return_chains: (s) => s.map((i) => new P(e, i)),
-      visible_drum_pads: (s) => s.map((i) => new I(e, i))
-    }, this.cachedProps = {
-      chain_selector: !0,
-      chains: !0,
-      drum_pads: !0,
-      parameters: !0,
-      return_chains: !0,
-      visible_drum_pads: !0
-    };
-  }
-  view;
-  /** Increases the number of visible macro controls in the rack. */
-  async addMacro() {
-    return this.sendCommand("add_macro");
-  }
-  /**
-   * Copies all contents of a drum pad from a source pad into a destination pad.
-   * Indices are note numbers (0–127). Throws if the source pad is empty or
-   * indices are out of range.
-   */
-  async copyPad(e, t) {
-    return this.sendCommand("copy_pad", {
-      source_index: e,
-      destination_index: t
-    });
-  }
-  /** Deletes the currently selected macro variation. */
-  async deleteSelectedVariation() {
-    return this.sendCommand("delete_selected_variation");
-  }
-  /**
-   * Inserts a new chain at `index`, or at the end when `index` is `-1`
-   * (default).
-   */
-  async insertChain(e = -1) {
-    const t = await this.sendCommand("insert_chain", { index: e });
-    return Fe(this.ableton, t);
-  }
-  /** Randomizes values for all macro controls not excluded from randomization. */
-  async randomizeMacros() {
-    return this.sendCommand("randomize_macros");
-  }
-  /** Recalls the macro variation that was recalled most recently. */
-  async recallLastUsedVariation() {
-    return this.sendCommand("recall_last_used_variation");
-  }
-  /** Recalls the currently selected macro variation. */
-  async recallSelectedVariation() {
-    return this.sendCommand("recall_selected_variation");
-  }
-  /** Decreases the number of visible macro controls in the rack. */
-  async removeMacro() {
-    return this.sendCommand("remove_macro");
-  }
-  /**
-   * Saves the current state of the device to the compare AB slot.
-   * Only relevant if `can_compare_ab`, otherwise throws.
-   */
-  async savePresetToCompareAbSlot() {
-    return this.sendCommand("save_preset_to_compare_ab_slot");
-  }
-  /** Sets the selected bank in the device for persistency. */
-  async storeChosenBank(e, t) {
-    return this.sendCommand("store_chosen_bank", [e, t]);
-  }
-  /** Stores a new variation of the values of all currently mapped macros. */
-  async storeVariation() {
-    return this.sendCommand("store_variation");
-  }
-}
-function Ms(n) {
-  return Us.includes(n);
-}
-function q(n, e) {
-  return e.class_name === qs ? new Is(n, e) : e.class_name === js ? new Ds(n, e) : Ms(e.class_name) ? new Hs(n, e) : new Bs(n, e);
-}
-class Bs extends _ {
-  constructor(e, t) {
-    super(e, "device", t.id), this.raw = t, this.view = new He(e, t.id), this.transformers = {
-      chains: (s) => s.map((i) => new P(e, i)),
-      drum_pads: (s) => s.map((i) => new I(e, i)),
-      parameters: (s) => s.map((i) => new b(e, i)),
-      return_chains: (s) => s.map((i) => new P(e, i))
-    }, this.cachedProps = {
-      chains: !0,
-      drum_pads: !0,
-      parameters: !0,
-      return_chains: !0
-    };
-  }
-  view;
-  /**
-   * Saves the current state of the device to the compare AB slot.
-   * Only relevant if `can_compare_ab`, otherwise throws.
-   */
-  async savePresetToCompareAbSlot() {
-    return this.sendCommand("save_preset_to_compare_ab_slot");
-  }
-  /** Sets the selected bank in the device for persistency. */
-  async storeChosenBank(e, t) {
-    return this.sendCommand("store_chosen_bank", [e, t]);
   }
 }
 class Ws extends _ {
@@ -2200,7 +2200,7 @@ class xt extends _ {
 class Gs extends _ {
   constructor(e, t) {
     super(e, "track-view", t), this.transformers = {
-      selected_device: (s) => q(e, s)
+      selected_device: (s) => s ? I(e, s) : null
     }, this.cachedProps = {
       selected_device: !0
     };
@@ -2217,8 +2217,8 @@ class A extends _ {
     super(e, "track", t.id), this.raw = t, this.view = new Gs(this.ableton, t.id), this.transformers = {
       arrangement_clips: (s) => s.map((i) => new E(e, i)),
       color: (s) => new G(s),
-      devices: (s) => s.map((i) => q(e, i)),
-      clip_slots: (s) => s.map((i) => new Ue(e, i)),
+      devices: (s) => s.map((i) => I(e, i)),
+      clip_slots: (s) => s.map((i) => new Me(e, i)),
       group_track: (s) => s ? new A(e, s) : null,
       mixer_device: (s) => new Ws(e, s),
       take_lanes: (s) => s.map((i) => new xt(e, i))
@@ -2286,7 +2286,7 @@ class A extends _ {
       device_name: e,
       target_index: t
     });
-    return q(this.ableton, s);
+    return I(this.ableton, s);
   }
   /**
    * Jumps forward/backward in the currently running Session clip by `beats`.
@@ -2336,11 +2336,11 @@ class A extends _ {
 class $s extends _ {
   constructor(e) {
     super(e, "song-view"), this.transformers = {
-      selected_parameter: (t) => new b(e, t),
-      selected_track: (t) => new A(e, t),
-      selected_scene: (t) => new Pe(e, t),
-      highlighted_clip_slot: (t) => new Ue(e, t),
-      detail_clip: (t) => new E(e, t)
+      selected_parameter: (t) => t ? new b(e, t) : null,
+      selected_track: (t) => t ? new A(e, t) : null,
+      selected_scene: (t) => t ? new Fe(e, t) : null,
+      highlighted_clip_slot: (t) => t ? new Me(e, t) : null,
+      detail_clip: (t) => t ? new E(e, t) : null
     }, this.cachedProps = {
       detail_clip: !0,
       selected_parameter: !0,
@@ -2368,13 +2368,14 @@ class Vs extends _ {
 class Js extends _ {
   constructor(e) {
     super(e, "song"), this.transformers = {
-      cue_points: (t) => t.map((s) => new Ps(e, s)),
+      appointed_device: (t) => t ? new Ht(e, t) : null,
+      cue_points: (t) => t.map((s) => new Fs(e, s)),
       master_track: (t) => new A(e, t),
       return_tracks: (t) => t.map((s) => new A(e, s)),
       tracks: (t) => t.map((s) => new A(e, s)),
       tuning_system: (t) => t ? new Vs(e, t) : null,
       visible_tracks: (t) => t.map((s) => new A(e, s)),
-      scenes: (t) => t.map((s) => new Pe(e, s))
+      scenes: (t) => t.map((s) => new Fe(e, s))
     }, this.cachedProps = {
       cue_points: !0,
       master_track: !0,
@@ -2386,7 +2387,7 @@ class Js extends _ {
     };
   }
   view = new $s(this.ableton);
-  groovePool = new Os(this.ableton);
+  groovePool = new Bs(this.ableton);
   /** Begins a grouped undo step for subsequent song edits. */
   async beginUndoStep() {
     return this.sendCommand("begin_undo_step");
@@ -2422,7 +2423,7 @@ class Js extends _ {
    */
   async createScene(e = -1) {
     const t = await this.sendCommand("create_scene", { index: e });
-    return new Pe(this.ableton, t);
+    return new Fe(this.ableton, t);
   }
   /** Deletes the return track at the given index. */
   async deleteReturnTrack(e) {
@@ -2601,13 +2602,13 @@ function B(n, e = !0) {
   if (e && n.finished)
     throw new Error("digest() was already called");
 }
-function Mt(n, e) {
+function Bt(n, e) {
   $(n, void 0, "output");
   const t = e.outputLen;
   if (!(n.length >= t))
     throw new RangeError('"output" expected length >= ' + t);
 }
-function qe(...n) {
+function Ie(...n) {
   for (let e = 0; e < n.length; e++)
     n[e].fill(0);
 }
@@ -2665,13 +2666,13 @@ class kt {
     this.iHash.update(i), this.oHash = e.create();
     for (let r = 0; r < i.length; r++)
       i[r] ^= 106;
-    this.oHash.update(i), qe(i);
+    this.oHash.update(i), Ie(i);
   }
   update(e) {
     return B(this), this.iHash.update(e), this;
   }
   digestInto(e) {
-    B(this), Mt(e, this), this.finished = !0;
+    B(this), Bt(e, this), this.finished = !0;
     const t = e.subarray(0, this.outputLen);
     this.iHash.digestInto(t), this.oHash.update(t), this.oHash.digestInto(t), this.destroy();
   }
@@ -2739,7 +2740,7 @@ class ln {
     return this.length += e.length, a && this.roundClean(), this;
   }
   digestInto(e) {
-    B(this), Mt(e, this), this.finished = !0;
+    B(this), Bt(e, this), this.finished = !0;
     const { buffer: t, view: s, blockLen: i, isLE: r } = this;
     let { pos: a } = this;
     t[a++] = 128, t.fill(0, a), this.padOffset > i - a && (this.process(s, 0), t.fill(0)), cn(s, i - 8, this.length * 8, r), this.process(s, 0), this.roundClean();
@@ -2880,10 +2881,10 @@ class mn extends ln {
     s = s + this.A | 0, i = i + this.B | 0, r = r + this.C | 0, a = a + this.D | 0, o = o + this.E | 0, h = h + this.F | 0, c = c + this.G | 0, l = l + this.H | 0, this.set(s, i, r, a, o, h, c, l);
   }
   roundClean() {
-    qe(R);
+    Ie(R);
   }
   destroy() {
-    this.destroyed = !0, this.set(0, 0, 0, 0, 0, 0, 0, 0), qe(this.buffer);
+    this.destroyed = !0, this.set(0, 0, 0, 0, 0, 0, 0, 0), Ie(this.buffer);
   }
 }
 class pn extends mn {
@@ -2898,15 +2899,20 @@ const gn = /* @__PURE__ */ sn(
 function _n(n, e) {
   return en(rn(gn, Lt(n), Lt(e)));
 }
-const yn = "127.0.0.1", vn = 39031, wn = xs(200);
-function bn(n) {
-  return n.ns === "internal" && n.name === "authenticate" ? "{ hash: *** }" : gs(JSON.stringify(n.args), { length: 100 });
+const yn = "127.0.0.1", vn = 39031;
+function wn(n) {
+  return n.ns === "internal" && n.name === "authenticate" ? "{ hash: *** }" : _s(JSON.stringify(n.args), { length: 100 });
 }
-function Sn(n) {
+function bn(n) {
   if (n.length === 0)
     return "commands[0]";
-  const e = n[0], t = `${e.ns}.${e.name}(${bn(e)})`;
+  const e = n[0], t = `${e.ns}.${e.name}(${wn(e)})`;
   return n.length === 1 ? t : `commands[${n.length}] starting with ${t}`;
+}
+class Sn extends Error {
+  constructor(e, t) {
+    super(e), this.message = e, this.payload = t;
+  }
 }
 class Cn extends Error {
   constructor(e, t) {
@@ -2915,7 +2921,7 @@ class Cn extends Error {
 }
 class xn extends Error {
   constructor(e, t) {
-    super(e), this.message = e, this.payload = t;
+    super(e), this.message = e, this.errorType = t;
   }
 }
 class Ln extends Xs {
@@ -2932,6 +2938,7 @@ class Ln extends Xs {
   }
   client;
   msgMap = /* @__PURE__ */ new Map();
+  limit = Ts(200);
   commandQueue = [];
   flushScheduled = !1;
   eventListeners = /* @__PURE__ */ new Map();
@@ -2940,8 +2947,10 @@ class Ln extends Xs {
   connectTimer;
   _isConnected = !1;
   latency = 0;
+  lastMessageReceivedAt = 0;
   reconnectDelay = 250;
   shouldReconnect = !1;
+  connectionWaiters = [];
   host;
   port;
   /** LRU cache used by cached property reads when caching is enabled. */
@@ -2949,13 +2958,13 @@ class Ln extends Xs {
   /** The current Live Set (tracks, scenes, tempo, playback, …). */
   song = new Js(this);
   /** Red box / session ring control. */
-  session = new zs(this);
+  session = new Ps(this);
   /** Live application metadata and dialogs. */
-  application = new Es(this);
+  application = new Ls(this);
   /** Internal plugin helpers (ping, version, auth). */
-  internal = new Ls(this);
+  internal = new ks(this);
   /** Forwarded MIDI note/CC tracking. */
-  midi = new Rs(this);
+  midi = new zs(this);
   logger;
   clientState = "closed";
   cancelDisconnectEvents = [];
@@ -2964,7 +2973,16 @@ class Ln extends Xs {
     return String(this.lastId++);
   }
   handleConnect(e) {
-    this._isConnected || (this._isConnected = !0, this.logger?.info("Live connected", { type: e }), this.emit("connect", e));
+    this._isConnected || (this._isConnected = !0, this.logger?.info("Live connected", { type: e }), this.emit("connect", e), this.settleConnectionWaiters());
+  }
+  /**
+   * Resolves or rejects every pending `waitForConnection()` call.
+   */
+  settleConnectionWaiters(e) {
+    const t = this.connectionWaiters;
+    this.connectionWaiters = [];
+    for (const s of t)
+      e ? s.rej(e) : s.res();
   }
   handleDisconnect(e) {
     this._isConnected && (this._isConnected = !1, this.eventListeners.clear(), this.cache?.clear(), e === "realtime" && (this.msgMap.forEach((t) => t.clearTimeout()), this.msgMap.clear(), this.rejectCommandQueue(
@@ -2984,7 +3002,7 @@ class Ln extends Xs {
   async waitForConnection() {
     if (!this._isConnected)
       return new Promise((e, t) => {
-        this.once("connect", () => e()), this.once("error", (s) => t(s));
+        this.connectionWaiters.push({ res: e, rej: t });
       });
   }
   /**
@@ -2997,7 +3015,7 @@ class Ln extends Xs {
   async start(e) {
     if (this.clientState !== "closed")
       return this.logger?.warn(
-        "Tried calling start, but client is already " + this.clientState
+        `Tried calling start, but client is already ${this.clientState}`
       ), this.waitForConnection();
     this.clientState = "starting", this.shouldReconnect = !0, this.logger?.info("Connecting to Live", { url: this.socketUrl() }), this.connectSocket(), this.logger?.info("Checking connection...");
     const t = this.waitForConnection();
@@ -3014,21 +3032,24 @@ class Ln extends Xs {
       await t;
     this.logger?.info("Got connection!"), this.clientState = "started", this.handleConnect("start");
     const s = async () => {
-      if (!this._isConnected || !this.client || this.client.readyState !== WebSocket.OPEN || this.msgMap.size > 0 || this.commandQueue.length > 0)
+      if (!this._isConnected || !this.client || this.client.readyState !== WebSocket.OPEN)
         return;
-      let i = !1;
-      const r = () => {
-        i = !0, this.logger?.debug("Cancelled heartbeat");
+      const i = this.options?.heartbeatInterval ?? 2e3;
+      if (Date.now() - this.lastMessageReceivedAt < i)
+        return;
+      let r = !1;
+      const a = () => {
+        r = !0, this.logger?.debug("Cancelled heartbeat");
       };
-      this.cancelDisconnectEvents.push(r);
+      this.cancelDisconnectEvents.push(a);
       try {
-        const a = performance.now();
-        await this.internal.get("ping"), this.handleConnect("heartbeat"), this.latency = performance.now() - a, this.emit("ping", this.latency);
-      } catch (a) {
-        !i && this._isConnected && (this.logger?.warn("Heartbeat failed:", { error: a, canceled: i }), this.closeCurrentSocket());
+        const o = performance.now();
+        await this.internal.get("ping"), this.handleConnect("heartbeat"), this.latency = performance.now() - o, this.emit("ping", this.latency);
+      } catch (o) {
+        !r && this._isConnected && (this.logger?.warn("Heartbeat failed:", { error: o, canceled: r }), this.closeCurrentSocket("heartbeat"));
       } finally {
         this.cancelDisconnectEvents = this.cancelDisconnectEvents.filter(
-          (a) => a !== r
+          (o) => o !== a
         );
       }
     };
@@ -3060,21 +3081,27 @@ class Ln extends Xs {
     this.client = t;
     const s = this.options?.connectTimeoutMs ?? 5e3;
     this.connectTimer = setTimeout(() => {
-      this.connectTimer = void 0, !(this.client !== t || t.readyState !== WebSocket.CONNECTING) && (this.logger?.warn("WebSocket connection timed out", { url: e, timeout: s }), this.client = void 0, t.close(), this.handleDisconnect("realtime"), this.scheduleReconnect());
+      this.connectTimer = void 0, !(this.client !== t || t.readyState !== WebSocket.CONNECTING) && (this.logger?.warn("WebSocket connection timed out", { url: e, timeout: s }), this.teardownSocket(t, "realtime"), t.close());
     }, s), t.addEventListener("open", () => {
       this.client === t && (this.clearConnectTimer(), this.reconnectDelay = 250);
     }), t.addEventListener("message", (i) => {
       this.client === t && typeof i.data == "string" && this.handleIncoming(i.data);
     }), t.addEventListener("close", () => {
-      this.client === t && (this.clearConnectTimer(), this.client = void 0, this.handleDisconnect("realtime"), this.scheduleReconnect());
+      this.teardownSocket(t, "realtime");
     });
   }
-  closeCurrentSocket() {
-    if (!this.client || this.client.readyState === WebSocket.CLOSED) {
-      this.client = void 0, this.scheduleReconnect();
+  // Cleans up after `ws` and schedules a reconnect. Can be called more than
+  // once for the same socket, only the first call does anything.
+  teardownSocket(e, t) {
+    this.client === e && (this.clearConnectTimer(), this.client = void 0, this.handleDisconnect(t), this.scheduleReconnect());
+  }
+  closeCurrentSocket(e = "realtime") {
+    const t = this.client;
+    if (!t) {
+      this.scheduleReconnect();
       return;
     }
-    this.client.close();
+    this.teardownSocket(t, e), t.close();
   }
   scheduleReconnect() {
     if (!this.shouldReconnect || this.reconnectTimer)
@@ -3089,15 +3116,19 @@ class Ln extends Xs {
     if (this.logger?.info("Closing the client"), this.shouldReconnect = !1, this.reconnectTimer && (clearTimeout(this.reconnectTimer), this.reconnectTimer = void 0), this.clearConnectTimer(), this.heartbeatInterval && clearInterval(this.heartbeatInterval), this.client) {
       const e = this.client;
       if (e.readyState === WebSocket.CLOSED)
-        this.client = void 0;
+        this.teardownSocket(e, "realtime");
       else {
         const t = new Promise((s) => {
           e.addEventListener("close", () => s(), { once: !0 });
         });
-        e.close(), await t, this.client = void 0;
+        e.close(), await t;
       }
     }
-    this.clientState = "closed", this._isConnected = !1, this.logger?.info("Client closed");
+    this.clientState = "closed", this._isConnected = !1, this.logger?.info("Client closed"), this.settleConnectionWaiters(
+      new Error(
+        "The client was closed before a connection could be established."
+      )
+    );
   }
   /**
    * Returns the latency between the last command and its response.
@@ -3109,15 +3140,17 @@ class Ln extends Xs {
   handleIncoming(e) {
     try {
       this.emit("raw_message", e);
-      const t = JSON.parse(e), s = this.msgMap.get(t.uuid);
-      if (this.emit("message", t), t.event === "result" && s)
+      const t = JSON.parse(e);
+      this.lastMessageReceivedAt = Date.now(), this.emit("message", t);
+      const s = this.msgMap.get(t.uuid);
+      if (t.event === "result" && s)
         return this.msgMap.delete(t.uuid), s.res(t.data);
       if (t.event === "error" && s)
         return this.msgMap.delete(t.uuid), s.rej(new Error(t.data));
       if (t.event === "result" || t.event === "error")
         return;
       if (t.event === "disconnect") {
-        this.handleDisconnect("realtime"), this.closeCurrentSocket();
+        this.closeCurrentSocket();
         return;
       }
       if (t.event === "connect") {
@@ -3170,7 +3203,7 @@ class Ln extends Xs {
     this.handleConnect(this.clientState === "starting" ? "start" : "realtime");
   }
   abortAuthentication(e) {
-    this.logger?.error(e.message), this.shouldReconnect = !1, this.clientState = "closed", this.emit("error", e), this.closeCurrentSocket();
+    this.logger?.error(e.message), this.shouldReconnect = !1, this.clientState = "closed", this.emit("error", e), this.settleConnectionWaiters(e), this.closeCurrentSocket();
   }
   /**
    * Sends a raw command to Ableton. Usually, you won't need this.
@@ -3190,7 +3223,7 @@ class Ln extends Xs {
     if (this.commandQueue.length === 0)
       return;
     const e = this.commandQueue;
-    this.commandQueue = [], e.length > 1 && this.logger?.debug("Flushing command queue", { length: e.length }), await wn(async () => {
+    this.commandQueue = [], e.length > 1 && this.logger?.debug("Flushing command queue", { length: e.length }), await this.limit(async () => {
       try {
         const t = await this.sendCommandEnvelope(
           e.map((s) => s.command)
@@ -3203,7 +3236,9 @@ class Ln extends Xs {
         }
         for (let s = 0; s < e.length; s++) {
           const i = e[s], r = t[s];
-          r.ok ? i.res(r.data) : i.rej(new Error(r.error ?? "Command failed"));
+          r.ok ? i.res(r.data) : i.rej(
+            new xn(r.error || "Command failed", r.errorType)
+          );
         }
       } catch (t) {
         for (const s of e)
@@ -3216,7 +3251,7 @@ class Ln extends Xs {
       const i = this.getId(), r = {
         uuid: i,
         commands: e
-      }, a = JSON.stringify(r), o = Sn(e), h = e.filter((m) => m.timeout).reduce(
+      }, a = JSON.stringify(r), o = bn(e), h = e.filter((m) => m.timeout).reduce(
         (m, g) => Math.max(m, g.timeout ?? 0),
         this.options?.commandTimeoutMs ?? 3e3
       );
@@ -3228,7 +3263,7 @@ class Ln extends Xs {
       }, d = () => {
         l(), c = setTimeout(() => {
           u(), s(
-            new Cn(
+            new Sn(
               `The command ${o} timed out after ${h} ms.`,
               r
             )
@@ -3248,7 +3283,7 @@ class Ln extends Xs {
         },
         clearTimeout: () => {
           u(), s(
-            new xn(
+            new Cn(
               `Live disconnected before being able to respond to ${o}`,
               r
             )
@@ -3376,8 +3411,9 @@ class Ln extends Xs {
 }
 export {
   Ln as Ableton,
-  xn as DisconnectError,
-  Cn as TimeoutError,
+  xn as CommandError,
+  Cn as DisconnectError,
+  Sn as TimeoutError,
   ze as packageVersion
 };
 //# sourceMappingURL=ableton.js.map
