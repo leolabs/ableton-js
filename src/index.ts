@@ -228,6 +228,10 @@ export class Ableton extends EventEmitter<EventMap> {
   private lastMessageReceivedAt = 0;
   private reconnectDelay = 250;
   private shouldReconnect = false;
+  private connectionWaiters: Array<{
+    res: () => void;
+    rej: (error: Error) => void;
+  }> = [];
 
   private host: string;
   private port: number;
@@ -280,6 +284,22 @@ export class Ableton extends EventEmitter<EventMap> {
       this._isConnected = true;
       this.logger?.info("Live connected", { type });
       this.emit("connect", type);
+      this.settleConnectionWaiters();
+    }
+  }
+
+  /**
+   * Resolves or rejects every pending `waitForConnection()` call.
+   */
+  private settleConnectionWaiters(error?: Error) {
+    const waiters = this.connectionWaiters;
+    this.connectionWaiters = [];
+    for (const waiter of waiters) {
+      if (error) {
+        waiter.rej(error);
+      } else {
+        waiter.res();
+      }
     }
   }
 
@@ -323,8 +343,7 @@ export class Ableton extends EventEmitter<EventMap> {
     }
 
     return new Promise<void>((res, rej) => {
-      this.once("connect", () => res());
-      this.once("error", (error) => rej(error));
+      this.connectionWaiters.push({ res, rej });
     });
   }
 
@@ -568,6 +587,15 @@ export class Ableton extends EventEmitter<EventMap> {
     this.clientState = "closed";
     this._isConnected = false;
     this.logger?.info("Client closed");
+
+    // Unblocks any start()/waitForConnection() call that was still waiting
+    // for this connection attempt - otherwise it would wait forever, since
+    // we just gave up on ever connecting.
+    this.settleConnectionWaiters(
+      new Error(
+        "The client was closed before a connection could be established.",
+      ),
+    );
   }
 
   /**
@@ -679,6 +707,7 @@ export class Ableton extends EventEmitter<EventMap> {
     this.shouldReconnect = false;
     this.clientState = "closed";
     this.emit("error", error);
+    this.settleConnectionWaiters(error);
     this.closeCurrentSocket();
   }
 
