@@ -1,6 +1,6 @@
 {
   "include": ["./src/**/*"],
-  "exclude": ["**/*.spec.ts"],
+  "exclude": [],
   "compilerOptions": {
     "module": "nodenext",
     "target": "ES2022",

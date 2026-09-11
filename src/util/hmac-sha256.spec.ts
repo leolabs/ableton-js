@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hmacSha256Hex } from "./hmac-sha256";
+import { hmacSha256Hex } from "./hmac-sha256.js";
 
 describe("hmacSha256Hex", () => {
   it("matches Python hmac.sha256 for a short key", () => {

@@ -1,7 +1,11 @@
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { Color } from "../util/color.js";
-import { createAbleton, createTrack, gettablePropKeys } from "../util/tests.js";
+import {
+  createAbleton,
+  createTrack,
+  gettablePropKeys,
+} from "../util/tests/index.js";
 import { Clip } from "./clip.js";
 import { ClipSlot } from "./clip-slot.js";
 import { Device } from "./device.js";

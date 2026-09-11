@@ -34,6 +34,7 @@
     "**/*.js",
     "**/*.d.ts",
     "!hooks/",
+    "!util/tests/",
     "midi-script/**/*.py",
     "midi-script/static/**"
   ],
@@ -49,7 +50,7 @@
     "prepublishOnly": "yarn build",
     "build:doc": "jsdoc2md --files src/**/*.ts --configure ./jsdoc2md.json > ./API.md",
     "version": "node hooks/prepublish.js && yarn build:static && git add src/util/package-version.ts midi-script/version.py midi-script/static/ableton.js midi-script/static/ableton.js.map && auto-changelog -p -l 100 && git add CHANGELOG.md",
-    "build": "tsc && yarn build:static",
+    "build": "tsc -p tsconfig.build.json && yarn build:static",
     "build:static": "vite build",
     "test": "vitest --run",
     "format": "prettier -w src/"

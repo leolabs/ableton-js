@@ -1,5 +1,9 @@
 import { describe, it } from "vitest";
-import { createAbleton, createTrack, gettablePropKeys } from "../util/tests.js";
+import {
+  createAbleton,
+  createTrack,
+  gettablePropKeys,
+} from "../util/tests/index.js";
 import type { GettableProperties } from "./mixer-device.js";
 
 const gettableProps = gettablePropKeys<GettableProperties>({

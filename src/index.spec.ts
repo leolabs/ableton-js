@@ -5,7 +5,7 @@ import {
   createAbleton,
   createAbletonClients,
   sleep,
-} from "./util/tests.js";
+} from "./util/tests/index.js";
 
 const PROTOCOL_EVENTS = new Set(["result", "error", "connect", "disconnect"]);
 
