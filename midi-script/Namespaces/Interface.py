@@ -135,13 +135,18 @@ class Interface:
             entry["subscribers"].send_each(self.socket, value)
 
         self.log_debug(f"Attaching listener: {key}, event ID: {eventId}")
-        add_fn(fn)
-        self.listeners[key] = {
-            "fn": fn,
-            "subscribers": subscribers,
-            "ns": ns,
-            "prop": prop,
-        }
+
+        try:
+            add_fn(fn)
+            self.listeners[key] = {
+                "fn": fn,
+                "subscribers": subscribers,
+                "ns": ns,
+                "prop": prop,
+            }
+        except Exception as e:
+            raise Exception(f"Listener {prop} could not be attached: {e}")
+
         return eventId
 
     def remove_listener(self, ns, prop, connection, nsid="Default"):
