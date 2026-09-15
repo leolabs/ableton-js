@@ -1,4 +1,3 @@
-
 import time
 
 import Live
@@ -181,7 +180,7 @@ class AbletonJS(ControlSurface):
                 data = self.handlers[namespace].dispatch(command, connection)
                 results.append({"ok": True, "data": data})
             except Exception as e:
-                logger.error("Handler Error:")
+                logger.error(f"Handler error in payload {uuid} ({command.get('ns')}.{command.get('name')}):")
                 logger.exception(e)
                 message = str(e.args[0]) if e.args else str(e)
                 error_type = type(e).__name__
