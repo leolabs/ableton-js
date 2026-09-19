@@ -2,6 +2,7 @@
 import binascii
 import hashlib
 import hmac
+import itertools
 import json
 import os
 import queue
@@ -41,6 +42,14 @@ EAGAIN_ERRNOS = (11, 35, 10035)
 # stalled client could otherwise freeze the whole application indefinitely.
 SOCKET_TIMEOUT_SECONDS = 3.0
 
+# Push events (property-change listeners) are latency-sensitive UI state and
+# should jump ahead of queued command results, which the client is already
+# waiting on a promise for and can tolerate a bit more delay from. Pings and
+# close frames also get the high lane so they aren't stuck behind a backlog
+# of result frames.
+PRIORITY_HIGH = 0
+PRIORITY_LOW = 1
+
 
 def _auth_enabled():
     return bool(PASSWORD)
@@ -63,7 +72,8 @@ class ClientConnection:
     def __init__(self, sock):
         self.sock = sock
         self.sock.settimeout(SOCKET_TIMEOUT_SECONDS)
-        self.out_queue = queue.Queue()
+        self.out_queue = queue.PriorityQueue()
+        self._seq = itertools.count()
         self._send_lock = threading.Lock()
         self._closed = False
         self.authenticated = not _auth_enabled()
@@ -71,7 +81,7 @@ class ClientConnection:
         thread = threading.Thread(target=self._send_loop, daemon=True)
         thread.start()
 
-    def send_or_enqueue(self, frame):
+    def send_or_enqueue(self, frame, priority=PRIORITY_LOW):
         if self._closed:
             return False
 
@@ -93,12 +103,16 @@ class ClientConnection:
                     return False
             finally:
                 self._send_lock.release()
-        return self.enqueue(frame)
+        return self.enqueue(frame, priority)
 
-    def enqueue(self, frame):
+    def enqueue(self, frame, priority=PRIORITY_LOW):
         if self._closed:
             return False
-        self.out_queue.put_nowait(frame)
+        # (priority, seq, frame): seq breaks ties in insertion order and
+        # keeps frames (bytes, or None for the close sentinel) out of the
+        # comparison, since PriorityQueue compares tuple elements left to
+        # right and would otherwise try to compare frames against each other.
+        self.out_queue.put_nowait((priority, next(self._seq), frame))
         return True
 
     def close(self):
@@ -106,7 +120,7 @@ class ClientConnection:
             return
         self._closed = True
         try:
-            self.out_queue.put_nowait(None)
+            self.out_queue.put_nowait((PRIORITY_HIGH, next(self._seq), None))
         except:
             pass
         try:
@@ -116,7 +130,7 @@ class ClientConnection:
 
     def _send_loop(self):
         while True:
-            frame = self.out_queue.get()
+            _priority, _seq, frame = self.out_queue.get()
             if frame is None:
                 break
             try:
@@ -174,6 +188,11 @@ class Socket:
                 pass
             return str(o)
 
+        # Command responses are matched by uuid on the client and it's
+        # already waiting on that promise, so they can queue behind push
+        # events, which drive live UI state and are latency-sensitive.
+        priority = PRIORITY_LOW if name in ("result", "error") else PRIORITY_HIGH
+
         try:
             data = json.dumps(
                 {"event": name, "data": obj, "uuid": uuid},
@@ -182,25 +201,25 @@ class Socket:
             )
             frame = encode_text_frame(to_bytes(data))
             if connection is None:
-                self._broadcast_frame(frame)
+                self._broadcast_frame(frame, priority)
             else:
-                self._send_frame(frame, connection)
+                self._send_frame(frame, connection, priority)
         except Exception as e:
             logger.error(f"Error {name}({uuid}):")
             logger.exception(e)
 
-    def _send_frame(self, frame, connection):
-        self._deliver_frame(frame, [connection])
+    def _send_frame(self, frame, connection, priority=PRIORITY_LOW):
+        self._deliver_frame(frame, [connection], priority)
 
-    def _broadcast_frame(self, frame):
+    def _broadcast_frame(self, frame, priority=PRIORITY_LOW):
         with self._lock:
             targets = list(self._connections)
-        self._deliver_frame(frame, targets)
+        self._deliver_frame(frame, targets, priority)
 
-    def _deliver_frame(self, frame, targets):
+    def _deliver_frame(self, frame, targets, priority=PRIORITY_LOW):
         stale = []
         for conn in targets:
-            if not conn.send_or_enqueue(frame):
+            if not conn.send_or_enqueue(frame, priority):
                 stale.append(conn)
 
         if stale:
@@ -227,7 +246,7 @@ class Socket:
             clients = list(self._connections)
             self._connections = []
         for conn in clients:
-            conn.enqueue(encode_close_frame())
+            conn.enqueue(encode_close_frame(), PRIORITY_HIGH)
             conn.close()
         if self._socket:
             try:
@@ -372,10 +391,10 @@ class Socket:
                     opcode, fin, payload = frame
 
                     if opcode == OPCODE_CLOSE:
-                        client.enqueue(encode_close_frame())
+                        client.enqueue(encode_close_frame(), PRIORITY_HIGH)
                         return
                     if opcode == OPCODE_PING:
-                        self._send_frame(encode_pong_frame(payload), client)
+                        self._send_frame(encode_pong_frame(payload), client, PRIORITY_HIGH)
                         continue
                     if opcode == OPCODE_PONG:
                         continue
