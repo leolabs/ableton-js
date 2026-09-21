@@ -1293,7 +1293,7 @@ class Ls extends _ {
     );
   }
 }
-const ze = "5.0.2";
+const ze = "5.0.3";
 class ks extends _ {
   constructor(e) {
     super(e, "internal");
@@ -3141,12 +3141,17 @@ class Ln extends Xs {
     try {
       this.emit("raw_message", e);
       const t = JSON.parse(e);
-      this.lastMessageReceivedAt = Date.now(), this.emit("message", t);
-      const s = this.msgMap.get(t.uuid);
-      if (t.event === "result" && s)
-        return this.msgMap.delete(t.uuid), s.res(t.data);
-      if (t.event === "error" && s)
-        return this.msgMap.delete(t.uuid), s.rej(new Error(t.data));
+      this.lastMessageReceivedAt = Date.now();
+      const s = this.lastMessageReceivedAt - t.ts;
+      s > (this.options?.messageLatencyWarnMs ?? 500) && this.logger?.warn("Message arrived with high latency:", {
+        event: t.event,
+        latency: s
+      }), this.emit("message", t);
+      const i = this.msgMap.get(t.uuid);
+      if (t.event === "result" && i)
+        return this.msgMap.delete(t.uuid), i.res(t.data);
+      if (t.event === "error" && i)
+        return this.msgMap.delete(t.uuid), i.rej(new Error(t.data));
       if (t.event === "result" || t.event === "error")
         return;
       if (t.event === "disconnect") {
@@ -3157,9 +3162,9 @@ class Ln extends Xs {
         this.handleServerConnect(t);
         return;
       }
-      const i = this.eventListeners.get(t.event);
-      if (i)
-        return i.forEach((r) => r(t.data));
+      const r = this.eventListeners.get(t.event);
+      if (r)
+        return r.forEach((a) => a(t.data));
       t.uuid && this.logger?.warn("Message could not be assigned to any request:", {
         msg: e
       });
