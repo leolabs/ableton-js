@@ -69,6 +69,7 @@ interface Response {
   uuid: string;
   event: "result" | "error" | "connect" | "disconnect" | string;
   data: any;
+  ts: number;
 }
 
 type DisconnectEventType = "realtime" | "heartbeat";
@@ -184,6 +185,14 @@ export interface AbletonOptions {
    * @default 2000
    */
   commandWarnMs?: number;
+
+  /**
+   * If the delay between creating a message in the Python script and
+   * it being received on the client is larger than this, log a warning.
+   *
+   * @default 500
+   */
+  messageLatencyWarnMs?: number;
 
   /**
    * Options for the response cache.
@@ -612,6 +621,14 @@ export class Ableton extends EventEmitter<EventMap> {
 
       const data: Response = JSON.parse(msg);
       this.lastMessageReceivedAt = Date.now();
+
+      const latency = this.lastMessageReceivedAt - data.ts;
+      if (latency > (this.options?.messageLatencyWarnMs ?? 500)) {
+        this.logger?.warn("Message arrived with high latency:", {
+          event: data.event,
+          latency,
+        });
+      }
 
       this.emit("message", data);
 

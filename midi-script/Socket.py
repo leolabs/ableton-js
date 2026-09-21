@@ -50,6 +50,10 @@ SOCKET_TIMEOUT_SECONDS = 3.0
 PRIORITY_HIGH = 0
 PRIORITY_LOW = 1
 
+# If a frame sits in the per-connection out_queue longer than this before
+# actually being written to the socket, log it.
+QUEUE_WAIT_WARN_SECONDS = 0.5
+
 
 def _auth_enabled():
     return bool(PASSWORD)
@@ -108,11 +112,12 @@ class ClientConnection:
     def enqueue(self, frame, priority=PRIORITY_LOW):
         if self._closed:
             return False
-        # (priority, seq, frame): seq breaks ties in insertion order and
-        # keeps frames (bytes, or None for the close sentinel) out of the
-        # comparison, since PriorityQueue compares tuple elements left to
-        # right and would otherwise try to compare frames against each other.
-        self.out_queue.put_nowait((priority, next(self._seq), frame))
+        # (priority, seq, queued_at, frame): seq breaks ties in insertion
+        # order and, together with queued_at, keeps frames (bytes, or None
+        # for the close sentinel) out of the comparison, since PriorityQueue
+        # compares tuple elements left to right and would otherwise try to
+        # compare frames against each other.
+        self.out_queue.put_nowait((priority, next(self._seq), time.time(), frame))
         return True
 
     def close(self):
@@ -120,7 +125,7 @@ class ClientConnection:
             return
         self._closed = True
         try:
-            self.out_queue.put_nowait((PRIORITY_HIGH, next(self._seq), None))
+            self.out_queue.put_nowait((PRIORITY_HIGH, next(self._seq), time.time(), None))
         except:
             pass
         try:
@@ -130,9 +135,18 @@ class ClientConnection:
 
     def _send_loop(self):
         while True:
-            _priority, _seq, frame = self.out_queue.get()
+            priority, _seq, queued_at, frame = self.out_queue.get()
             if frame is None:
                 break
+
+            wait = time.time() - queued_at
+            if wait > QUEUE_WAIT_WARN_SECONDS:
+                logger.warning(
+                    f"Frame sat in the send queue for {round(wait * 1000)}ms before "
+                    f"being sent (priority={priority}, size={len(frame)}B, "
+                    f"queue_depth={self.out_queue.qsize()})"
+                )
+
             try:
                 self._send_lock.acquire()
                 try:
@@ -195,7 +209,7 @@ class Socket:
 
         try:
             data = json.dumps(
-                {"event": name, "data": obj, "uuid": uuid},
+                {"event": name, "data": obj, "uuid": uuid, "ts": round(time.time() * 1000)},
                 default=jsonReplace,
                 ensure_ascii=False,
             )
