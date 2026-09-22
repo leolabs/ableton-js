@@ -123,13 +123,11 @@ class ClientConnection:
     def close(self):
         if self._closed:
             return
+
         self._closed = True
+
         try:
             self.out_queue.put_nowait((PRIORITY_HIGH, next(self._seq), time.time(), None))
-        except:
-            pass
-        try:
-            self.sock.close()
         except:
             pass
 
@@ -150,8 +148,6 @@ class ClientConnection:
             try:
                 self._send_lock.acquire()
                 try:
-                    if self._closed:
-                        break
                     self.sock.sendall(frame)
                 finally:
                     self._send_lock.release()
