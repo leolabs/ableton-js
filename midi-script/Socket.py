@@ -54,6 +54,9 @@ PRIORITY_LOW = 1
 # actually being written to the socket, log it.
 QUEUE_WAIT_WARN_SECONDS = 0.5
 
+# Upper bound for how many bytes the send thread bundles into one sendall.
+MAX_BATCH_BYTES = 1024 * 1024
+
 
 def _auth_enabled():
     return bool(PASSWORD)
@@ -107,6 +110,7 @@ class ClientConnection:
                     return False
             finally:
                 self._send_lock.release()
+
         return self.enqueue(frame, priority)
 
     def enqueue(self, frame, priority=PRIORITY_LOW):
@@ -137,21 +141,45 @@ class ClientConnection:
             if frame is None:
                 break
 
-            wait = time.time() - queued_at
+            # Bundle everything that's already queued into this write.
+            # The send thread only gets scheduled every ~20ms inside Live,
+            # so sending one frame per pass can't keep up with bursts.
+            batch = bytearray(frame)
+            frame_count = 1
+            oldest_queued_at = queued_at
+            stop = False
+            while len(batch) < MAX_BATCH_BYTES:
+                try:
+                    _priority, _seq, next_queued_at, next_frame = self.out_queue.get_nowait()
+                except queue.Empty:
+                    break
+                if next_frame is None:
+                    stop = True
+                    break
+                batch.extend(next_frame)
+                frame_count += 1
+                oldest_queued_at = min(oldest_queued_at, next_queued_at)
+
+            wait = time.time() - oldest_queued_at
             if wait > QUEUE_WAIT_WARN_SECONDS:
                 logger.warning(
-                    f"Frame sat in the send queue for {round(wait * 1000)}ms before "
-                    f"being sent (priority={priority}, size={len(frame)}B, "
-                    f"queue_depth={self.out_queue.qsize()})"
+                    f"Sending batch after {round(wait * 1000)}ms in the send queue "
+                    f"(priority={priority}, frames={frame_count}, size={len(batch)}B, "
+                    f"remaining_depth={self.out_queue.qsize()})"
                 )
 
+            # Don't bail out on self._closed here: close() is called right
+            # after a close frame was enqueued, and that frame must still go out.
             try:
                 self._send_lock.acquire()
                 try:
-                    self.sock.sendall(frame)
+                    self.sock.sendall(batch)
                 finally:
                     self._send_lock.release()
             except:
+                break
+
+            if stop:
                 break
         try:
             self.sock.close()
@@ -326,6 +354,10 @@ class Socket:
                 continue
             try:
                 conn.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+            except:
+                pass
+            try:
+                conn.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 4 * 1024 * 1024)
             except:
                 pass
             logger.info(f"Client connected: {addr}")
