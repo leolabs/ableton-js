@@ -34,7 +34,6 @@ from .WebSocket import (
 # dedicated send thread adds ~10ms wake-up on macOS; keep it only for large
 # payloads or when a previous send is still queued.
 DIRECT_SEND_MAX_BYTES = 65536
-EAGAIN_ERRNOS = (11, 35, 10035)
 
 # Bounds how long any blocking call on a client socket (send or recv) may
 # block. Sends can happen synchronously on Live's own main thread (e.g. a
@@ -102,12 +101,10 @@ class ClientConnection:
                     return False
                 self.sock.sendall(frame)
                 return True
-            except socket.timeout:
+            except OSError:
+                # Includes socket.timeout. Part of the frame may already be
+                # on the wire, so the stream can't be recovered.
                 return False
-            except OSError as e:
-                errno = getattr(e, "errno", None)
-                if errno not in EAGAIN_ERRNOS:
-                    return False
             finally:
                 self._send_lock.release()
 
