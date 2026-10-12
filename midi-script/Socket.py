@@ -10,7 +10,7 @@ import socket
 import threading
 import time
 
-from .Config import PASSWORD, PLUGIN_NAME, WEBSOCKET_HOST, WEBSOCKET_PORT
+from .Config import DEBUG, PASSWORD, PLUGIN_NAME, WEBSOCKET_HOST, WEBSOCKET_PORT
 from .Logging import logger
 from .StaticServer import serve_static
 from .WebSocket import (
@@ -49,10 +49,6 @@ SOCKET_TIMEOUT_SECONDS = 3.0
 PRIORITY_HIGH = 0
 PRIORITY_LOW = 1
 
-# If a frame sits in the per-connection out_queue longer than this before
-# actually being written to the socket, log it.
-QUEUE_WAIT_WARN_SECONDS = 0.5
-
 # Upper bound for how many bytes the send thread bundles into one sendall.
 MAX_BATCH_BYTES = 1024 * 1024
 
@@ -78,6 +74,13 @@ class ClientConnection:
     def __init__(self, sock):
         self.sock = sock
         self.sock.settimeout(SOCKET_TIMEOUT_SECONDS)
+
+        try:
+            host, port = sock.getpeername()[:2]
+            self.peer = f"{host}:{port}"
+        except:
+            self.peer = "unknown"
+
         self.out_queue = queue.PriorityQueue()
         self._seq = itertools.count()
         self._send_lock = threading.Lock()
@@ -101,9 +104,13 @@ class ClientConnection:
                     return False
                 self.sock.sendall(frame)
                 return True
-            except OSError:
+            except OSError as e:
                 # Includes socket.timeout. Part of the frame may already be
                 # on the wire, so the stream can't be recovered.
+                logger.warning(
+                    f"[{self.peer}] Direct send of {len(frame)}B failed, "
+                    f"dropping connection: {e!r}"
+                )
                 return False
             finally:
                 self._send_lock.release()
@@ -158,11 +165,12 @@ class ClientConnection:
                 oldest_queued_at = min(oldest_queued_at, next_queued_at)
 
             wait = time.time() - oldest_queued_at
-            if wait > QUEUE_WAIT_WARN_SECONDS:
-                logger.warning(
-                    f"Sending batch after {round(wait * 1000)}ms in the send queue "
-                    f"(priority={priority}, frames={frame_count}, size={len(batch)}B, "
-                    f"remaining_depth={self.out_queue.qsize()})"
+
+            if DEBUG:
+                logger.info(
+                    f"[{self.peer}] Sending batch after {round(wait * 1000)}ms in the "
+                    f"send queue (priority={priority}, frames={frame_count}, "
+                    f"size={len(batch)}B, remaining_depth={self.out_queue.qsize()})"
                 )
 
             # Don't bail out on self._closed here: close() is called right
@@ -173,11 +181,16 @@ class ClientConnection:
                     self.sock.sendall(batch)
                 finally:
                     self._send_lock.release()
-            except:
+            except Exception as e:
+                logger.warning(
+                    f"[{self.peer}] Queued send of {len(batch)}B failed, "
+                    f"dropping connection: {e!r}"
+                )
                 break
 
             if stop:
                 break
+
         try:
             self.sock.close()
         except:
@@ -354,10 +367,16 @@ class Socket:
             except:
                 pass
             try:
-                conn.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 4 * 1024 * 1024)
+                conn.setsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF, 4 * MAX_BATCH_BYTES)
             except:
                 pass
-            logger.info(f"Client connected: {addr}")
+            try:
+                sndbuf = conn.getsockopt(socket.SOL_SOCKET, socket.SO_SNDBUF)
+            except:
+                sndbuf = "unknown"
+
+            # The OS may silently cap SO_SNDBUF, so log what we actually got.
+            logger.info(f"Client connected: {addr} (send buffer: {sndbuf}B)")
             thread = threading.Thread(
                 target=self._handle_connection, args=(conn,), daemon=True
             )
@@ -460,7 +479,7 @@ class Socket:
         finally:
             with self._lock:
                 self._drop_connection(client)
-            logger.info("Client disconnected")
+            logger.info(f"Client disconnected: {client.peer}")
 
     def _handle_payload(self, opcode, payload, client):
         if opcode != OPCODE_TEXT:
