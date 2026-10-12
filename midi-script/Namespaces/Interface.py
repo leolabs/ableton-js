@@ -1,7 +1,6 @@
 import hashlib
 import json
 
-from ..Config import DEBUG
 from ..Logging import logger
 
 
@@ -60,10 +59,6 @@ class Interface:
         self.ableton = c_instance
         self.socket = socket
 
-    def log_debug(self, message):
-        if DEBUG:
-            logger.debug(message)
-
     def get_ns(self, nsid):
         return Interface.get_obj(nsid)
 
@@ -119,7 +114,7 @@ class Interface:
             raise Exception(f"Listener {prop} does not exist.")
 
         key = f"{nsid}:{prop}"
-        self.log_debug(f"Listener key: {key}")
+        logger.debug(f"Listener key: {key}")
 
         if key in self.listeners:
             return self.listeners[key]["subscribers"].subscribe(connection, eventId)
@@ -134,7 +129,7 @@ class Interface:
                 return
             entry["subscribers"].send_each(self.socket, value)
 
-        self.log_debug(f"Attaching listener: {key}, event ID: {eventId}")
+        logger.debug(f"Attaching listener: {key}, event ID: {eventId}")
 
         try:
             add_fn(fn)
@@ -151,7 +146,7 @@ class Interface:
 
     def remove_listener(self, ns, prop, connection, nsid="Default"):
         key = f"{nsid}:{prop}"
-        self.log_debug(f"Remove key: {key}")
+        logger.debug(f"Remove key: {key}")
         if key not in self.listeners:
             raise Exception(f"Listener {prop} does not exist.")
 

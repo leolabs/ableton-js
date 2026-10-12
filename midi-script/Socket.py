@@ -10,7 +10,7 @@ import socket
 import threading
 import time
 
-from .Config import DEBUG, PASSWORD, PLUGIN_NAME, WEBSOCKET_HOST, WEBSOCKET_PORT
+from .Config import PASSWORD, PLUGIN_NAME, WEBSOCKET_HOST, WEBSOCKET_PORT
 from .Logging import logger
 from .StaticServer import serve_static
 from .WebSocket import (
@@ -166,12 +166,11 @@ class ClientConnection:
 
             wait = time.time() - oldest_queued_at
 
-            if DEBUG:
-                logger.info(
-                    f"[{self.peer}] Sending batch after {round(wait * 1000)}ms in the "
-                    f"send queue (priority={priority}, frames={frame_count}, "
-                    f"size={len(batch)}B, remaining_depth={self.out_queue.qsize()})"
-                )
+            logger.debug(
+                f"[{self.peer}] Sending batch after {round(wait * 1000)}ms in the "
+                f"send queue (priority={priority}, frames={frame_count}, "
+                f"size={len(batch)}B, remaining_depth={self.out_queue.qsize()})"
+            )
 
             # Don't bail out on self._closed here: close() is called right
             # after a close frame was enqueued, and that frame must still go out.
